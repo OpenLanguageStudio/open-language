@@ -1,0 +1,66 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  PYTHON_VERSION: "3.13"
+
+jobs:
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: astral-sh/setup-uv@v10.2.0
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          enable-cache: true
+      - name: Install dev tools
+        run: uv sync --locked --only-dev --no-install-project
+      # --no-fix: the shared ruff config fixes on local runs, which would let
+      # CI repair the code and report success.
+      - name: Ruff check
+        run: uv run ruff check --no-fix .
+      - name: Ruff format
+        run: uv run ruff format --check .
+
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: astral-sh/setup-uv@v10.2.0
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          enable-cache: true
+      - name: Install
+        run: uv sync --locked
+      # The floor is the coverage the suite has today. It only ever goes up.
+      - name: Pytest
+        run: uv run pytest -q --cov --cov-report=term-missing --cov-fail-under=60
+
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: astral-sh/setup-uv@v10.2.0
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          enable-cache: true
+      - name: Build the distribution
+        run: uv build
+      - name: Install the wheel and run the CLI
+        run: |
+          uv venv /tmp/wheelcheck
+          uv pip install --quiet --python /tmp/wheelcheck/bin/python dist/*.whl
+          /tmp/wheelcheck/bin/ol --help
+          /tmp/wheelcheck/bin/ol templates | grep -q grammar-article.md

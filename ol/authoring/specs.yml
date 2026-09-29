@@ -1,0 +1,102 @@
+# Validation spec for Open Language article types.
+# Consumed by ol/authoring/validate.py (`ol validate`).
+#
+# Common checks (all articles, hardcoded in the script):
+#   - frontmatter with html_meta description/keywords
+#   - exactly one H1; NO CEFR level prefix in index titles
+#   - NO {practice} blocks (learners stay on our platforms)
+#   - NO HTML comments (agent notes leak into built HTML)
+#   - NO blockquote subtitle under the H1
+#   - NO :::{seealso} blocks (use Prerequisites admonition or Related articles)
+#   - doc links resolve; no unfilled {{PLACEHOLDER}}
+#
+# Per-type keys:
+#   required_headings: regexes that must each match at least one ## heading
+#   require_examples_div: at least one ":::{div} ol-examples" block
+#   require_summary_admonitions / require_common_mistakes
+#   min_audio_examples: minimum count of :::{audio-examples} blocks
+#   ordered: toctree order in the category index is the learning sequence
+
+common:
+  description_max_chars: 160
+  check_doc_links: true
+
+types:
+  grammar:
+    required_headings:
+      - "^Hear it in practice$"
+      - "^Summary$"
+      - "^Related articles$"
+    require_examples_div: true
+    require_summary_admonitions: true
+    require_common_mistakes: true
+    min_audio_examples: 1
+    ordered: false
+
+  concepts:
+    required_headings:
+      - "^When to use it$"
+      - "^Key phrases$"
+      - "^Hear it in practice$"
+      - "^Summary$"
+    require_examples_div: true
+    require_summary_admonitions: true
+    require_common_mistakes: false
+    min_audio_examples: 1
+    ordered: true
+    english_filename: true
+
+  # Writing shape updated 2026-07-20 to the operational-guidelines category shape
+  # (model text -> building blocks -> Hear it in practice -> Summary); writing
+  # articles DO carry tracks (decision record #3). Interim pending the W1
+  # exemplar sign-off.
+  writing:
+    required_headings:
+      - "^Example: "
+      - "^Building blocks$"
+      - "^Summary$"
+    # Each "Example: ..." section carries its own "### Hear it in practice"
+    # (H3 per the brand rule for sub-section audio; the H2-level required list
+    # cannot see H3s, so the audio block count check carries the enforcement).
+    require_examples_div: false
+    require_summary_admonitions: true
+    require_common_mistakes: true
+    min_audio_examples: 1
+    ordered: false
+    english_filename: true
+
+  topics:
+    required_headings:
+      - "^Vocabulary list$"
+      - "^Useful phrases$"
+    require_examples_div: false
+    require_summary_admonitions: false
+    require_common_mistakes: false
+    min_audio_examples: 0
+    ordered: false
+    english_filename: true
+
+  situations:
+    required_headings:
+      - "^The situation$"
+      - "^What you will hear$"
+      - "^Key vocabulary$"
+    require_examples_div: true
+    require_summary_admonitions: false
+    require_common_mistakes: false
+    min_audio_examples: 0
+    ordered: false
+    english_filename: true
+
+  # Vocabulary packs (category renamed from "topics" course-wide).
+  # Interim spec: heading shape is finalized with the V1 exemplar.
+  vocabulary:
+    required_headings:
+      - "^Hear it in practice$"
+      - "^Summary$"
+    require_examples_div: false
+    require_summary_admonitions: false
+    require_common_mistakes: false
+    min_audio_examples: 1
+    ordered: false
+    english_filename: true

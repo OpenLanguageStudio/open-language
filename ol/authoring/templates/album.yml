@@ -1,0 +1,15 @@
+# TEMPLATE: album manifest: albums/<level>/<category>/<name>/album.yml
+# NEVER include level, category, or language: level/category are derived from
+# the album's path (albums/<level>/<category>/<name>); language comes from
+# open-language.yml. Required keys: title, voice, tracks.
+# tracks: lists track NAMES (not filenames, not titles), in play order; each
+# must match one :::{audio-examples} block whose :album: backlink is this
+# album (block :name: option, else the article's file stem). Verify with
+# `ol audit`. A legacy `.yml` entry loads from tracks/ (satzbildung only: # never author new tracks that way).
+title: {{Part 1}}              # album title as shown on streaming platforms
+voice: {{max}}                 # default voice name from open-language.yml
+publish_year: {{2026}}
+description: "{{one-line release description}}"   # optional
+tracks:
+  - {{first-track}}
+  - {{second-track}}

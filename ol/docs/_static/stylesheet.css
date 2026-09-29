@@ -1,0 +1,549 @@
+/* ============================================================================
+   Open Language — coursebook stylesheet
+
+   Two sources feed this file and neither is edited here:
+
+     Brand tokens ....... brand.css v3/v4 (palette, type, spacing, --focus).
+                          Token names are stable across modes; only the
+                          values swap.
+     Grammar marking .... the marking-scheme guide (accent assignments,
+                          word-mark vs phrase-mark treatment).
+
+   Layered over pydata-sphinx-theme 0.17. The theme scopes its own variables
+   to html[data-theme=light] / html[data-theme=dark] (specificity 0,1,1), so
+   every --pst-* override below carries the same selector shape or it
+   silently loses. conf.py adds this file after the theme stylesheet, so
+   equal specificity resolves in our favour.
+   ============================================================================ */
+
+/* ── Fonts ─────────────────────────────────────────────────────────────────
+   Latin, Latin Ext A/B, combining diacritics, punctuation. The italic is
+   load-bearing: German phrases in prose are set in italic, so it is what
+   separates the language being taught from the language teaching it. A
+   synthesised oblique would degrade that distinction. */
+
+@font-face {
+  font-family: "Bricolage Grotesque";
+  src: url("fonts/BricolageGrotesque[opsz,wdth,wght].woff2") format("woff2");
+  font-weight: 200 800;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Literata";
+  src: url("fonts/Literata[opsz,wght].woff2") format("woff2");
+  font-weight: 200 900;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Literata";
+  src: url("fonts/Literata-Italic[opsz,wght].woff2") format("woff2");
+  font-weight: 200 900;
+  font-style: italic;
+  font-display: swap;
+}
+@font-face {
+  font-family: "JetBrains Mono";
+  src: url("fonts/JetBrainsMono-Regular.woff2") format("woff2");
+  font-weight: 400;
+  font-display: swap;
+}
+
+/* ── Brand tokens: light ───────────────────────────────────────────────────
+   On :root rather than html[data-theme=light] so the values are present
+   before the theme's script resolves a mode. Nothing else in the page
+   defines these names. */
+
+:root {
+  --bg:          #fbf7f0;
+  --bg-2:        #f2ece1;
+  --text:        #1e1a15;
+  --text-muted:  #665c50;
+  --rule:        #d8cdbb;   /* decorative only, never the sole signal */
+  --rule-strong: #978871;   /* any border that identifies something */
+
+  --brand:       #d9922f;
+  --brand-text:  #96550f;
+  --on-brand:    #1e1a15;
+
+  /* A focus ring is measured against every surface it can land on, not
+     against the page. Its own token for that reason. */
+  --focus:       #96550f;
+
+  --pine:         #1f4a3d;
+  --pine-text:    #1f4a3d;
+  --pine-surface: #eaf0ec;
+  --on-pine:      #fbf7f0;
+
+  --warn:         #a2461b;   /* correction register. Deliberately not red. */
+  --warn-surface: #f8e0d3;
+
+  /* Grammar accents. marking-scheme.md assigns the meanings.
+     -surface carries --text on top, never the accent itself. */
+  --accent-1: #1a5aa6;  --accent-1-surface: #dce8f7;  /* blue   */
+  --accent-2: #6b3d99;  --accent-2-surface: #e7dcf5;  /* violet */
+  --accent-3: #a62f57;  --accent-3-surface: #f8dbe4;  /* rose   */
+  --accent-4: #10635e;  --accent-4-surface: #d6ecea;  /* teal   */
+  --accent-5: #4d6612;  --accent-5-surface: #e5eecd;  /* moss   */
+  --accent-6: #a2461b;  --accent-6-surface: #f8e0d3;  /* rust   */
+
+  /* Level. Categorical, not a ramp. Identical in every language and mode. */
+  --level-a1: #eeb849;
+  --level-a2: #a4563a;
+  --level-b1: #79b3a8;
+  --level-b2: #496695;
+
+  --ink-fixed:   #1e1a15;
+  --paper-fixed: #fbf7f0;
+  --on-level-a1: var(--ink-fixed);
+  --on-level-a2: var(--paper-fixed);
+  --on-level-b1: var(--ink-fixed);
+  --on-level-b2: var(--paper-fixed);
+
+  --font-display: "Bricolage Grotesque", "Helvetica Neue", Arial, sans-serif;
+  --font-body:    "Literata", Georgia, serif;
+  --font-mono:    "JetBrains Mono", ui-monospace, Menlo, monospace;
+
+  --weight-regular:  400;
+  --weight-medium:   500;
+  --weight-semibold: 600;
+  --weight-bold:     700;
+
+  --leading-tight: 1.15;
+  --leading-body:  1.7;
+
+  --space-1:  4px;
+  --space-2:  8px;
+  --space-3:  12px;
+  --space-4:  16px;
+  --space-6:  24px;
+  --space-8:  32px;
+  --space-12: 48px;
+
+  --radius-sm: 3px;
+  --radius-md: 6px;
+  --radius-lg: 10px;
+}
+
+/* ── Brand tokens: dark ────────────────────────────────────────────────────
+   Warm charcoal, never black. Accents lighten and desaturate; surfaces are
+   tints of the page rather than of white. */
+
+html[data-theme="dark"] {
+  --bg:          #17140f;
+  --bg-2:        #221e17;
+  --text:        #ece5d8;
+  --text-muted:  #a99e8c;
+  --rule:        #332d24;
+  --rule-strong: #6b6153;
+
+  --brand:       #d9922f;
+  --brand-text:  #eab254;
+  --on-brand:    #1e1a15;
+
+  --focus:       #eab254;
+
+  --pine:         #2c6b58;
+  --pine-text:    #7cc4a8;
+  --pine-surface: #17251f;
+
+  --warn:         #f0a279;
+  --warn-surface: #2b1a12;
+
+  --accent-1: #8fbaf0;  --accent-1-surface: #16202e;
+  --accent-2: #c4a6ee;  --accent-2-surface: #221a2e;
+  --accent-3: #f093ab;  --accent-3-surface: #2c161e;
+  --accent-4: #6ac6bd;  --accent-4-surface: #12241f;
+  --accent-5: #b0cc7d;  --accent-5-surface: #1d2313;
+  --accent-6: #f0a279;  --accent-6-surface: #2b1a12;
+}
+
+/* ── Theme bridge ──────────────────────────────────────────────────────────
+   One block for both modes: every value is a brand token and the tokens
+   already swap. Written with the theme's own selector shape so it is not
+   outranked. */
+
+html[data-theme="light"],
+html[data-theme="dark"] {
+  --pst-color-background:    var(--bg);
+  --pst-color-on-background: var(--bg-2);
+  --pst-color-surface:       var(--bg-2);
+  --pst-color-on-surface:    var(--text);
+
+  --pst-color-text-base:  var(--text);
+  --pst-color-text-muted: var(--text-muted);
+  --pst-color-heading:    var(--text);
+
+  --pst-color-border:           var(--rule);
+  --pst-color-border-muted:     var(--rule);
+  --pst-color-blockquote-notch: var(--rule-strong);
+
+  --pst-color-primary:                var(--brand-text);
+  --pst-color-primary-bg:             var(--bg-2);
+  --pst-color-primary-text:           var(--on-brand);
+  --pst-color-primary-highlight:      var(--brand-text);
+  --pst-color-primary-highlight-text: var(--on-brand);
+
+  --pst-color-link:                 var(--brand-text);
+  --pst-color-link-hover:           var(--pine-text);
+  --pst-color-link-higher-contrast: var(--brand-text);
+
+  --pst-color-accent:       var(--pine-text);
+  --pst-color-accent-bg:    var(--pine-surface);
+  --pst-color-secondary:    var(--pine-text);
+  --pst-color-secondary-bg: var(--pine-surface);
+
+  /* Callout registers. The corpus uses three: quiet aside (pine),
+     correction (rust, never red — a learner reading "common mistakes" is
+     already afraid of looking stupid), and key points (the calmest, because
+     it is the most frequent). danger and error appear zero times. */
+  --pst-color-info:         var(--pine-text);
+  --pst-color-info-bg:      var(--pine-surface);
+  --pst-color-success:      var(--accent-5);
+  --pst-color-success-bg:   var(--accent-5-surface);
+  --pst-color-warning:      var(--warn);
+  --pst-color-warning-bg:   var(--warn-surface);
+  --pst-color-attention:    var(--warn);
+  --pst-color-attention-bg: var(--warn-surface);
+  --pst-color-danger:       var(--accent-3);
+  --pst-color-danger-bg:    var(--accent-3-surface);
+
+  --pst-color-inline-code:        var(--accent-2);
+  --pst-color-inline-code-links:  var(--brand-text);
+  --pst-color-table:              var(--text);
+  --pst-color-table-heading-bg:   var(--bg-2);
+  --pst-color-table-row-hover-bg: var(--bg-2);
+
+  --pst-font-family-base:      var(--font-body);
+  --pst-font-family-heading:   var(--font-display);
+  --pst-font-family-monospace: var(--font-mono);
+  --pst-font-weight-heading:   var(--weight-semibold);
+}
+
+/* ── Typography ────────────────────────────────────────────────────────────
+   The page is read at night, on a phone. */
+
+body {
+  font-family: var(--font-body);
+  line-height: var(--leading-body);
+  -webkit-font-smoothing: antialiased;
+}
+
+.bd-article-container,
+.bd-article {
+  font-size: 1.0625rem;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-display);
+  font-weight: var(--weight-semibold);
+  line-height: var(--leading-tight);
+  letter-spacing: -0.015em;
+}
+
+.bd-article h1 { font-size: 2.2rem; }
+.bd-article h2 { font-size: 1.65rem; margin-top: var(--space-12); }
+.bd-article h3 { font-size: 1.3rem;  margin-top: var(--space-8); }
+
+/* German inline, wherever the corpus sets a native word or phrase inside
+   English prose. */
+.de { font-style: italic; }
+
+code, pre, .mono, kbd, samp {
+  font-family: var(--font-mono);
+  font-size: 0.9em;
+}
+
+hr {
+  border: none;
+  border-top: 1px solid var(--rule);
+  margin: var(--space-12) 0;
+}
+
+/* Focus. --focus rather than --rule-strong: a border sits on one surface,
+   a focus ring travels across all of them, and --rule-strong falls under
+   the 3:1 floor of SC 1.4.11 on --bg-2. */
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+summary:focus-visible,
+[tabindex]:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+/* ============================================================================
+   Grammar marking
+
+   Two treatments, per marking-scheme.md §1. Colour is never the only carrier
+   (WCAG 1.4.1): a word mark also takes a dotted underline, a phrase mark also
+   takes a solid rule along its baseline.
+
+     Word mark ..... one word, accent-coloured text + dotted underline
+     Phrase mark ... a whole constituent, accent highlight behind the span
+
+   Accent assignments are unique per marked passage, not per page, and that
+   only holds because every marked passage ships a key.
+
+   Every role carries both the namespaced class emitted by ol.docs.roles and
+   the bare role name, so a role registered by any other path still renders,
+   and content using the old 15-role set keeps rendering while it is
+   migrated, rather than having to change in lockstep with this file.
+   ============================================================================ */
+
+/* ── Word marks ─────────────────────────────────────────────────────────── */
+
+.ol-mark--verb, .ol-mark--noun, .ol-mark--det, .ol-mark--mod,
+.ol-mark--conj, .ol-mark--prep,
+.ol-mark--adj, .ol-mark--adv, .ol-mark--article, .ol-mark--pronoun,
+.verb, .noun, .det, .mod, .conj, .prep,
+.adj, .adv, .article, .pronoun {
+  border-bottom: 2px dotted currentColor;
+  padding-bottom: 1px;
+  font-weight: var(--weight-medium);
+}
+
+/* 1 · verb — finite verb, participle, separable prefix, infinitive */
+.ol-mark--verb, .verb { color: var(--accent-1); }
+
+/* 2 · noun */
+.ol-mark--noun, .noun { color: var(--accent-2); }
+
+/* 3 · det — determiner or pronoun (der/die/das, kein, mein, ihn, sich).
+       article and pronoun are the pre-migration names for this mark. */
+.ol-mark--det, .ol-mark--article, .ol-mark--pronoun,
+.det, .article, .pronoun { color: var(--accent-3); }
+
+/* 4 · mod — adjective or adverb, including nicht.
+       adj and adv are the pre-migration names for this mark. */
+.ol-mark--mod, .ol-mark--adj, .ol-mark--adv,
+.mod, .adj, .adv { color: var(--accent-4); }
+
+/* 5 · conj — coordinating and subordinating connector */
+.ol-mark--conj, .conj { color: var(--accent-5); }
+
+/* 6 · prep */
+.ol-mark--prep, .prep { color: var(--accent-6); }
+
+/* ── Phrase marks ───────────────────────────────────────────────────────── */
+
+.ol-mark--nom, .ol-mark--akk, .ol-mark--dativ, .ol-mark--gen,
+.ol-mark--te, .ol-mark--ka, .ol-mark--mo, .ol-mark--lo,
+.ol-mark--subj,
+.nom, .akk, .dativ, .gen, .te, .ka, .mo, .lo, .subj {
+  color: var(--text);
+  border-radius: var(--radius-sm);
+  padding: 1px 5px;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+}
+
+/* Case. 1 nom · 2 akk · 3 dativ · 4 gen.
+   subj is the pre-migration name for nom: a subject is always nominative. */
+.ol-mark--nom, .ol-mark--subj, .nom, .subj {
+  background: var(--accent-1-surface);
+  box-shadow: inset 0 -2px 0 var(--accent-1);
+}
+.ol-mark--akk, .akk {
+  background: var(--accent-2-surface);
+  box-shadow: inset 0 -2px 0 var(--accent-2);
+}
+.ol-mark--dativ, .dativ {
+  background: var(--accent-3-surface);
+  box-shadow: inset 0 -2px 0 var(--accent-3);
+}
+.ol-mark--gen, .gen {
+  background: var(--accent-4-surface);
+  box-shadow: inset 0 -2px 0 var(--accent-4);
+}
+
+/* TeKaMoLo. Contiguous and in Te-Ka-Mo-Lo order so the key reads left to
+   right; the mnemonic is the content. Accents 3 and 4 are shared with dativ
+   and gen, which meet them on one page, in separate sections, under
+   separate keys. */
+.ol-mark--te, .te {
+  background: var(--accent-3-surface);
+  box-shadow: inset 0 -2px 0 var(--accent-3);
+}
+.ol-mark--ka, .ka {
+  background: var(--accent-4-surface);
+  box-shadow: inset 0 -2px 0 var(--accent-4);
+}
+.ol-mark--mo, .mo {
+  background: var(--accent-5-surface);
+  box-shadow: inset 0 -2px 0 var(--accent-5);
+}
+.ol-mark--lo, .lo {
+  background: var(--accent-6-surface);
+  box-shadow: inset 0 -2px 0 var(--accent-6);
+}
+
+/* ── Marking key ──────────────────────────────────────────────────────────
+   Sits next to a marked passage and names what each accent means there.
+   Hand-authored for now; generation is a follow-up. */
+
+.ol-key {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-4);
+  margin: 0 0 var(--space-4) 0;
+  padding: var(--space-3) var(--space-4);
+  background: var(--bg-2);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-md);
+  font-family: var(--font-display);
+  font-size: 0.8125rem;
+  line-height: 1.4;
+}
+
+.ol-key > * { white-space: nowrap; }
+
+/* ── Level ─────────────────────────────────────────────────────────────────
+   Artwork colours never follow the theme: a cover is a file and it does not
+   know what mode the reader is in. */
+
+.ol-level-a1 { background: var(--level-a1); color: var(--on-level-a1); }
+.ol-level-a2 { background: var(--level-a2); color: var(--on-level-a2); }
+.ol-level-b1 { background: var(--level-b1); color: var(--on-level-b1); }
+.ol-level-b2 { background: var(--level-b2); color: var(--on-level-b2); }
+
+/* ============================================================================
+   Audio Examples component (.ae-*)
+
+   Integrates with pydata-sphinx-theme through the tokens above. Bootstrap
+   utility classes are applied directly on elements in the generated HTML.
+   ============================================================================ */
+
+.ae-container {
+  margin-top: 0.25rem;
+}
+
+.ae-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-bottom: 0.25rem;
+}
+
+.ae-subtitle {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  margin: 0 0 var(--space-3) 0;
+}
+
+.ae-stream-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-bottom: var(--space-4);
+}
+
+/* Platform colours are the platforms' own, not ours. */
+.ae-stream-btn {
+  display: inline-flex !important;
+  align-items: center;
+  gap: 0.375rem;
+  text-decoration: none !important;
+  font-family: var(--font-display);
+  font-weight: var(--weight-semibold);
+  border-radius: var(--radius-md);
+  color: #fff !important;
+  border-color: transparent !important;
+  transition:
+    filter 0.15s ease,
+    opacity 0.15s ease;
+}
+
+.ae-stream-btn:hover {
+  color: #fff !important;
+  filter: brightness(0.9);
+}
+
+.ae-spotify-btn,
+.ae-spotify-btn:hover {
+  background-color: #1db954 !important;
+}
+
+.ae-youtube-btn,
+.ae-youtube-btn:hover {
+  background-color: #ff0000 !important;
+}
+
+.ae-coming-soon {
+  font-size: 0.8rem;
+  font-style: italic;
+  color: var(--text-muted);
+}
+
+.ae-list {
+  list-style: none !important;
+  padding: 0;
+  margin: 0;
+}
+
+.ae-item {
+  padding: 0.45rem 0;
+  border-bottom: 1px solid var(--rule);
+}
+
+.ae-item:last-child {
+  border-bottom: none;
+}
+
+.ae-de {
+  margin: 0;
+  font-size: 1rem;
+  line-height: 1.5;
+}
+
+.ae-en {
+  margin: 0.15rem 0 0;
+  font-size: 0.875rem;
+  color: var(--text-muted);
+  font-style: italic;
+  line-height: 1.4;
+}
+
+.ae-en.ae-hidden {
+  display: none;
+}
+
+/* ── In-article example pairs ─────────────────────────────────────────────
+   Authored as a definition list inside :::{div} ol-examples — native
+   sentence as the term, English translation as the definition. Mirrors the
+   audio-examples look: no list decorations, muted italic translation,
+   hairline separators. */
+
+.ol-examples dl {
+  margin: 0 0 var(--space-4) 0;
+}
+
+.ol-examples dt {
+  font-weight: var(--weight-regular);
+  font-size: 1rem;
+  line-height: 1.6;
+  padding-top: 0.45rem;
+}
+
+.ol-examples dd {
+  margin: 0.15rem 0 0 0;
+  padding-bottom: 0.45rem;
+  border-bottom: 1px solid var(--rule);
+}
+
+.ol-examples dd:last-child {
+  border-bottom: none;
+}
+
+.ol-examples dd p {
+  margin: 0;
+  font-size: 0.875rem;
+  color: var(--text-muted);
+  font-style: italic;
+  line-height: 1.4;
+}

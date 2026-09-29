@@ -1,0 +1,76 @@
+[project]
+name = "open-language"
+version = "0.1.0"
+description = "Authoring tools for Open Language coursebooks: template checks, album audits and the Sphinx build."
+readme = "README.md"
+license = "MIT"
+license-files = ["LICENSE"]
+authors = [{ name = "Samuel Jennings", email = "samuel.scott.jennings@gmail.com" }]
+requires-python = ">=3.13"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Framework :: Sphinx :: Extension",
+    "Topic :: Education",
+]
+dependencies = [
+    "sphinx>=8.2",
+    "myst-parser>=4.0",
+    "pydata-sphinx-theme>=0.16",
+    "sphinx-copybutton>=0.5",
+    "sphinx-design>=0.6",
+    "sphinxext-opengraph>=0.9",
+    "sphinx-autobuild>=2024.10",
+    "markdown-it-py>=3.0",
+    "mdit-py-plugins>=0.4",
+    "pyyaml>=6.0",
+    "typer>=0.15",
+]
+
+[project.urls]
+Homepage = "https://openlanguage.studio"
+Repository = "https://github.com/OpenLanguageStudio/open-language"
+
+[project.scripts]
+ol = "ol.cli:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["ol"]
+
+[tool.hatch.build.targets.sdist]
+include = ["/ol", "/README.md", "/LICENSE"]
+
+[dependency-groups]
+dev = [
+    "pytest>=9.1",
+    "pytest-cov>=7.0",
+    "ruff>=0.14",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["ol/tests"]
+
+[tool.coverage.run]
+source = ["ol"]
+omit = ["ol/tests/*"]
+
+[tool.ruff]
+extend = "ruff-base.toml"
+
+[tool.ruff.lint]
+extend-ignore = [
+    # Target-language text is non-ASCII by design.
+    "RUF001", "RUF002", "RUF003",
+    # The CLI shells out to sphinx-build and git on PATH.
+    "S404", "S603", "S607",
+]
+
+[tool.ruff.lint.per-file-ignores]
+"ol/tests/*" = ["S101"]
+# Typer declares CLI options as call defaults by design.
+"ol/cli.py" = ["B008"]
