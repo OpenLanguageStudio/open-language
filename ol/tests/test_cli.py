@@ -65,3 +65,11 @@ def test_templates_lists_the_article_templates():
     result = runner.invoke(app, ["templates"])
     assert result.exit_code == 0
     assert "grammar-article.md" in result.output
+
+
+def test_check_skips_the_audit_without_an_albums_directory(tmp_path):
+    workspace = _workspace(tmp_path)
+    result = runner.invoke(
+        app, ["check", "--workspace", str(workspace), "--skip-build"]
+    )
+    assert "== ol audit" not in result.output

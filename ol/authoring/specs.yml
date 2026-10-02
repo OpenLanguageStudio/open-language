@@ -9,6 +9,8 @@
 #   - NO blockquote subtitle under the H1
 #   - NO :::{seealso} blocks (use Prerequisites admonition or Related articles)
 #   - doc links resolve; no unfilled {{PLACEHOLDER}}
+#   - example block size, marking limits, audio example counts, model-text
+#     length and stock vocabulary, with the limits under `common` below
 #
 # Per-type keys:
 #   required_headings: regexes that must each match at least one ## heading
@@ -20,6 +22,57 @@
 common:
   description_max_chars: 160
   check_doc_links: true
+  # Inline example blocks. The target is 3 examples; 4 is the hard limit.
+  max_examples_per_block: 4
+  # Marking scheme: distinct roles a reader holds at once.
+  max_roles_per_sentence: 2
+  max_roles_per_block: 4
+  # Example pairs per audio track (about 20 fills a 70 second track).
+  min_audio_examples: 12
+  max_audio_examples: 30
+  # Writing model texts: below this the track is too short for the stores.
+  min_model_text_words: 60
+  # Stock machine-writing vocabulary, as regex fragments matched on whole
+  # words in prose. Only words with no honest use in a grammar explanation
+  # belong here; anything that can gloss the target language does not.
+  ai_vocabulary:
+    - "additionally"
+    - "moreover"
+    - "furthermore"
+    - "crucial"
+    - "pivotal"
+    - "delv(?:e|es|ed|ing)"
+    - "tapestry"
+    - "testament"
+    - "interplay"
+    - "intricate"
+    - "intricacies"
+    - "vibrant"
+    - "seamless(?:ly)?"
+    - "robust"
+    - "realm"
+    - "showcas(?:e|es|ed|ing)"
+    - "underscor(?:e|es|ed|ing)"
+    - "foster(?:s|ed|ing)?"
+    - "garner(?:s|ed|ing)?"
+    - "leverag(?:e|es|ed|ing)"
+    - "embark(?:s|ed|ing)?"
+    - "unlock(?:s|ed|ing)?"
+    - "elevat(?:e|es|ed|ing)"
+    - "deep dive"
+    - "dive into"
+    - "game.changer"
+    - "plays? a (?:key|vital|crucial|significant|pivotal) role"
+    - "serves? as a"
+    - "stands? as a"
+    - "it(?: is|'s) (?:important|worth) (?:to note|noting)"
+    - "due to the fact that"
+    - "at this point in time"
+    - "when it comes to"
+    - "at the end of the day"
+    - "a wide range of"
+    - "in conclusion"
+    - "rest assured"
 
 types:
   grammar:
