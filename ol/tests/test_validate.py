@@ -233,3 +233,18 @@ def test_short_model_text_is_red(tmp_path):
         msg for lvl, msg in validate_file(article, tmp_path).items if lvl == "ERROR"
     ]
     assert any("model text is 6 words" in msg for msg in found), found
+
+
+def test_review_rubric_is_well_formed():
+    import yaml
+
+    from ol.authoring.validate import SPECS_PATH
+
+    rubric = yaml.safe_load(
+        (SPECS_PATH.parent / "review-rubric.yml").read_text(encoding="utf-8")
+    )
+    assert rubric["answers"] == ["pass", "concern", "fail"]
+    ids = [item["id"] for item in rubric["items"]]
+    assert len(ids) == len(set(ids))
+    for item in rubric["items"]:
+        assert item["question"].strip() and item["fail_when"].strip() and item["area"]
