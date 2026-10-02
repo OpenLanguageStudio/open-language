@@ -12,11 +12,15 @@ Usage:
   get article checks per specs.yml.
 - Every :::{audio-examples} block is checked in its ADR-0006 content form:
   required :album: backlink and :title:, example-pair grammar (single-line or
-  :multiline:), no banned characters (text is fed to TTS verbatim), and, when
-  --workspace is given or inferable, album dir + album.yml exist (and store no
-  level/category/language) and the track name is listed in the album.yml
-  tracks: list. Legacy :track: pointer blocks are ERRORs. Missing streaming
-  links are reported as INFO (pending release).
+  :multiline:), no banned characters (text is fed to TTS verbatim), example
+  count and model-text length within the limits in specs.yml, and no dash in
+  an unpublished :title-en:. When the workspace keeps an albums/ directory,
+  album dir + album.yml must exist (and store no level/category/language) and
+  the track name must be listed in the album.yml tracks: list; a workspace
+  without albums/ skips that wiring. Legacy :track: pointer blocks are ERRORs.
+  Missing streaming links are reported as INFO (pending release).
+- Prose is checked for stock machine-writing vocabulary (specs.yml
+  ai_vocabulary). Example blocks, tables and code are not prose.
 - Stub files (< 200 bytes of body) are reported as STUB, not failed line by line.
 
 Exit code: 1 if any ERROR, else 0. Dependency: PyYAML.
@@ -195,7 +199,38 @@ def _example_pairs(rep: Report, where: str, body: list[str], multiline: bool) ->
     return pairs
 
 
-def check_audio_wiring(rep: Report, block: dict, path: Path, workspace: Path | None):
+def check_album_manifest(
+    rep: Report, where: str, workspace: Path, album: str, name: str
+):
+    """Album directory wiring, for workspaces that keep albums as files."""
+    album_dir = workspace / "albums" / album
+    manifest = album_dir / "album.yml"
+    if not album_dir.is_dir():
+        rep.error(f"{where}: album dir missing: albums/{album}")
+        return
+    if not manifest.exists():
+        rep.error(f"{where}: no album.yml in albums/{album}")
+        return
+    meta = yaml.safe_load(manifest.read_text(encoding="utf-8")) or {}
+    for key in ("title", "voice"):
+        if key not in meta:
+            rep.error(f"albums/{album}/album.yml missing required key: {key}")
+    for key in ("level", "category", "language"):
+        if key in meta:
+            rep.error(
+                f"albums/{album}/album.yml must not store '{key}' "
+                "(derived from path / open-language.yml)"
+            )
+    if name not in (meta.get("tracks") or []):
+        rep.error(
+            f"{where}: track name '{name}' not listed in "
+            f"albums/{album}/album.yml tracks:"
+        )
+
+
+def check_audio_wiring(
+    rep: Report, block: dict, path: Path, workspace: Path | None, ctype: str | None
+):
     opts = block["options"]
     where = f"audio-examples (line {block['line']})"
     if "track" in opts:
@@ -216,40 +251,47 @@ def check_audio_wiring(rep: Report, block: dict, path: Path, workspace: Path | N
     if not opts.get("title-en"):
         rep.warn(f"{where}: no :title-en: (store title falls back to the native title)")
     name = opts.get("name") or path.stem
+    published = bool(opts.get("spotify") or opts.get("youtube-music"))
+    limits = SPECS["common"]
 
-    n_pairs = _example_pairs(rep, where, block["body"], "multiline" in opts)
-    if "multiline" not in opts and 0 < n_pairs < 8:
-        rep.warn(
-            f"{where}: only {n_pairs} examples (over-author ~12-18 for the 70s budget)"
+    # Published store titles are frozen, dashes included. New ones follow the
+    # "Accusative Case (German A1)" style, which has no dash.
+    title_en = opts.get("title-en", "")
+    if not published and re.search(r"[\u2013\u2014]| - ", title_en):
+        rep.error(
+            f"{where}: :title-en: contains a dash ({title_en!r}): store titles "
+            "use no dashes"
         )
+
+    multiline = "multiline" in opts
+    n_pairs = _example_pairs(rep, where, block["body"], multiline)
+    if multiline:
+        if ctype == "writing":
+            words = sum(
+                len(ln.split())
+                for ln in block["body"]
+                if ln.strip() and not ln.strip().startswith(":")
+            )
+            if words < limits["min_model_text_words"]:
+                rep.error(
+                    f"{where}: model text is {words} words (minimum "
+                    f"{limits['min_model_text_words']}): shorter texts make a "
+                    "track too short for the stores"
+                )
+    elif n_pairs:
+        lo, hi = limits["min_audio_examples"], limits["max_audio_examples"]
+        if not lo <= n_pairs <= hi:
+            rep.error(
+                f"{where}: {n_pairs} examples (a track carries {lo} to {hi}; "
+                "aim for about 20)"
+            )
 
     if not workspace:
         rep.warn("cannot wiring-check audio-examples (workspace unknown)")
         return
-    album_dir = workspace / "albums" / album
-    manifest = album_dir / "album.yml"
-    if not album_dir.is_dir():
-        rep.error(f"{where}: album dir missing: albums/{album}")
-        return
-    if not manifest.exists():
-        rep.error(f"{where}: no album.yml in albums/{album}")
-    else:
-        meta = yaml.safe_load(manifest.read_text(encoding="utf-8")) or {}
-        for key in ("title", "voice"):
-            if key not in meta:
-                rep.error(f"albums/{album}/album.yml missing required key: {key}")
-        for key in ("level", "category", "language"):
-            if key in meta:
-                rep.error(
-                    f"albums/{album}/album.yml must not store '{key}' "
-                    "(derived from path / open-language.yml)"
-                )
-        if name not in (meta.get("tracks") or []):
-            rep.error(
-                f"{where}: track name '{name}' not listed in "
-                f"albums/{album}/album.yml tracks:"
-            )
-    if not (opts.get("spotify") or opts.get("youtube-music")):
+    if (workspace / "albums").is_dir():
+        check_album_manifest(rep, where, workspace, album, name)
+    if not published:
         rep.info(f"{where}: no streaming links yet (pending release)")
 
 
@@ -377,6 +419,104 @@ def check_direct_address(rep: Report, body: str):
         )
 
 
+_EXAMPLES_DIV = re.compile(r"^:::\{div\}\s+ol-examples\s*$")
+_ROLE = re.compile(r"\{([a-z-]+)\}`[^`]+`")
+
+
+def find_example_blocks(body: str):
+    """Yield (line number, [lines]) per ``:::{div} ol-examples`` block."""
+    lines = body.splitlines()
+    i = 0
+    while i < len(lines):
+        if not _EXAMPLES_DIV.match(lines[i].strip()):
+            i += 1
+            continue
+        start = i
+        i += 1
+        block: list[str] = []
+        while i < len(lines) and lines[i].strip() != ":::":
+            block.append(lines[i])
+            i += 1
+        yield start + 1, block
+        i += 1
+
+
+def check_example_blocks(rep: Report, body: str):
+    """Size and marking limits for inline example blocks.
+
+    A block is one passage in the marking scheme: the reader has to hold every
+    marked role in it at once, so the limits count distinct roles, not marks.
+    """
+    limits = SPECS["common"]
+    for line_no, block in find_example_blocks(body):
+        where = f"examples block (line {line_no})"
+        pairs = sum(1 for ln in block if ln.startswith(": "))
+        if pairs > limits["max_examples_per_block"]:
+            rep.error(
+                f"{where}: {pairs} examples (maximum "
+                f"{limits['max_examples_per_block']}; aim for 3 and move the rest "
+                "to the audio track)"
+            )
+        roles = set()
+        for ln in block:
+            if not ln.strip() or ln.startswith(":"):
+                continue
+            in_line = set(_ROLE.findall(ln))
+            roles |= in_line
+            if len(in_line) > limits["max_roles_per_sentence"]:
+                rep.error(
+                    f"{where}: {len(in_line)} different marks in one sentence "
+                    f"(maximum {limits['max_roles_per_sentence']}): {ln.strip()[:50]!r}"
+                )
+        if len(roles) > limits["max_roles_per_block"]:
+            rep.error(
+                f"{where}: {len(roles)} different marks in one block (maximum "
+                f"{limits['max_roles_per_block']})"
+            )
+
+
+def prose_lines(body: str):
+    """Yield (line number, text) for running prose.
+
+    Skips what is not the author's own English: example and audio blocks
+    (target language and its glosses), code fences, tables, headings and
+    directive option lines.
+    """
+    lines = body.splitlines()
+    i = 0
+    while i < len(lines):
+        s = lines[i].strip()
+        if s == ":::{audio-examples}" or _EXAMPLES_DIV.match(s):
+            i += 1
+            while i < len(lines) and lines[i].strip() != ":::":
+                i += 1
+        elif s.startswith("```"):
+            i += 1
+            while i < len(lines) and not lines[i].strip().startswith("```"):
+                i += 1
+        elif s and not s.startswith(("#", "|", ":")):
+            yield i + 1, lines[i]
+        i += 1
+
+
+_AI_VOCABULARY = re.compile(
+    r"\b(" + "|".join(SPECS["common"]["ai_vocabulary"]) + r")\b", re.I
+)
+
+
+def check_ai_vocabulary(rep: Report, body: str):
+    """Stock machine-writing vocabulary in prose is an error.
+
+    The list holds only words with no honest use in a grammar explanation.
+    Words that also gloss German ("in order to" for um ... zu, "not only" for
+    nicht nur) are left to the review rubric, which can read the context.
+    """
+    for line_no, line in prose_lines(body):
+        m = _AI_VOCABULARY.search(line)
+        if m:
+            rep.error(f"stock phrase '{m.group(1)}' on line {line_no}: say it plainly")
+
+
 def headings(body: str, level: int = 2):
     prefix = "#" * level + " "
     return [
@@ -444,6 +584,8 @@ def validate_article(path: Path, ctype: str, workspace: Path | None) -> Report:
         )
 
     check_direct_address(rep, body)
+    check_example_blocks(rep, body)
+    check_ai_vocabulary(rep, body)
 
     # required section headings
     h2s = headings(body, 2)
@@ -494,7 +636,7 @@ def validate_article(path: Path, ctype: str, workspace: Path | None) -> Report:
             "(every article carries its track)"
         )
     for block in blocks:
-        check_audio_wiring(rep, block, path, workspace)
+        check_audio_wiring(rep, block, path, workspace, ctype)
 
     if common.get("check_doc_links"):
         check_doc_links(rep, body, workspace)
@@ -600,7 +742,7 @@ def main(argv=None):
         "--workspace",
         type=Path,
         default=None,
-        help="language workspace root (contains docs/ and albums/)",
+        help="language workspace root (contains docs/)",
     )
     ap.add_argument(
         "--type",

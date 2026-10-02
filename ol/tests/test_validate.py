@@ -59,7 +59,61 @@ def _break_first_audio_line(text: str) -> str:
     return re.sub(pattern, lambda m: m.group(1) + "`" + m.group(2), text, count=1)
 
 
+def _keep_audio_pairs(text: str, keep: int) -> str:
+    head, rest = text.split(":title-en: The definite article\n\n", 1)
+    block, tail = rest.split("\n:::\n", 1)
+    pairs = block.split("\n\n")[:keep]
+    return (
+        head
+        + ":title-en: The definite article\n\n"
+        + "\n\n".join(pairs)
+        + "\n:::\n"
+        + tail
+    )
+
+
 BROKEN_ARTICLES = {
+    "too many inline examples": (
+        lambda s: s.replace(
+            "Sie liest {akk}`das` Buch.",
+            "Ich lese {akk}`das` Heft.\n: I am reading the notebook.\n\n"
+            "Sie liest {akk}`das` Buch.",
+            1,
+        ),
+        "5 examples",
+    ),
+    "too many marks in a sentence": (
+        lambda s: s.replace(
+            "Ich sehe {akk}`den` Turm.", "{nom}`Ich` {verb}`sehe` {akk}`den` Turm.", 1
+        ),
+        "different marks in one sentence",
+    ),
+    "too many marks in a block": (
+        lambda s: (
+            s.replace(
+                "Er kauft {akk}`den` Käse.", "{nom}`Er` kauft {dat}`dem` Käse.", 1
+            )
+            .replace("Wir nehmen {akk}`die`", "{verb}`Wir` nehmen {gen}`die`", 1)
+            .replace("Sie liest {akk}`das`", "Sie liest {prep}`das`", 1)
+        ),
+        "different marks in one block",
+    ),
+    "too few audio examples": (
+        lambda s: _keep_audio_pairs(s, 5),
+        "5 examples (a track carries",
+    ),
+    "dash in a new store title": (
+        lambda s: s.replace(
+            ":title-en: The definite article", ":title-en: Articles - Definite", 1
+        ),
+        "contains a dash",
+    ),
+    "stock phrase": (
+        lambda s: s.replace(
+            "## The forms", "Additionally, gender matters.\n\n## The forms", 1
+        ),
+        "stock phrase 'Additionally'",
+    ),
     "em dash": (
         lambda s: s.replace(
             "## The forms", "Articles — the basics.\n\n## The forms", 1
@@ -137,3 +191,45 @@ def test_album_storing_level_is_red(tmp_path, source):
     album = "title: Part 1\nvoice: max\nlevel: a1\ntracks:\n- bestimmter-artikel\n"
     found = errors(tmp_path, source, album=album)
     assert any("must not store 'level'" in msg for msg in found), found
+
+
+def test_published_title_keeps_its_dash(tmp_path, source):
+    published = source.replace(
+        ":title-en: The definite article",
+        ":title-en: Articles - Definite\n:spotify: https://open.spotify.com/track/x",
+        1,
+    )
+    assert errors(tmp_path, published) == []
+
+
+def test_stock_phrase_in_an_example_is_not_prose(tmp_path, source):
+    glossed = source.replace(": The harbour is big.", ": The harbour is robust.", 1)
+    assert errors(tmp_path, glossed) == []
+
+
+def test_workspace_without_albums_skips_album_wiring(tmp_path, source):
+    for target in LINK_TARGETS:
+        page = tmp_path / "docs" / target
+        page.parent.mkdir(parents=True, exist_ok=True)
+        page.write_text("# Page\n", encoding="utf-8")
+    article = tmp_path / ARTICLE
+    article.write_text(source, encoding="utf-8")
+    report = validate_file(article, tmp_path)
+    assert [msg for lvl, msg in report.items if lvl == "ERROR"] == []
+
+
+def test_short_model_text_is_red(tmp_path):
+    article = tmp_path / "docs/a1/writing/postcard.md"
+    article.parent.mkdir(parents=True)
+    filler = "Writing a postcard is a small, friendly task. " * 6
+    article.write_text(
+        f"# A Postcard\n\n{filler}\n\n"
+        ":::{audio-examples}\n:album: a1/writing/part-1\n:title: Eine Postkarte\n"
+        ":multiline:\n\nLiebe Anna,\nviele Grüße aus Hamburg.\n"
+        ": Dear Anna,\n: greetings from Hamburg.\n:::\n",
+        encoding="utf-8",
+    )
+    found = [
+        msg for lvl, msg in validate_file(article, tmp_path).items if lvl == "ERROR"
+    ]
+    assert any("model text is 6 words" in msg for msg in found), found

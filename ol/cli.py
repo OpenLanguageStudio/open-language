@@ -306,7 +306,8 @@ def check(
     """Run every content check: validate, audit, then a strict docs build.
 
     This is the same gate CI runs. All three steps run even when an earlier one
-    fails, so one pass reports everything.
+    fails, so one pass reports everything. The audit is skipped in a workspace
+    with no ``albums/`` directory.
     """
     failed: list[str] = []
 
@@ -321,9 +322,13 @@ def check(
     else:
         typer.echo(f"OK: {checked} file(s), no failures outside the baseline.")
 
-    typer.echo("\n== ol audit")
-    if subprocess.run([sys.executable, "-m", "ol", "audit"], cwd=workspace).returncode:
-        failed.append("audit")
+    # The audit cross-checks album files against the docs. A workspace that
+    # does not keep albums as files has nothing to audit.
+    if (workspace / "albums").is_dir():
+        typer.echo("\n== ol audit")
+        audit_cmd = [sys.executable, "-m", "ol", "audit"]
+        if subprocess.run(audit_cmd, cwd=workspace).returncode:
+            failed.append("audit")
 
     if not skip_build:
         typer.echo("\n== sphinx-build -W")
