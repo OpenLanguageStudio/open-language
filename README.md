@@ -9,6 +9,7 @@ Each language lives in its own workspace repository, which installs this package
 - **`ol check`** runs every content check in one pass: template conformance, the album audit (in workspaces that keep an `albums/` directory), and a strict docs build with warnings as errors. This is the command CI runs.
 - **`ol validate`** checks articles and category indexes against the templates: required sections in order, frontmatter, banned characters, audio-examples block grammar, example and marking limits, and stock machine-writing vocabulary. The limits and the word list live in `ol/authoring/specs.yml`.
 - **`ol audit`** cross-checks every `album.yml` track list against the audio-examples blocks in the docs, in both directions.
+- **`ol/authoring/review-rubric.yml`** is the checklist for the part a script cannot judge: level, correctness, teaching value and plain language. Each item is answered pass, concern or fail.
 - **`ol templates`** lists the article templates, or prints one to start a new article from.
 - **`ol docs`** builds the coursebook, with `--live` for a local preview that rebuilds on save.
 - **`ol outline`** prints the heading structure of the CEFR-level docs.

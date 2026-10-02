@@ -1,0 +1,108 @@
+# Review rubric for a coursebook article.
+#
+# `ol validate` checks what a script can measure. This rubric covers what
+# needs a reader: whether the article teaches the right thing, at the right
+# level, in plain English and correct target language.
+#
+# A review answers every item with one of `answers`, and gives a line number
+# and one sentence for anything that is not a pass. Nothing else is free text.
+# An article passes review when no item is answered `fail`.
+
+answers: [pass, concern, fail]
+
+items:
+  - id: level-vocabulary
+    area: level
+    question: >-
+      Do the example sentences use only vocabulary a learner at this CEFR level
+      can be expected to know, apart from the words the article is teaching?
+    fail_when: Several examples depend on words from a higher level.
+
+  - id: level-grammar
+    area: level
+    question: >-
+      Do the examples avoid grammar the learner has not met yet at this level,
+      other than the structure being taught?
+    fail_when: >-
+      An example relies on a structure taught at a later level, such as a
+      subordinate clause or a past tense in an A1 article that is not about it.
+
+  - id: level-explanation
+    area: level
+    question: >-
+      Is the explanation pitched at this level: short sentences, one idea at a
+      time, grammatical terms introduced before they are used?
+    fail_when: The explanation assumes terminology or background a learner here lacks.
+
+  - id: language-correct
+    area: correctness
+    question: >-
+      Is every target-language sentence grammatical, natural, and something a
+      native speaker would say?
+    fail_when: Any example is ungrammatical or would sound wrong to a native speaker.
+
+  - id: translation-accurate
+    area: correctness
+    question: Does every translation say what its sentence says, in natural English?
+    fail_when: A translation changes the meaning or mistranslates the taught structure.
+
+  - id: rule-accurate
+    area: correctness
+    question: >-
+      Are the stated rules true, and are exceptions that a learner at this
+      level will meet mentioned?
+    fail_when: A rule as stated is wrong or would lead to a predictable error.
+
+  - id: examples-teach
+    area: teaching
+    question: >-
+      Does each example show the structure the section is about, and do the
+      examples vary enough to show the pattern and not one memorised sentence?
+    fail_when: Examples do not contain the taught structure, or all share one frame.
+
+  - id: single-topic
+    area: teaching
+    question: Does the article teach one thing, the thing its title names?
+    fail_when: The article drifts into a second topic that has or needs its own article.
+
+  - id: mistakes-real
+    area: teaching
+    question: >-
+      Are the common mistakes ones learners at this level really make, each
+      with its correction?
+    fail_when: The listed mistakes are invented, or a correction is itself wrong.
+
+  - id: plain-english
+    area: clear-language
+    question: >-
+      Is the prose plain and direct, with no filler, no inflated claims about
+      importance, and no promotional tone?
+    fail_when: >-
+      Paragraphs could be cut without losing information, or the text sells
+      the topic and does not explain it.
+
+  - id: machine-tells
+    area: clear-language
+    question: >-
+      Is the prose free of the patterns that mark machine writing: groups of
+      three for rhythm, "not only X but Y" contrasts used for effect, sentence
+      openers such as "Additionally" or "Moreover", synonym cycling for one
+      thing, vague upbeat conclusions, and hedging stacked on hedging?
+    fail_when: Two or more of these patterns appear in the article.
+    note: >-
+      "not only" and "in order to" are fine where they translate or explain a
+      target-language structure.
+
+  - id: reader-address
+    area: clear-language
+    question: >-
+      Does the body text describe the language and its use, without talking to
+      the reader about the course?
+    fail_when: Body prose tells the reader what they will learn or already know.
+
+  - id: cast-consistent
+    area: consistency
+    question: >-
+      Where examples name people from the cast, do the facts match the cast
+      entries in the workspace settings?
+    fail_when: An example contradicts a cast member's stated job, family or home.
