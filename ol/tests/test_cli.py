@@ -67,9 +67,62 @@ def test_templates_lists_the_article_templates():
     assert "grammar-article.md" in result.output
 
 
-def test_check_skips_the_audit_without_an_albums_directory(tmp_path):
-    workspace = _workspace(tmp_path)
-    result = runner.invoke(
-        app, ["check", "--workspace", str(workspace), "--skip-build"]
+def duplicate_page(workspace: Path, name: str) -> None:
+    page = workspace / f"docs/a1/grammar/{name}.md"
+    page.write_text(
+        "# Page\n\n:::{audio-examples}\n:track: a1/grammar/dativ\n:duplicate:\n:::\n"
     )
-    assert "== ol audit" not in result.output
+
+
+def test_a_refusal_across_pages_fails_the_run(tmp_path):
+    workspace = _workspace(tmp_path)
+    (workspace / ".ol-validate-baseline").write_text("docs/a1/grammar/broken.md\n")
+    duplicate_page(workspace, "praepositionen")
+
+    result = runner.invoke(app, ["validate", "--workspace", str(workspace), "-v"])
+
+    assert result.exit_code == 1, result.output
+    assert "orphan_duplicate" in result.output
+
+
+def test_a_refusal_across_pages_is_found_when_checking_one_file(tmp_path):
+    workspace = _workspace(tmp_path)
+    duplicate_page(workspace, "praepositionen")
+    page = workspace / "docs/a1/grammar/praepositionen.md"
+
+    result = runner.invoke(
+        app, ["validate", str(page), "--workspace", str(workspace), "-v"]
+    )
+
+    assert "orphan_duplicate" in result.output
+
+
+def test_a_track_written_on_another_page_is_found(tmp_path):
+    workspace = _workspace(tmp_path)
+    (workspace / ".ol-validate-baseline").write_text(
+        "docs/a1/grammar/broken.md\ndocs/a1/grammar/praepositionen.md\n"
+        "docs/a1/grammar/dativ.md\n"
+    )
+    duplicate_page(workspace, "praepositionen")
+    (workspace / "docs/a1/grammar/dativ.md").write_text(
+        "# Dativ\n\n:::{audio-examples}\n:track: a1/grammar\n:title: Dativ\n\n"
+        "Ich fahre mit dem Bus.\n: I go by bus.\n:::\n"
+    )
+
+    result = runner.invoke(app, ["validate", "--workspace", str(workspace), "-v"])
+
+    assert "orphan_duplicate" not in result.output
+
+
+def test_a_block_that_cannot_be_read_fails_the_run_and_nothing_else(tmp_path):
+    workspace = _workspace(tmp_path)
+    (workspace / ".ol-validate-baseline").write_text("docs/a1/grammar/broken.md\n")
+    (workspace / "docs/a1/grammar/dativ.md").write_text(
+        "# Dativ\n\n:::{audio-examples}\n:track: a1/grammar\n\n: No sentence.\n:::\n"
+        + "Filler prose for the page. " * 10
+    )
+
+    result = runner.invoke(app, ["validate", "--workspace", str(workspace)])
+
+    assert result.exit_code == 1, result.output
+    assert "docs/a1/grammar/dativ.md" in result.output
