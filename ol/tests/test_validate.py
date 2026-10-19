@@ -16,7 +16,6 @@ from ol.authoring.validate import validate_file
 
 FIXTURE = Path(__file__).parent / "fixtures" / "grammar-article.md"
 ARTICLE = "docs/a1/grammar/articles/bestimmter-artikel.md"
-ALBUM = "title: Part 1\nvoice: max\ntracks:\n- bestimmter-artikel\n"
 LINK_TARGETS = [
     "a1/grammar/articles/unbestimmter-artikel.md",
     "a1/grammar/articles/negativartikel.md",
@@ -25,18 +24,16 @@ LINK_TARGETS = [
     "a1/grammar/other/nomen-genus-plural.md",
 ]
 H1 = "# Definite Articles\n"
+TRACK = ":track: a1/grammar/bestimmter-artikel\n"
 
 
-def errors(tmp_path: Path, text: str, album: str = ALBUM) -> list[str]:
+def errors(tmp_path: Path, text: str) -> list[str]:
     for target in LINK_TARGETS:
         page = tmp_path / "docs" / target
         page.parent.mkdir(parents=True, exist_ok=True)
         page.write_text("# Page\n", encoding="utf-8")
     article = tmp_path / ARTICLE
     article.write_text(text, encoding="utf-8")
-    album_dir = tmp_path / "albums/a1/grammar/part-1"
-    album_dir.mkdir(parents=True)
-    (album_dir / "album.yml").write_text(album, encoding="utf-8")
     (tmp_path / "open-language.yml").write_text(
         "language: German\nlanguage_code: de\n", encoding="utf-8"
     )
@@ -55,7 +52,7 @@ def test_fixture_passes(tmp_path, source):
 
 
 def _break_first_audio_line(text: str) -> str:
-    pattern = r"(:album: a1/grammar/part-1\n(?:.*\n)*?\n)(\S[^\n]*)"
+    pattern = r"(:track: a1/grammar/bestimmter-artikel\n(?:.*\n)*?\n)(\S[^\n]*)"
     return re.sub(pattern, lambda m: m.group(1) + "`" + m.group(2), text, count=1)
 
 
@@ -208,10 +205,25 @@ BROKEN_ARTICLES = {
         ),
         "collapsed",
     ),
-    "markup in audio example": (_break_first_audio_line, "banned char"),
-    "no album backlink": (
-        lambda s: s.replace(":album: a1/grammar/part-1\n", "", 1),
-        ":album: backlink",
+    "markup in audio example": (_break_first_audio_line, "plain text"),
+    "retired album option": (
+        lambda s: s.replace(TRACK, TRACK + ":album: a1/grammar/part-1\n", 1),
+        "unknown_option",
+    ),
+    "no track": (lambda s: s.replace(TRACK, "", 1), "bad_address"),
+    "examples on a duplicate": (
+        lambda s: s.replace(TRACK, TRACK + ":duplicate:\n", 1),
+        "duplicate_writes",
+    ),
+    "no examples": (lambda s: _keep_audio_pairs(s, 0), "missing_examples"),
+    "sentence twice": (
+        lambda s: s.replace(
+            "Die Brücke ist alt.\n: The bridge is old.\n",
+            "Die Brücke ist alt.\n: The bridge is old.\n\n"
+            "Die Brücke ist *alt*.\n: The bridge is old indeed.\n",
+            1,
+        ),
+        "sentence_twice",
     ),
 }
 
@@ -225,42 +237,9 @@ def test_broken_article_is_red(tmp_path, source, case):
     assert any(expected in msg for msg in found), found
 
 
-def test_track_missing_from_album_is_red(tmp_path, source):
-    found = errors(
-        tmp_path, source, album="title: Part 1\nvoice: max\ntracks:\n- other\n"
-    )
-    assert any("not listed in" in msg for msg in found), found
-
-
-def test_album_storing_level_is_red(tmp_path, source):
-    album = "title: Part 1\nvoice: max\nlevel: a1\ntracks:\n- bestimmter-artikel\n"
-    found = errors(tmp_path, source, album=album)
-    assert any("must not store 'level'" in msg for msg in found), found
-
-
-def test_published_title_keeps_its_dash(tmp_path, source):
-    published = source.replace(
-        ":title-en: The definite article",
-        ":title-en: Articles - Definite\n:spotify: https://open.spotify.com/track/x",
-        1,
-    )
-    assert errors(tmp_path, published) == []
-
-
 def test_stock_phrase_in_an_example_is_not_prose(tmp_path, source):
     glossed = source.replace(": The harbour is big.", ": The harbour is robust.", 1)
     assert errors(tmp_path, glossed) == []
-
-
-def test_workspace_without_albums_skips_album_wiring(tmp_path, source):
-    for target in LINK_TARGETS:
-        page = tmp_path / "docs" / target
-        page.parent.mkdir(parents=True, exist_ok=True)
-        page.write_text("# Page\n", encoding="utf-8")
-    article = tmp_path / ARTICLE
-    article.write_text(source, encoding="utf-8")
-    report = validate_file(article, tmp_path)
-    assert [msg for lvl, msg in report.items if lvl == "ERROR"] == []
 
 
 def write_articles_index(tmp_path: Path, *entries: str) -> None:
@@ -329,7 +308,7 @@ def test_short_model_text_is_red(tmp_path):
     filler = "Writing a postcard is a small, friendly task. " * 6
     article.write_text(
         f"# A Postcard\n\n{filler}\n\n"
-        ":::{audio-examples}\n:album: a1/writing/part-1\n:title: Eine Postkarte\n"
+        ":::{audio-examples}\n:track: a1/writing/postcard\n:title: Eine Postkarte\n"
         ":multiline:\n\nLiebe Anna,\nviele Grüße aus Hamburg.\n"
         ": Dear Anna,\n: greetings from Hamburg.\n:::\n",
         encoding="utf-8",

@@ -1,0 +1,8 @@
+expect: orphan_duplicate
+description: A duplicate block whose track no block writes.
+pages:
+  a1/grammar/praepositionen: |
+    :::{audio-examples}
+    :track: a1/grammar/dativ
+    :duplicate:
+    :::

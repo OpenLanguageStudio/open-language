@@ -1,6 +1,6 @@
 [project]
 name = "open-language"
-version = "0.1.0"
+version = "0.2.0"
 description = "Authoring tools for Open Language coursebooks: template checks, album audits and the Sphinx build."
 readme = "README.md"
 license = "MIT"
@@ -77,6 +77,6 @@ extend-ignore = [
 "ol/cli.py" = ["B008"]
 
 [tool.forge.docs]
-# The checks' functions are reached through `ol validate`, which the README
-# documents; nothing outside the package calls them.
-exempt-paths = ["ol/authoring/validate.py"]
+# These modules have no public Python API: the checks are reached through
+# `ol validate`, the CLI through `ol`, and the Sphinx extension through conf.py.
+exempt-paths = ["ol/cli.py", "ol/authoring/validate.py", "ol/docs/audio_examples.py"]

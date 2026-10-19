@@ -73,7 +73,7 @@ Before reading this article, make sure you are comfortable with:
 ## Hear it in practice
 
 :::{audio-examples}
-:album: {{level_lc}}/grammar/{{album_name}}
+:track: {{level_lc}}/grammar
 :title: {{NATIVE_TITLE}}
 :title-en: {{ENGLISH_TITLE}}
 
@@ -85,8 +85,8 @@ Before reading this article, make sure you are comfortable with:
 :::
 <!-- REQUIRED, in this position: after the learning sections, before Summary.
      The ## Hear it in practice heading puts the section in the sidebar. The block IS the
-     track (ADR-0006, see templates/audio-examples-block.md): ordered plain-text pairs,
-     best first, over-author ~12-18; register the track name in album.yml. -->
+     block writes the track this page names (see templates/audio-examples-block.md):
+     ordered plain-text pairs, best first, over-author ~12-18. -->
 
 ## Summary
 

@@ -56,15 +56,15 @@ myst:
 ---
 
 :::{audio-examples}
-:album: {{level_lc}}/situations/{{album_name}}
+:track: {{level_lc}}/situations
 :title: {{NATIVE_TITLE}}
 :title-en: {{ENGLISH_TITLE}}
 
 {{Native sentence 1}}
 : {{English translation 1}}
 :::
-<!-- REQUIRED once a situations album exists for this level. The block IS the
-     track (ADR-0006, see templates/audio-examples-block.md). -->
+<!-- The block writes the track this page names (see
+     templates/audio-examples-block.md). -->
 
 ---
 

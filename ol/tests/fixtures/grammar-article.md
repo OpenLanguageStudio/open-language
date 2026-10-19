@@ -94,7 +94,7 @@ Sie liest {akk}`das` Buch.
 ## Hear it in practice
 
 :::{audio-examples}
-:album: a1/grammar/part-1
+:track: a1/grammar/bestimmter-artikel
 :title: Der bestimmte Artikel
 :title-en: The definite article
 

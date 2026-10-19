@@ -1,0 +1,19 @@
+expect: written_twice
+description: Two pages write the same track.
+pages:
+  a1/grammar/dativ: |
+    :::{audio-examples}
+    :track: a1/grammar/dativ
+    :title: Der Dativ
+
+    Ich fahre mit dem Bus.
+    : I go by bus.
+    :::
+  a1/grammar/praepositionen: |
+    :::{audio-examples}
+    :track: a1/grammar/dativ
+    :title: Der Dativ
+
+    Ich wohne bei meiner Tante.
+    : I live with my aunt.
+    :::

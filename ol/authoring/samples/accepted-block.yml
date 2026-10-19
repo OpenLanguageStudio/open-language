@@ -1,0 +1,16 @@
+expect: accepted
+description: A block that writes its track with every option it takes.
+pages:
+  a2/grammar/nebensatz-mit-weil: |
+    :::{audio-examples}
+    :track: a2/grammar/nebensatz-mit-weil
+    :title: Nebensatz mit weil
+    :title-en: Subordinate clauses with weil
+    :tags: nebensatz, konjunktionen
+
+    Ich bleibe zu Hause, weil ich krank bin.
+    : I am staying at home because I am ill.
+
+    Er lernt Deutsch, weil er in Berlin arbeitet.
+    : He is learning German because he works in Berlin.
+    :::

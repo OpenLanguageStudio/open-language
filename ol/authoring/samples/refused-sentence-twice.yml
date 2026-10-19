@@ -1,0 +1,14 @@
+expect: sentence_twice
+description: One block gives the same sentence twice, once with emphasis and other spacing.
+pages:
+  a1/grammar/dativ: |
+    :::{audio-examples}
+    :track: a1/grammar/dativ
+    :title: Der Dativ
+
+    Ich fahre mit dem Bus.
+    : I go by bus.
+
+    Ich  fahre mit *dem* Bus.
+    : I travel by bus.
+    :::

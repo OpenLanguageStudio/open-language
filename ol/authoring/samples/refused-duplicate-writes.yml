@@ -1,0 +1,17 @@
+expect: duplicate_writes
+description: A duplicate block that gives a title of its own.
+pages:
+  a1/grammar/dativ: |
+    :::{audio-examples}
+    :track: a1/grammar/dativ
+    :title: Der Dativ
+
+    Ich fahre mit dem Bus.
+    : I go by bus.
+    :::
+  a1/grammar/praepositionen: |
+    :::{audio-examples}
+    :track: a1/grammar/dativ
+    :title: Der Dativ
+    :duplicate:
+    :::

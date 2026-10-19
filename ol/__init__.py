@@ -2,7 +2,7 @@
 
 Typical use from a language workspace::
 
-    ol check        # validate articles, audit albums, build the docs strictly
+    ol check        # validate articles and blocks, build the docs strictly
     ol validate     # template conformance only
     ol docs --live  # local preview
 """

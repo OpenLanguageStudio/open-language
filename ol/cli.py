@@ -7,6 +7,8 @@ from pathlib import Path
 
 import typer
 
+from ol.blocks import BlockCollection, BlockFormatError, Refusal
+
 app = typer.Typer(help="Open Language authoring tools")
 
 BASELINE_FILE = ".ol-validate-baseline"
@@ -70,65 +72,6 @@ def outline(
         argv.append("--json")
 
     outline_main(argv)
-
-
-@app.command()
-def audit():
-    """Cross-check album.yml track lists against docs audio-examples blocks.
-
-    Run from a language workspace. Fails when an album lists a track with no
-    matching ``:album:`` backlink in the docs, when a legacy ``.yml`` entry is
-    missing, or when a docs block backlinks an album that never lists it
-    (ADR-0006).
-    """
-    import yaml
-
-    from ol.docs_source import DocsFormatError, scan_docs
-    from ol.language import Language
-
-    lang = Language()
-    issues: list[str] = []
-
-    try:
-        index = scan_docs(lang.docs_root)
-    except DocsFormatError as exc:
-        typer.echo(f"ERROR {exc}")
-        raise typer.Exit(1) from exc
-
-    listed: set[tuple[str, str]] = set()
-    for album_yml in sorted(lang.albums_root.rglob("album.yml")):
-        album_path = album_yml.parent.relative_to(lang.albums_root).as_posix()
-        meta = yaml.safe_load(album_yml.read_text(encoding="utf-8")) or {}
-        for entry in meta.get("tracks", []) or []:
-            if entry.endswith(".yml"):
-                if not (album_yml.parent / "tracks" / entry).exists():
-                    issues.append(
-                        f"{album_path}: legacy track file missing: tracks/{entry}"
-                    )
-                continue
-            listed.add((album_path, entry))
-            if (album_path, entry) not in index:
-                issues.append(
-                    f"{album_path}: no audio-examples block with "
-                    f":album: {album_path} and name '{entry}' in {lang.docs_root}"
-                )
-
-    for (album_path, name), block in sorted(index.items()):
-        if (album_path, name) not in listed:
-            issues.append(
-                f"{block.doc_path}: block backlinks {album_path} but "
-                f"'{name}' is not listed in that album.yml"
-            )
-
-    if issues:
-        for issue in issues:
-            typer.echo(f"ERROR {issue}")
-        typer.echo(f"\n{len(issues)} issue(s) found.")
-        raise typer.Exit(1)
-    typer.echo(
-        f"OK: {len(index)} docs-defined tracks, all album.yml entries resolve, "
-        "no orphan blocks."
-    )
 
 
 def main() -> None:
@@ -195,18 +138,67 @@ def _read_baseline(path: Path) -> set[str]:
     }
 
 
+def cross_page_refusals(workspace: Path) -> dict[str, list[Refusal]]:
+    """The refusals that need every page, by file relative to the workspace.
+
+    Every page under docs/ is read, whichever files are being checked, so a
+    duplicate is matched with the block that writes its track wherever it is.
+    While a block on any page cannot be read there is nothing to match against,
+    and that page's own report fails the run instead.
+
+    Args:
+        workspace: The language repository's root.
+
+    Returns:
+        The refusals, by file path such as ``docs/a1/grammar/dativ.md``.
+    """
+    found: dict[str, list[Refusal]] = {}
+    try:
+        collection = BlockCollection.from_docs(workspace / "docs")
+    except BlockFormatError:
+        return found
+    for refusal in collection.refusals():
+        if refusal.code in Refusal.CROSS_PAGE:
+            found.setdefault(f"docs/{refusal.block.page}.md", []).append(refusal)
+    return found
+
+
+def file_report(path: Path, workspace: Path, cross_page: dict[str, list[Refusal]]):
+    """Validate one file and add the refusals across pages that fall on it.
+
+    Args:
+        path: The file to check.
+        workspace: The language repository's root.
+        cross_page: The refusals from ``cross_page_refusals``.
+
+    Returns:
+        The file's report.
+    """
+    from ol.authoring.validate import validate_file
+
+    rep = validate_file(path, workspace)
+    rel = path.resolve().relative_to(workspace.resolve()).as_posix()
+    for refusal in cross_page.get(rel, []):
+        rep.error(
+            f"audio-examples (line {refusal.block.line}): {refusal.code}: "
+            f"{refusal.detail}"
+        )
+    return rep
+
+
 def _run_validate(
     files: list[Path], workspace: Path, baseline_path: Path, verbose: bool
 ) -> tuple[list[str], list[str], int]:
     """Validate files. Returns (new failures, baseline entries now passing, checked)."""
-    from ol.authoring.validate import report_status, validate_file
+    from ol.authoring.validate import report_status
 
     baseline = _read_baseline(baseline_path)
+    cross_page = cross_page_refusals(workspace)
     new_failures: list[str] = []
     now_passing: list[str] = []
     for path in files:
         rel = path.resolve().relative_to(workspace.resolve()).as_posix()
-        rep = validate_file(path, workspace)
+        rep = file_report(path, workspace, cross_page)
         status = report_status(rep)
         if status == "FAIL" and rel not in baseline:
             new_failures.append(rel)
@@ -243,15 +235,16 @@ def validate(
     failure does. A baseline entry that now passes is reported so it can be
     removed, and the baseline only ever shrinks.
     """
-    from ol.authoring.validate import report_status, validate_file
+    from ol.authoring.validate import report_status
 
     baseline_path = baseline or workspace / BASELINE_FILE
     targets = list(files) if files else _article_files(workspace / "docs")
 
     if write_baseline:
         failing = []
+        cross_page = cross_page_refusals(workspace)
         for path in targets:
-            if report_status(validate_file(path, workspace)) == "FAIL":
+            if report_status(file_report(path, workspace, cross_page)) == "FAIL":
                 failing.append(
                     path.resolve().relative_to(workspace.resolve()).as_posix()
                 )
@@ -303,11 +296,10 @@ def check(
     workspace: Path = typer.Option(Path("."), help="Language workspace root."),
     skip_build: bool = typer.Option(False, "--skip-build", help="Skip the docs build."),
 ):
-    """Run every content check: validate, audit, then a strict docs build.
+    """Run every content check: validate, then a strict docs build.
 
-    This is the same gate CI runs. All three steps run even when an earlier one
-    fails, so one pass reports everything. The audit is skipped in a workspace
-    with no ``albums/`` directory.
+    This is the same gate CI runs. Both steps run even when the first one
+    fails, so one pass reports everything.
     """
     failed: list[str] = []
 
@@ -321,14 +313,6 @@ def check(
         failed.append("validate")
     else:
         typer.echo(f"OK: {checked} file(s), no failures outside the baseline.")
-
-    # The audit cross-checks album files against the docs. A workspace that
-    # does not keep albums as files has nothing to audit.
-    if (workspace / "albums").is_dir():
-        typer.echo("\n== ol audit")
-        audit_cmd = [sys.executable, "-m", "ol", "audit"]
-        if subprocess.run(audit_cmd, cwd=workspace).returncode:
-            failed.append("audit")
 
     if not skip_build:
         typer.echo("\n== sphinx-build -W")

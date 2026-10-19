@@ -1,59 +1,105 @@
+"""A standalone Sphinx build renders blocks in the app's form."""
+
+from __future__ import annotations
+
+from io import StringIO
 from pathlib import Path
 
-import yaml
+import pytest
+from sphinx.application import Sphinx
 
-from ol.docs.audio_examples import build_audio_examples_html, load_track_examples
-from ol.docs_source import parse_example_pairs
+WRITER = """# Weil
 
+:::{audio-examples}
+:track: a2/grammar/weil
+:title: Nebensatz mit weil
 
-def _make_album(root: Path):
-    tracks = root / "albums" / "a1" / "grammar" / "test" / "tracks"
-    tracks.mkdir(parents=True, exist_ok=True)
-    (tracks / "nominativ.yml").write_text(
-        yaml.dump(
-            {
-                "title": {"de": "Nominativ", "en": "Nominative"},
-                "streaming": {"spotify": "https://open.spotify.com/album/x"},
-                "examples": [{"de": "Der Hund schläft.", "en": "The dog sleeps."}],
-            },
-            allow_unicode=True,
-            sort_keys=False,
-        ),
-        encoding="utf-8",
-    )
+Ich bleibe zu Hause, weil ich <krank> bin.
+: I am staying at home because I am ill.
+:::
+"""
 
+DUPLICATE = """# Denn
 
-def test_load_track_examples_reads_new_schema(tmp_path: Path):
-    _make_album(tmp_path)
-    examples, spotify, youtube = load_track_examples(
-        tmp_path, "a1/grammar/test", "nominativ.yml"
-    )
-    assert examples[0]["de"] == "Der Hund schläft."
-    assert spotify == "https://open.spotify.com/album/x"
-    assert youtube == ""
+:::{audio-examples}
+:track: a2/grammar/weil
+:duplicate:
+:::
+"""
 
 
-def test_build_html_contains_sentence_and_spotify():
-    html = build_audio_examples_html(
-        [("Der Hund schläft.", "The dog sleeps.")],
-        "https://open.spotify.com/album/x",
-        "",
-    )
-    assert "Der Hund schläft." in html
-    assert "The dog sleeps." in html
-    assert "https://open.spotify.com/album/x" in html
-    assert "ae-container" in html
+class Build:
+    def __init__(self, root: Path, pages: dict[str, str]):
+        self.root = root
+        self.src = root / "src"
+        self.src.mkdir()
+        (self.src / "conf.py").write_text(
+            'extensions = ["myst_parser", "ol.docs.audio_examples"]\n'
+            'myst_enable_extensions = ["colon_fence"]\n'
+        )
+        toctree = "\n".join(pages)
+        (self.src / "index.md").write_text(
+            f"# Index\n\n```{{toctree}}\n{toctree}\n```\n"
+        )
+        self.out = root / "out"
+        self.run(pages, fresh=True)
+
+    def run(self, pages: dict[str, str], fresh: bool = False) -> None:
+        for name, text in pages.items():
+            page = self.src / f"{name}.md"
+            page.parent.mkdir(parents=True, exist_ok=True)
+            page.write_text(text, encoding="utf-8")
+        self.warnings = StringIO()
+        Sphinx(
+            str(self.src),
+            str(self.src),
+            str(self.out),
+            str(self.root / "doctrees"),
+            "html",
+            status=None,
+            warning=self.warnings,
+            freshenv=fresh,
+        ).build()
+
+    def html(self, name: str) -> str:
+        return (self.out / f"{name}.html").read_text(encoding="utf-8")
 
 
-def test_build_html_without_links_shows_coming_soon():
-    html = build_audio_examples_html([("Eins.", "One.")], "", "")
-    assert "Streaming links coming soon" in html
+@pytest.fixture
+def build(tmp_path):
+    return lambda pages: Build(tmp_path, pages)
 
 
-def test_directive_content_flows_through_shared_parser():
-    """The directive body grammar and the extractor grammar are one function."""
-    content = ["Der Hund schläft.", ": The dog sleeps."]
-    pairs = parse_example_pairs(content, "test")
-    html = build_audio_examples_html(pairs, "", "")
-    assert "Der Hund schläft." in html
-    assert "The dog sleeps." in html
+class TestAudioExamplesDirective:
+    def test_a_block_that_writes_shows_its_examples_escaped(self, build):
+        html = build({"a2/grammar/weil": WRITER}).html("a2/grammar/weil")
+        assert "weil ich &lt;krank&gt; bin." in html
+        assert "I am staying at home because I am ill." in html
+
+    def test_a_duplicate_shows_the_examples_of_the_block_that_writes(self, build):
+        done = build({"a2/grammar/weil": WRITER, "a2/grammar/denn": DUPLICATE})
+        assert "weil ich &lt;krank&gt; bin." in done.html("a2/grammar/denn")
+        assert "audio-examples:" not in done.warnings.getvalue()
+
+    def test_a_duplicate_follows_its_track_when_only_the_writer_changes(self, build):
+        done = build({"a2/grammar/weil": WRITER, "a2/grammar/denn": DUPLICATE})
+        done.run({"a2/grammar/weil": WRITER.replace("krank", "müde")})
+        assert "weil ich &lt;müde&gt; bin." in done.html("a2/grammar/denn")
+
+    def test_a_duplicate_of_a_track_nobody_writes_warns(self, build):
+        done = build({"a2/grammar/denn": DUPLICATE})
+        assert "orphan_duplicate" in done.warnings.getvalue()
+
+    def test_a_track_written_on_two_pages_warns(self, build):
+        done = build({"a2/grammar/weil": WRITER, "a2/grammar/denn": WRITER})
+        assert done.warnings.getvalue().count("written_twice") == 2
+
+    def test_a_refused_block_warns_with_its_code(self, build):
+        page = WRITER.replace(":title: Nebensatz mit weil\n", ":duplicate:\n")
+        done = build({"a2/grammar/weil": page})
+        assert "duplicate_writes" in done.warnings.getvalue()
+
+    def test_a_block_that_cannot_be_read_warns(self, build):
+        page = WRITER.replace("Ich bleibe", ": Ich bleibe")
+        done = build({"a2/grammar/weil": page})
+        assert "a2/grammar/weil" in done.warnings.getvalue()

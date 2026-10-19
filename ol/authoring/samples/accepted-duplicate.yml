@@ -1,0 +1,17 @@
+expect: accepted
+description: A duplicate block on a second page shows the track the first page writes.
+pages:
+  a2/grammar/nebensatz-mit-weil: |
+    :::{audio-examples}
+    :track: a2/grammar/nebensatz-mit-weil
+    :title: Nebensatz mit weil
+
+    Ich bleibe zu Hause, weil ich krank bin.
+    : I am staying at home because I am ill.
+    :::
+  a2/grammar/konjunktionen: |
+    :::{audio-examples}
+    :track: a2/grammar/nebensatz-mit-weil
+    :tags: konjunktionen
+    :duplicate:
+    :::

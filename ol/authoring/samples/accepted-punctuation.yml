@@ -1,0 +1,20 @@
+expect: accepted
+description: Sentences that differ only in punctuation or case are two sentences.
+pages:
+  a1/grammar/fragen: |
+    :::{audio-examples}
+    :track: a1/grammar/fragen
+    :title: Fragen
+
+    Du kommst.
+    : You are coming.
+
+    Du kommst?
+    : Are you coming?
+
+    Arm ist er.
+    : He is poor.
+
+    arm ist er.
+    : poor he is.
+    :::

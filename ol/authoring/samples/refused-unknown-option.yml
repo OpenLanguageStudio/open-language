@@ -1,0 +1,12 @@
+expect: unknown_option
+description: The retired album option is one the block does not take.
+pages:
+  a1/grammar/dativ: |
+    :::{audio-examples}
+    :track: a1/grammar/dativ
+    :album: a1/grammar/part-1
+    :title: Der Dativ
+
+    Ich fahre mit dem Bus.
+    : I go by bus.
+    :::

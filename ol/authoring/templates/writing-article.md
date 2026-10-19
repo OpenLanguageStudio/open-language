@@ -21,17 +21,31 @@ Before reading this article, make sure you are comfortable with:
 :::
 <!-- CONDITIONAL: omit unless genuinely required. -->
 
-## The task
+{{2-3 sentences of plain prose: what the learner will be able to write, in what
+real context, and the register (formal/informal).}}
 
-{{2-3 sentences: what the learner will be able to write, and in what real context.
-Note the register (formal/informal).}}
+## Example: {{Situation, e.g. "Accepting an invitation"}}
 
-## Structure
+{{1-2 sentences setting the situation: who writes to whom, and why.}}
 
-1. {{Opening: greeting formula}}
-2. {{Body point 1}}
-3. {{Body point 2}}
-4. {{Closing: sign-off formula}}
+### Hear it in practice
+
+:::{audio-examples}
+:track: {{level_lc}}/writing/{{example-name}}
+:title: {{NATIVE_TITLE}}
+:title-en: {{ENGLISH_TITLE}}
+:multiline:
+
+{{Model text line 1}}
+{{Model text line 2}}
+: {{Translation line 1}}
+: {{Translation line 2}}
+:::
+<!-- REQUIRED: one or more "## Example: <Situation>" sections, each with its
+     own "### Hear it in practice" holding a complete at-level model text
+     (~60-120 words) read aloud. Each block writes its own track, so give each
+     a name of its own in :track: (see templates/audio-examples-block.md);
+     :multiline: keeps the text's line breaks on the page and in the audio. -->
 
 ## Building blocks
 
@@ -39,13 +53,6 @@ Note the register (formal/informal).}}
 |---|---|---|
 | Greeting (formal) | {{…}} | {{…}} |
 | {{purpose}} | {{phrase}} | {{translation}} |
-
-## Model text
-
-{{A complete at-level model text (~40-120 words), followed by an English
-translation in italics or a collapsible block.}}
-
----
 
 ## Summary
 
@@ -60,23 +67,6 @@ translation in italics or a collapsible block.}}
 
 - {{typical error in this genre}} → {{fix}}
 :::
-
----
-
-:::{audio-examples}
-:album: {{level_lc}}/writing/{{album_name}}
-:title: {{NATIVE_TITLE}}
-:title-en: {{ENGLISH_TITLE}}
-:multiline:
-
-{{Model text line 1}}
-{{Model text line 2}}
-: {{Translation line 1}}
-: {{Translation line 2}}
-:::
-<!-- REQUIRED once a writing album exists for this level (the model text read
-     aloud). The block IS the track (ADR-0006); :multiline: keeps the text's
-     line breaks on the page and in the audio. Register the name in album.yml. -->
 
 ---
 
