@@ -13,6 +13,6 @@
   - No hand-numbered headings ("## 1. Form"). Drop the number.
   - At most three links in a Prerequisites admonition. Keep the ones the article cannot be read without.
   - "Hear it in practice" is never collapsed in a dropdown. Remove the dropdown.
-  - Related articles never links the article just before or after this one in its category index's toctree. Remove the link: the page footer already has it.
   - A vocabulary pack's word table has 10 to 20 words. Split or fill the pack.
   - A writing or vocabulary file name ends in a running number (`email-formal-1`, `at-the-beach-1`). Rename an unpublished article; record a published one in the baseline, because published file names never change.
+- `ol validate` warns when Related articles links the article just before or after this one in its category index's toctree. Remove the link: the page footer already has it. This is a warning for now and becomes an error in a later version.

@@ -515,7 +515,8 @@ def check_related_neighbours(
 
     The theme already renders previous and next links from the toctree, so a
     neighbour under Related articles repeats them. Only the category index in
-    the article's own directory is read.
+    the article's own directory is read. A warning for now; it becomes an
+    error in a later version.
     """
     index = path.parent / "index.md"
     section = RELATED_SECTION.search(body)
@@ -538,7 +539,7 @@ def check_related_neighbours(
         else:
             target = path.parent / link
         if target.resolve() in neighbours:
-            rep.error(
+            rep.warn(
                 f"Related articles links {link}, next to this article in the "
                 "toctree: the build already links it as previous or next"
             )

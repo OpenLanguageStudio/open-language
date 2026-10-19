@@ -272,10 +272,15 @@ def write_articles_index(tmp_path: Path, *entries: str) -> None:
     )
 
 
-def test_related_link_to_a_toctree_neighbour_is_red(tmp_path, source):
+def test_related_link_to_a_toctree_neighbour_warns(tmp_path, source):
     write_articles_index(tmp_path, "bestimmter-artikel", "unbestimmter-artikel")
-    found = errors(tmp_path, source)
-    assert any("unbestimmter-artikel" in msg for msg in found), found
+    assert errors(tmp_path, source) == []
+    warnings = [
+        msg
+        for lvl, msg in validate_file(tmp_path / ARTICLE, tmp_path).items
+        if lvl == "WARN"
+    ]
+    assert any("unbestimmter-artikel" in msg for msg in warnings), warnings
 
 
 def test_related_link_past_a_toctree_neighbour_passes(tmp_path, source):
