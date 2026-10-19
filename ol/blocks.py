@@ -1,28 +1,4 @@
-"""The ``audio-examples`` block: what it may contain and why a block is refused.
-
-A block names a track by its address and either writes it, by giving its
-examples, or shows a track another block writes, with ``:duplicate:``::
-
-    :::{audio-examples}
-    :track: a2/grammar/nebensatz-mit-weil
-    :title: Nebensatz mit weil
-    :title-en: Subordinate clauses with weil
-    :tags: nebensatz, konjunktionen
-
-    Ich bleibe zu Hause, weil ich krank bin.
-    : I am staying at home because I am ill.
-    :::
-
-This module is the one definition of the block. ``ol validate``, the Sphinx
-extension ``ol.docs.audio_examples`` and the Open Language app all read blocks
-through it, so a block refused here is one the app will not show.
-
-``BlockReader`` reads one block, or every block on a page, into a ``Block``
-carrying the refusals that block earns on its own. ``BlockCollection`` holds
-every block of a build and adds the refusals that need more than one page.
-``load_samples`` returns the sample blocks the package ships, each marked with
-the outcome it should get.
-"""
+"""Read ``audio-examples`` blocks and the refusals the app and the checks report."""
 
 from __future__ import annotations
 
@@ -231,10 +207,17 @@ class BlockReader:
         return "/".join(parts)
 
     def refusals(self, block: Block, options: Mapping[str, str | None]) -> list[str]:
-        """The refusals a block earns on its own, in the order they are checked.
+        """List the refusals a block earns on its own, in the order they are checked.
 
         A block with a bad address earns nothing more, because it names no
         track to check against.
+
+        Args:
+            block: The block as read, with no refusals yet.
+            options: Every option the block carries, by name.
+
+        Returns:
+            The refusal codes.
         """
         found = []
         if set(options) - self.OPTIONS:
@@ -254,12 +237,18 @@ class BlockReader:
 
     @staticmethod
     def sentence_key(text: str) -> str:
-        """What identifies a sentence within its track.
+        """Return what identifies a sentence within its track.
 
         The text is put in one Unicode form, the emphasis marks ``*`` and ``_``
         are removed and every run of spacing, new lines included, becomes one
         space. Case and punctuation stay, so "Du kommst." and "Du kommst?" are
         two sentences.
+
+        Args:
+            text: A sentence as a page gives it.
+
+        Returns:
+            The sentence's key.
         """
         text = unicodedata.normalize("NFC", text).replace("*", "").replace("_", "")
         return re.sub(r"\s+", " ", text).strip()
@@ -279,6 +268,9 @@ class BlockReader:
             multiline: Whether the block carries ``:multiline:``.
             where: The page and line, for the error message.
 
+        Returns:
+            The examples, in order.
+
         Raises:
             BlockFormatError: When a sentence has no translation, a translation
                 has no sentence, or a line holds markup.
@@ -296,7 +288,19 @@ class BlockReader:
         return self.single_line_examples(lines, where)
 
     def single_line_examples(self, lines: list[str], where: str) -> list[Example]:
-        """Read examples of one sentence line and one translation line each."""
+        """Read examples of one sentence line and one translation line each.
+
+        Args:
+            lines: The body's lines, stripped.
+            where: The page and line, for the error message.
+
+        Returns:
+            The examples, in order.
+
+        Raises:
+            BlockFormatError: When a sentence has no translation or a
+                translation has no sentence.
+        """
         examples = []
         sentence = None
         for offset, line in enumerate(lines, start=1):
@@ -319,7 +323,19 @@ class BlockReader:
         return examples
 
     def multiline_examples(self, lines: list[str], where: str) -> list[Example]:
-        """Read examples of several sentence lines then several translation lines."""
+        """Read examples of several sentence lines then several translation lines.
+
+        Args:
+            lines: The body's lines, stripped.
+            where: The page and line, for the error message.
+
+        Returns:
+            The examples, in order, each keeping its line breaks.
+
+        Raises:
+            BlockFormatError: When a group is not sentence lines followed by
+                translation lines.
+        """
         examples = []
         group: list[str] = []
         for offset, line in enumerate([*lines, ""], start=1):
@@ -378,6 +394,9 @@ class BlockReader:
     def options(self, lines: Sequence[str]) -> tuple[dict[str, str], int]:
         """Read the ``:name: value`` lines that open a block.
 
+        Args:
+            lines: The lines between the block's fences.
+
         Returns:
             The options by name, and the index of the first body line.
         """
@@ -404,7 +423,18 @@ class BlockCollection:
     def from_pages(
         cls, pages: Mapping[str, str], reader: BlockReader | None = None
     ) -> BlockCollection:
-        """Read the blocks of pages given as Markdown, by page name."""
+        """Read the blocks of pages given as Markdown.
+
+        Args:
+            pages: Each page's Markdown, by page name.
+            reader: The reader to use, a ``BlockReader`` unless given.
+
+        Returns:
+            The collection of every block on the pages.
+
+        Raises:
+            BlockFormatError: When a block's body cannot be read as examples.
+        """
         reader = reader or BlockReader()
         return cls(
             block for page, text in pages.items() for block in reader.find(page, text)
@@ -418,6 +448,16 @@ class BlockCollection:
 
         A directory whose name starts with ``_`` or ``.``, such as ``_build``,
         is skipped. A page's name is its path below ``root`` without ``.md``.
+
+        Args:
+            root: The docs directory.
+            reader: The reader to use, a ``BlockReader`` unless given.
+
+        Returns:
+            The collection of every block under ``root``.
+
+        Raises:
+            BlockFormatError: When a block's body cannot be read as examples.
         """
         pages = {}
         for path in sorted(Path(root).rglob("*.md")):
@@ -430,12 +470,15 @@ class BlockCollection:
         return cls.from_pages(pages, reader)
 
     def refusals(self) -> list[Refusal]:
-        """Every refusal of the build: each block's own, then the cross-page ones.
+        """List every refusal of the build: each block's own, then the cross-page ones.
 
         Of the blocks with one address, more than one that writes is refused as
         ``written_twice``, each of them. A duplicate is refused as
         ``orphan_duplicate`` when no block writes its address, unless it is
         already refused for writing itself.
+
+        Returns:
+            The refusals, the blocks' own in page order first.
         """
         found = [
             Refusal(block, code) for block in self.blocks for code in block.refusals
@@ -474,12 +517,23 @@ class Sample:
     pages: dict[str, str]
 
     def blocks(self, reader: BlockReader | None = None) -> list[Block]:
-        """The blocks of the sample's pages."""
+        """Read the blocks of the sample's pages.
+
+        Args:
+            reader: The reader to use, a ``BlockReader`` unless given.
+
+        Returns:
+            The blocks, page by page.
+        """
         return BlockCollection.from_pages(self.pages, reader).blocks
 
     @classmethod
     def load_all(cls) -> list[Sample]:
-        """The samples shipped in ``ol/authoring/samples/``, by name."""
+        """Load the samples shipped in ``ol/authoring/samples/``.
+
+        Returns:
+            The samples, ordered by name.
+        """
         samples = []
         folder = files("ol.authoring").joinpath("samples")
         for entry in sorted(folder.iterdir(), key=lambda entry: entry.name):
@@ -498,5 +552,9 @@ class Sample:
 
 
 def load_samples() -> list[Sample]:
-    """The sample blocks shipped in ``ol/authoring/samples/``, by name."""
+    """Load the sample blocks shipped in ``ol/authoring/samples/``.
+
+    Returns:
+        The samples, ordered by name.
+    """
     return Sample.load_all()

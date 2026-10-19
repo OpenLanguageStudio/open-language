@@ -145,6 +145,12 @@ def cross_page_refusals(workspace: Path) -> dict[str, list[Refusal]]:
     duplicate is matched with the block that writes its track wherever it is.
     While a block on any page cannot be read there is nothing to match against,
     and that page's own report fails the run instead.
+
+    Args:
+        workspace: The language repository's root.
+
+    Returns:
+        The refusals, by file path such as ``docs/a1/grammar/dativ.md``.
     """
     found: dict[str, list[Refusal]] = {}
     try:
@@ -158,7 +164,16 @@ def cross_page_refusals(workspace: Path) -> dict[str, list[Refusal]]:
 
 
 def file_report(path: Path, workspace: Path, cross_page: dict[str, list[Refusal]]):
-    """Validate one file and add the refusals across pages that fall on it."""
+    """Validate one file and add the refusals across pages that fall on it.
+
+    Args:
+        path: The file to check.
+        workspace: The language repository's root.
+        cross_page: The refusals from ``cross_page_refusals``.
+
+    Returns:
+        The file's report.
+    """
     from ol.authoring.validate import validate_file
 
     rep = validate_file(path, workspace)

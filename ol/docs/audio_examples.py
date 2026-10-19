@@ -1,16 +1,4 @@
-"""The ``audio-examples`` directive for a standalone build of a Coursebook.
-
-Renders the body of a "Hear it in practice" section: the examples of the track
-a block names, each sentence with its translation, which a button shows and
-hides. The section heading is written in the article as a Markdown heading
-right above the block, so it appears in the sidebar.
-
-A block is read by ``ol.blocks.BlockReader``, the reader ``ol validate`` and the
-Open Language app use, so the form is described there. A block that writes its
-track shows its own examples. A ``:duplicate:`` block shows the examples of the
-block that writes its track, on whichever page that is. Each refusal is a
-build warning, so ``ol check`` fails on it.
-"""
+"""The ``audio-examples`` directive for a standalone build of a Coursebook."""
 
 from html import escape
 from typing import ClassVar
@@ -33,7 +21,14 @@ class DuplicateTrack(nodes.General, nodes.Element):
 
 
 def build_audio_examples_html(examples: list[Example]) -> str:
-    """The HTML of a track's examples, each sentence above its hidden translation."""
+    """Build the HTML of a track's examples, each above its hidden translation.
+
+    Args:
+        examples: The track's examples, in order.
+
+    Returns:
+        The HTML, with every sentence and translation escaped.
+    """
     items = ""
     for sentence, translation in examples:
         # Multiline examples (writing model texts) keep their line breaks.
@@ -57,9 +52,12 @@ def build_audio_examples_html(examples: list[Example]) -> str:
 
 
 class AudioExamplesDirective(Directive):
-    """One block: shows its track's examples and warns about each refusal.
+    """Show a block's track and warn about each refusal it earns.
 
-    An option the block does not take is reported by MyST as an unknown option.
+    A block that writes its track shows its own examples. A ``:duplicate:``
+    block shows the examples of the block that writes its track, on whichever
+    page that is. An option the block does not take is reported by MyST as an
+    unknown option.
     """
 
     has_content = True
@@ -103,7 +101,14 @@ class AudioExamplesDirective(Directive):
 
 
 def blocks_on(env) -> dict[str, list[Block]]:
-    """The blocks read so far, by page name, kept on the build environment."""
+    """Return the blocks read so far, kept on the build environment.
+
+    Args:
+        env: The Sphinx build environment.
+
+    Returns:
+        Each page's blocks, by page name.
+    """
     if not hasattr(env, "ol_blocks"):
         env.ol_blocks = {}
     blocks: dict[str, list[Block]] = env.ol_blocks
@@ -111,7 +116,14 @@ def blocks_on(env) -> dict[str, list[Block]]:
 
 
 def collection(env) -> BlockCollection:
-    """Every block of the build."""
+    """Collect every block of the build.
+
+    Args:
+        env: The Sphinx build environment.
+
+    Returns:
+        The blocks, page by page.
+    """
     return BlockCollection(
         block for page in sorted(blocks_on(env)) for block in blocks_on(env)[page]
     )
@@ -141,7 +153,11 @@ def warn_across_pages(app, env):
 
 
 def pages_with_duplicates(app, env):
-    """Write every page with a duplicate again, as its track may have changed."""
+    """Name every page with a duplicate, to write again as its track may have changed.
+
+    Returns:
+        The page names.
+    """
     return [
         page
         for page, blocks in blocks_on(env).items()

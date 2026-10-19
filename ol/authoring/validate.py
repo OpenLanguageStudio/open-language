@@ -107,7 +107,14 @@ def native_code(workspace: Path | None) -> str:
 
 
 def page_name(path: Path) -> str:
-    """The page's name in the build: its path below docs/ without .md."""
+    """Return the page's name in the build: its path below docs/ without .md.
+
+    Args:
+        path: The page's file.
+
+    Returns:
+        The name, or the file's stem when it is not under a docs/ directory.
+    """
     parts = path.resolve().with_suffix("").parts
     if "docs" not in parts:
         return path.stem
@@ -115,7 +122,16 @@ def page_name(path: Path) -> str:
 
 
 def read_blocks(rep: Report, path: Path, text: str) -> list[Block] | None:
-    """The page's blocks, or None, reported, when a block cannot be read."""
+    """Read the page's blocks, reporting a block that cannot be read.
+
+    Args:
+        rep: The page's report.
+        path: The page's file.
+        text: The page's Markdown.
+
+    Returns:
+        The blocks, or None when a block cannot be read.
+    """
     try:
         return BlockReader().find(page_name(path), text)
     except BlockFormatError as exc:
@@ -124,7 +140,12 @@ def read_blocks(rep: Report, path: Path, text: str) -> list[Block] | None:
 
 
 def check_refusals(rep: Report, block: Block):
-    """Each refusal the block earns on its own, with its code."""
+    """Report each refusal the block earns on its own, with its code.
+
+    Args:
+        rep: The page's report.
+        block: The block.
+    """
     for code in block.refusals:
         rep.error(
             f"audio-examples (line {block.line}): {code}: {Refusal.DETAILS[code]}"
@@ -132,7 +153,13 @@ def check_refusals(rep: Report, block: Block):
 
 
 def check_audio_block(rep: Report, block: Block, ctype: str | None):
-    """A block's refusals, and the limits a block that writes its track must meet."""
+    """Report a block's refusals and check the limits a block that writes must meet.
+
+    Args:
+        rep: The page's report.
+        block: The block.
+        ctype: The page's category, which decides the model-text check.
+    """
     where = f"audio-examples (line {block.line})"
     check_refusals(rep, block)
     if not block.writes:

@@ -140,9 +140,36 @@ class TestBlockReader:
             Example("Liebe Anna,\nbis bald.", "Dear Anna,\nsee you soon."),
         )
 
-    def test_a_translation_with_no_sentence_cannot_be_read(self):
+    def test_examples_need_no_blank_line_between_them(self):
+        body = ["Eins.", ": One.", "Zwei.", ": Two."]
+        block = read({"track": "a2/grammar/weil"}, body=body)
+        assert block.examples == (Example("Eins.", "One."), Example("Zwei.", "Two."))
+
+    @pytest.mark.parametrize(
+        "body",
+        [
+            [": Only a translation."],
+            ["Eins.", "Zwei.", ": Two."],
+            ["Eins.", "", ": One."],
+            ["Eins."],
+            ["Eins.", ":"],
+        ],
+    )
+    def test_a_body_that_is_not_sentence_then_translation_cannot_be_read(self, body):
         with pytest.raises(BlockFormatError):
-            read({"track": "a2/grammar/weil"}, body=[": Only a translation."])
+            read({"track": "a2/grammar/weil"}, body=body)
+
+    @pytest.mark.parametrize(
+        "body",
+        [
+            ["Liebe Anna,", "bis bald."],
+            [": Dear Anna,"],
+            ["Liebe Anna,", ": Dear Anna,", "bis bald.", ": see you soon."],
+        ],
+    )
+    def test_a_multiline_example_needs_sentences_then_translations(self, body):
+        with pytest.raises(BlockFormatError):
+            read({"track": "a1/writing/brief", "multiline": None}, body=body)
 
     def test_markup_in_an_example_cannot_be_read(self):
         with pytest.raises(BlockFormatError):
