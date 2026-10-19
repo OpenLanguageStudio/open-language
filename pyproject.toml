@@ -75,3 +75,8 @@ extend-ignore = [
 "ol/tests/*" = ["S101"]
 # Typer declares CLI options as call defaults by design.
 "ol/cli.py" = ["B008"]
+
+[tool.forge.docs]
+# The checks' functions are reached through `ol validate`, which the README
+# documents; nothing outside the package calls them.
+exempt-paths = ["ol/authoring/validate.py"]
