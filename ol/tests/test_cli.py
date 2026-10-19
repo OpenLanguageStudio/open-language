@@ -107,7 +107,7 @@ def test_a_track_written_on_another_page_is_found(tmp_path):
     )
     duplicate_page(workspace, "praepositionen")
     (workspace / "docs/a1/grammar/dativ.md").write_text(
-        "# Dativ\n\n:::{audio-examples}\n:track: a1/grammar\n:title: Dativ\n\n"
+        "# Dativ\n\n:::{audio-examples}\n:track: a1/grammar/dativ\n:title: Dativ\n\n"
         "Ich fahre mit dem Bus.\n: I go by bus.\n:::\n"
     )
 
@@ -120,7 +120,7 @@ def test_a_block_that_cannot_be_read_fails_the_run_and_nothing_else(tmp_path):
     workspace = _workspace(tmp_path)
     (workspace / ".ol-validate-baseline").write_text("docs/a1/grammar/broken.md\n")
     (workspace / "docs/a1/grammar/dativ.md").write_text(
-        "# Dativ\n\n:::{audio-examples}\n:track: a1/grammar\n\n: No sentence.\n:::\n"
+        "# Dativ\n\n:::{audio-examples}\n:track: a1/grammar/dativ\n\n: No sentence.\n:::\n"
         + "Filler prose for the page. " * 10
     )
 

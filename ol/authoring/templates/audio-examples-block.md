@@ -4,7 +4,7 @@ in the article under "## Hear it in practice", AFTER the learning sections,
 BEFORE Summary. Delete these comment lines: HTML comments are banned in docs. -->
 
 :::{audio-examples}
-:track: {{level}}/{{category}}
+:track: {{level}}/{{category}}/{{name}}
 :title: {{NATIVE_TITLE: spoken aloud as the track intro}}
 :title-en: {{ENGLISH_TITLE}}
 :tags: {{tag}}, {{tag}}
@@ -18,8 +18,8 @@ BEFORE Summary. Delete these comment lines: HTML comments are banned in docs. --
 
 <!-- Options. A block takes these six and no others:
 - :track: {{level}}/{{category}}/{{name}} : the track's address, in lower
-  case. With only {{level}}/{{category}}, the name is the page's file name.
-  Never change an address once the track has audio.
+  case. All three parts are always written: the name is never taken from
+  the page. Never change an address once the track has audio.
 - :title: / :title-en: : the title in the language taught (spoken) and in
   English. A title published in the stores keeps its dash: leave :title-en:
   out and the app keeps the title it holds.

@@ -1,5 +1,5 @@
-expect: accepted
-description: A track address of a level and a category takes the page's name.
+expect: bad_address
+description: A track address of a level and a category, with no name.
 pages:
   a2/grammar/dass: |
     :::{audio-examples}
