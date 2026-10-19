@@ -21,6 +21,13 @@ Usage:
   Missing streaming links are reported as INFO (pending release).
 - Prose is checked for stock machine-writing vocabulary (specs.yml
   ai_vocabulary). Example blocks, tables and code are not prose.
+- Article structure: no CEFR level or category prefix in the title, no
+  hand-numbered headings, no external-reading or "See also" section, at most
+  `max_prerequisites` Prerequisites links, an open "Hear it in practice"
+  section, and no Related articles link to the article's toctree neighbour
+  (the build links neighbours). Vocabulary packs hold `min_pack_words` to
+  `max_pack_words` words in their word list, and writing and vocabulary file
+  names end in a running number.
 - Stub files (< 200 bytes of body) are reported as STUB, not failed line by line.
 
 Exit code: 1 if any ERROR, else 0. Dependency: PyYAML.
@@ -327,6 +334,10 @@ def check_common(rep: Report, body: str):
         )
     if "{{" in body:
         rep.error("unfilled {{PLACEHOLDER}} left in file")
+    if re.search(r"\b(TODO|FIXME)\b", body):
+        rep.error(
+            "contains a TODO or FIXME note: notes for authors leak into the built HTML"
+        )
     for i, line in enumerate(body.splitlines(), 1):
         # Sphinx generates prev/next navigation from the toctree and the theme
         # renders it in the page footer. Hand-written neighbour links duplicate
@@ -417,6 +428,131 @@ def check_direct_address(rep: Report, body: str):
             "speaker does, wrong if it addresses the reader about the course "
             "('you will learn', 'the forms you already know'). Check it (rule 18)"
         )
+
+
+EXTERNAL_SECTION = re.compile(
+    r"^## (References|Additional reading|Further reading|See also)\s*$", re.M | re.I
+)
+CATEGORY_PREFIX = re.compile(rf"({'|'.join(CATEGORIES)})\s*[:\u2013-]", re.I)
+NUMBERED_HEADING = re.compile(r"\d+[.)]\s")
+PREREQUISITES = re.compile(r"^:::\{admonition\} Prerequisites\n(.*?)^:::", re.M | re.S)
+RELATED_SECTION = re.compile(r"^## Related articles\s*\n(.*?)(?=^## |\Z)", re.M | re.S)
+AUDIO_SECTION = re.compile(r"(#{2,3}) Hear it in practice\s*$")
+
+
+def check_article_headings(rep: Report, body: str):
+    """Titles and sections carry no navigation the path or the build provides."""
+    h1s = headings(body, 1)
+    if h1s and re.search(r"\b[ABC][12]\b", h1s[0]):
+        rep.error(
+            f"title '{h1s[0]}' contains the CEFR level: the article's path carries it"
+        )
+    if h1s and CATEGORY_PREFIX.match(h1s[0]):
+        rep.error(
+            f"title '{h1s[0]}' has a category prefix: the article's path carries it"
+        )
+    if m := EXTERNAL_SECTION.search(body):
+        rep.error(
+            f"'{m.group(1)}' section in an article: links to other articles go "
+            "under Related articles, and external reading belongs in the level index"
+        )
+    for h in headings(body, 2) + headings(body, 3):
+        if NUMBERED_HEADING.match(h):
+            rep.error(
+                f"numbered heading '{h}': never number sections by hand; the "
+                "toctree's :numbered: option numbers them"
+            )
+            break
+
+
+def check_prerequisites(rep: Report, body: str):
+    """A Prerequisites admonition names only the article's true dependencies."""
+    limit = SPECS["common"]["max_prerequisites"]
+    for m in PREREQUISITES.finditer(body):
+        count = m.group(1).count("](")
+        if count > limit:
+            rep.error(
+                f"{count} prerequisites (maximum {limit}): list only what the "
+                "article cannot be read without"
+            )
+
+
+def check_audio_section_open(rep: Report, body: str):
+    """A "Hear it in practice" section is never collapsed into a dropdown."""
+    lines = body.splitlines()
+    for i, line in enumerate(lines):
+        m = AUDIO_SECTION.match(line)
+        if not m:
+            continue
+        for later in lines[i + 1 :]:
+            heading = re.match(r"(#+) ", later)
+            if heading and len(heading.group(1)) <= len(m.group(1)):
+                break
+            if "{dropdown}" in later or re.match(r":class:.*\bdropdown\b", later):
+                rep.error(
+                    f"'Hear it in practice' on line {i + 1} is collapsed in a "
+                    "dropdown: the section stays open"
+                )
+                return
+
+
+def toctree_entries(body: str) -> list[str] | None:
+    """The entries of the first toctree in ``body``, or None without one."""
+    m = re.search(r"```\{toctree\}\s*\n(.*?)```", body, re.S)
+    if not m:
+        return None
+    return [
+        line.strip()
+        for line in m.group(1).splitlines()
+        if line.strip() and not line.strip().startswith(":")
+    ]
+
+
+def check_related_neighbours(
+    rep: Report, body: str, path: Path, workspace: Path | None
+):
+    """Related articles never links the article's toctree neighbours.
+
+    The theme already renders previous and next links from the toctree, so a
+    neighbour under Related articles repeats them. Only the category index in
+    the article's own directory is read.
+    """
+    index = path.parent / "index.md"
+    section = RELATED_SECTION.search(body)
+    if not index.exists() or not section:
+        return
+    entries = toctree_entries(index.read_text(encoding="utf-8")) or []
+    if path.stem not in entries:
+        return
+    i = entries.index(path.stem)
+    neighbours = {
+        (path.parent / f"{entries[j]}.md").resolve()
+        for j in (i - 1, i + 1)
+        if 0 <= j < len(entries)
+    }
+    for link in re.findall(r"\]\(([^)#\s]+\.md)", section.group(1)):
+        if link.startswith("/"):
+            if not workspace:
+                continue
+            target = workspace / "docs" / link.lstrip("/")
+        else:
+            target = path.parent / link
+        if target.resolve() in neighbours:
+            rep.error(
+                f"Related articles links {link}, next to this article in the "
+                "toctree: the build already links it as previous or next"
+            )
+
+
+def word_list_size(body: str) -> int:
+    """Rows below the header of the first table in ``body``."""
+    rows = []
+    for line in body.splitlines():
+        if line.startswith("|"):
+            rows.append(line)
+        elif rows:
+            break
+    return max(len(rows) - 2, 0)
 
 
 _EXAMPLES_DIV = re.compile(r"^:::\{div\}\s+ol-examples\s*$")
@@ -583,6 +719,10 @@ def validate_article(path: Path, ctype: str, workspace: Path | None) -> Report:
             "add at least one sentence of plain prose under the title before any subheading"
         )
 
+    check_article_headings(rep, body)
+    check_prerequisites(rep, body)
+    check_audio_section_open(rep, body)
+    check_related_neighbours(rep, body, path, workspace)
     check_direct_address(rep, body)
     check_example_blocks(rep, body)
     check_ai_vocabulary(rep, body)
@@ -615,9 +755,20 @@ def validate_article(path: Path, ctype: str, workspace: Path | None) -> Report:
     ):
         rep.error("Summary lacks ':::{admonition} Common mistakes' block")
 
+    if "min_pack_words" in spec:
+        words = word_list_size(body)
+        lo, hi = spec["min_pack_words"], spec["max_pack_words"]
+        if not lo <= words <= hi:
+            rep.error(f"word list has {words} words (a pack carries {lo} to {hi})")
+
     # english filename rule
     if spec.get("english_filename") and re.search(r"[äöüß]", path.stem):
         rep.error("filename must be English kebab-case (found umlaut/ß)")
+    if spec.get("numbered_filename") and not re.search(r"-\d+$", path.stem):
+        rep.error(
+            f"filename '{path.stem}' needs a running number (at-the-beach-1): "
+            "the next article on the same theme continues it"
+        )
 
     # "Hear it in practice" section order: heading before Summary, above the block
     hear = "## Hear it in practice"
@@ -668,8 +819,8 @@ def validate_index(path: Path, ctype: str | None, workspace: Path | None) -> Rep
             "(docs/<level>/index.md, '## Additional reading'), not here"
         )
 
-    m = re.search(r"```\{toctree\}\s*\n(.*?)```", body, re.S)
-    if not m:
+    entries = toctree_entries(body)
+    if entries is None:
         rep.error("no toctree found")
         return rep
     # grammar subcategory indexes must explain their concept group
@@ -682,11 +833,6 @@ def validate_index(path: Path, ctype: str | None, workspace: Path | None) -> Rep
                     "index has no explanation paragraph - add 1-3 sentences on what "
                     "this grammar concept group is"
                 )
-    entries = [
-        line.strip()
-        for line in m.group(1).splitlines()
-        if line.strip() and not line.strip().startswith(":")
-    ]
     if not entries:
         rep.error("toctree is empty")
     directory = path.parent

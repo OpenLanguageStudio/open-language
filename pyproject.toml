@@ -43,7 +43,7 @@ build-backend = "hatchling.build"
 packages = ["ol"]
 
 [tool.hatch.build.targets.sdist]
-include = ["/ol", "/README.md", "/LICENSE"]
+include = ["/ol", "/docs/reference", "/README.md", "/LICENSE"]
 
 [dependency-groups]
 dev = [
