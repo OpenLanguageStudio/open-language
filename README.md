@@ -84,7 +84,7 @@ Ich bleibe zu Hause, weil ich krank bin.
 
 | Option | Meaning |
 |---|---|
-| `:track:` | The track's address, `level/category/name`, in lower case. With only `level/category`, the name is the page's own name. An album is never part of it. |
+| `:track:` | The track's address, `level/category/name`, in lower case. All three parts are always written: the name is never taken from the page. An album is never part of it. |
 | `:title:` | The track's title in the language taught |
 | `:title-en:` | The title in English |
 | `:tags:` | Words that say what the track is about, separated by commas |
@@ -98,7 +98,7 @@ A block is refused with one of these codes:
 | Code | The block |
 |---|---|
 | `unknown_option` | has an option it does not take, such as the retired `:album:`, `:name:`, `:voice:`, `:spotify:` or `:youtube-music:` |
-| `bad_address` | has no `:track:`, or one that is not two or three lower-case names separated by `/` |
+| `bad_address` | has no `:track:`, or one that is not three lower-case names separated by `/` |
 | `missing_examples` | gives no examples and has no `:duplicate:` |
 | `duplicate_writes` | has `:duplicate:` and gives examples, a title or an English title |
 | `sentence_twice` | gives the same sentence twice, compared after Unicode normalisation, with spacing tidied and the emphasis marks `*` and `_` removed. Case and punctuation count. |

@@ -23,7 +23,7 @@ Each level has four categories, each a directory directly under the level: `gram
 
 ## File names
 
-- The file name of a published article never changes. Links and tracks depend on it.
+- The file name of a published article never changes. Links depend on it. A track does not: its `:track:` gives its own name.
 - Grammar file names are in the language being taught, such as `bestimmter-artikel`. Every other file name, and every directory that groups articles, is in English.
 
 ## Shape by category

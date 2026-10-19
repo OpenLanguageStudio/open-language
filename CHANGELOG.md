@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+### Changed: a track's address always gives its name
+
+This breaks language repositories that write `:track: level/category`. A `:track:` value now has to be `level/category/name`. With only a level and a category, the block is refused as `bad_address`. Before, the page's file name was taken as the track's name, so renaming or moving a page, or adding a second block to it, quietly changed which track a block named.
+
+For each block whose `:track:` gives two parts, add the page's file name as the third. `:track: a1/concepts` on `docs/a1/concepts/greetings.md` becomes `:track: a1/concepts/greetings`. The block then names the track it named before.
+
+The article templates write all three parts. `BlockReader.address()` no longer takes the page.
+
 ## [0.1.0] - 2026-10-19
 
 The first release.

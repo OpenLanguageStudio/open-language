@@ -64,15 +64,13 @@ class TestBlockReader:
         block = read({"track": "a2/grammar/weil"})
         assert (block.level, block.category, block.name) == ("a2", "grammar", "weil")
 
-    def test_a_level_and_a_category_take_the_pages_name(self):
-        block = read({"track": "a2/grammar"}, page="a2/grammar/dass")
-        assert block.address == "a2/grammar/dass"
-
     @pytest.mark.parametrize(
         "value",
         [
             "",
             "a2",
+            "a2/grammar",
+            "a2/grammar/",
             "a2/grammar/weil/extra",
             "a2/grammar/we.il",
             "a2/grammar/Weil",
@@ -249,7 +247,7 @@ class TestBlockCollection:
         page = tmp_path / "a2/grammar/weil.md"
         page.parent.mkdir(parents=True)
         page.write_text(
-            ":::{audio-examples}\n:track: a2/grammar\n:duplicate:\n:::\n",
+            ":::{audio-examples}\n:track: a2/grammar/weil\n:duplicate:\n:::\n",
             encoding="utf-8",
         )
         hidden = tmp_path / "_build/a2/grammar/weil.md"

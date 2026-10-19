@@ -73,7 +73,7 @@ Before reading this article, make sure you are comfortable with:
 ## Hear it in practice
 
 :::{audio-examples}
-:track: {{level_lc}}/grammar
+:track: {{level_lc}}/grammar/{{track-name}}
 :title: {{NATIVE_TITLE}}
 :title-en: {{ENGLISH_TITLE}}
 

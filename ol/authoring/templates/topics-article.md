@@ -56,7 +56,7 @@ myst:
 ---
 
 :::{audio-examples}
-:track: {{level_lc}}/topics
+:track: {{level_lc}}/topics/{{track-name}}
 :title: {{NATIVE_TITLE}}
 :title-en: {{ENGLISH_TITLE}}
 

@@ -79,7 +79,7 @@ Before reading this article, make sure you are comfortable with:
 ## Hear it in practice
 
 :::{audio-examples}
-:track: {{level_lc}}/concepts
+:track: {{level_lc}}/concepts/{{track-name}}
 :title: {{NATIVE_TITLE}}
 :title-en: {{ENGLISH_TITLE}}
 

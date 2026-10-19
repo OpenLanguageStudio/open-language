@@ -7,7 +7,7 @@ import unicodedata
 from collections.abc import Iterable, Mapping, Sequence
 from dataclasses import dataclass, replace
 from importlib.resources import files
-from pathlib import Path, PurePosixPath
+from pathlib import Path
 from typing import ClassVar, NamedTuple
 
 import yaml
@@ -158,8 +158,6 @@ class BlockReader:
 
         Args:
             page: The page's name in the build, such as ``a2/grammar/weil``.
-                Its last part names the track when ``:track:`` gives only a
-                level and a category.
             options: Each option the block carries, by name. A flag's value is
                 ignored, so docutils' ``None`` and an empty string both set it.
             body: The lines after the options.
@@ -176,7 +174,7 @@ class BlockReader:
         block = Block(
             page=page,
             line=line,
-            address=self.address(page, options.get("track") or ""),
+            address=self.address(options.get("track") or ""),
             title=(options.get("title") or "").strip() or None,
             title_en=(options.get("title-en") or "").strip() or None,
             tags=tuple(tag for tag in tags if tag),
@@ -187,21 +185,20 @@ class BlockReader:
         )
         return replace(block, refusals=tuple(self.refusals(block, options)))
 
-    def address(self, page: str, value: str) -> str | None:
+    def address(self, value: str) -> str | None:
         """Read a ``:track:`` value as an address.
 
+        The name is never taken from the page, so a page can be renamed, moved
+        or given a second block without changing which track a block names.
+
         Args:
-            page: The page's name, whose last part is the track's name when the
-                value gives only a level and a category.
             value: The option's value.
 
         Returns:
-            ``level/category/name``, or ``None`` when the value is not two or
-            three lower-case names separated by ``/``.
+            ``level/category/name``, or ``None`` when the value is not three
+            lower-case names separated by ``/``.
         """
         parts = value.strip().split("/")
-        if len(parts) == 2:
-            parts.append(PurePosixPath(page).name)
         if len(parts) != 3 or not all(self.SLUG.fullmatch(part) for part in parts):
             return None
         return "/".join(parts)
