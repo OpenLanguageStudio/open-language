@@ -1,6 +1,6 @@
 [project]
 name = "open-language"
-version = "0.2.0"
+version = "0.1.0"
 description = "Authoring tools for Open Language coursebooks: template checks, album audits and the Sphinx build."
 readme = "README.md"
 license = "MIT"
