@@ -114,11 +114,27 @@ def page_name(path: Path) -> str:
     return "/".join(parts[parts.index("docs") + 1 :])
 
 
+def read_blocks(rep: Report, path: Path, text: str) -> list[Block] | None:
+    """The page's blocks, or None, reported, when a block cannot be read."""
+    try:
+        return BlockReader().find(page_name(path), text)
+    except BlockFormatError as exc:
+        rep.error(f"audio-examples: {exc}")
+        return None
+
+
+def check_refusals(rep: Report, block: Block):
+    """Each refusal the block earns on its own, with its code."""
+    for code in block.refusals:
+        rep.error(
+            f"audio-examples (line {block.line}): {code}: {Refusal.DETAILS[code]}"
+        )
+
+
 def check_audio_block(rep: Report, block: Block, ctype: str | None):
     """A block's refusals, and the limits a block that writes its track must meet."""
     where = f"audio-examples (line {block.line})"
-    for code in block.refusals:
-        rep.error(f"{where}: {code}: {Refusal.DETAILS[code]}")
+    check_refusals(rep, block)
     if not block.writes:
         return
     if not block.title:
@@ -531,6 +547,8 @@ def validate_article(path: Path, ctype: str, workspace: Path | None) -> Report:
 
     if len(body.strip()) < STUB_BODY_BYTES:
         rep.info("STUB: not yet authored (skipping template checks)")
+        for block in read_blocks(rep, path, text) or []:
+            check_refusals(rep, block)
         # even stubs must not leak notes into the built HTML
         if "<!--" in body:
             rep.error(
@@ -635,11 +653,8 @@ def validate_article(path: Path, ctype: str, workspace: Path | None) -> Report:
         rep.error("the 'Hear it in practice' section must come BEFORE Summary")
 
     # audio-examples blocks
-    try:
-        blocks = BlockReader().find(page_name(path), text)
-    except BlockFormatError as exc:
-        rep.error(f"audio-examples: {exc}")
-    else:
+    blocks = read_blocks(rep, path, text)
+    if blocks is not None:
         if len(blocks) < spec.get("min_audio_examples", 0):
             rep.error(
                 f"needs >= {spec['min_audio_examples']} audio-examples block(s), "

@@ -4,8 +4,10 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import pytest
 from typer.testing import CliRunner
 
+from ol.blocks import Refusal, load_samples
 from ol.cli import app
 
 runner = CliRunner()
@@ -126,3 +128,17 @@ def test_a_block_that_cannot_be_read_fails_the_run_and_nothing_else(tmp_path):
 
     assert result.exit_code == 1, result.output
     assert "docs/a1/grammar/dativ.md" in result.output
+
+
+@pytest.mark.parametrize("sample", load_samples(), ids=lambda s: s.name)
+def test_validate_gives_each_sample_its_outcome(tmp_path, sample):
+    (tmp_path / "open-language.yml").write_text("language: German\nlanguage_code: de\n")
+    for page, text in sample.pages.items():
+        path = tmp_path / "docs" / f"{page}.md"
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(text, encoding="utf-8")
+
+    result = runner.invoke(app, ["validate", "--workspace", str(tmp_path)])
+
+    found = {code for code in Refusal.CODES if code in result.output}
+    assert found == (set() if sample.expect == "accepted" else {sample.expect})
