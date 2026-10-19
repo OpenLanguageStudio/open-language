@@ -79,7 +79,7 @@ Before reading this article, make sure you are comfortable with:
 ## Hear it in practice
 
 :::{audio-examples}
-:album: {{level_lc}}/concepts/{{album_name}}
+:track: {{level_lc}}/concepts
 :title: {{NATIVE_TITLE}}
 :title-en: {{ENGLISH_TITLE}}
 
@@ -87,8 +87,8 @@ Before reading this article, make sure you are comfortable with:
 : {{English translation 1}}
 :::
 <!-- REQUIRED, in this position: before Summary, with the ## Hear it in practice heading so
-     it shows in the sidebar. The block IS the track (ADR-0006, see
-     templates/audio-examples-block.md); register the track name in album.yml. -->
+     it shows in the sidebar. The block writes the track this page names (see
+     templates/audio-examples-block.md). -->
 
 ## Summary
 

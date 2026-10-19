@@ -10,9 +10,9 @@ Each language lives in its own workspace repository, which installs this package
 
 ## What it provides
 
-- **`ol check`** runs every content check in one pass: template conformance, the album audit (in workspaces that keep an `albums/` directory), and a strict docs build with warnings as errors. This is the command CI runs.
-- **`ol validate`** checks articles and category indexes against the templates: required sections in order, frontmatter, titles, banned characters, audio-examples block grammar, example and marking limits, Prerequisites and Related articles links, vocabulary pack size, file names, and stock machine-writing vocabulary. The limits and the word list live in `ol/authoring/specs.yml`.
-- **`ol audit`** cross-checks every `album.yml` track list against the audio-examples blocks in the docs, in both directions.
+- **`ol check`** runs every content check in one pass: template conformance and a strict docs build with warnings as errors. This is the command CI runs.
+- **`ol validate`** checks articles and category indexes against the templates: required sections in order, frontmatter, titles, banned characters, `audio-examples` blocks with a code for each refusal, example and marking limits, Prerequisites and Related articles links, vocabulary pack size, file names, and stock machine-writing vocabulary. The limits and the word list live in `ol/authoring/specs.yml`.
+- **`ol.blocks`** reads `audio-examples` blocks and says why a block is refused. The checks, the Sphinx extension and the Open Language app all read blocks through it. See [The audio-examples block](#the-audio-examples-block).
 - **`ol/authoring/review-rubric.yml`** is the checklist for the part a script cannot judge: level, correctness, teaching value and plain language. Each item is answered pass, concern or fail.
 - **[Authoring rules](docs/reference/authoring-rules.md)** holds the rules neither the checks nor the rubric cover. A language repository's `AGENTS.md` links it instead of restating it.
 - **`ol templates`** lists the article templates, or prints one to start a new article from.
@@ -46,7 +46,6 @@ uv add "open-language @ git+https://github.com/OpenLanguageStudio/open-language@
 german/
 ├── open-language.yml      language code, name, title, description
 ├── docs/                  conf.py, index.md, then docs/<level>/<category>/...
-├── albums/                albums/<level>/<category>/<album>/album.yml
 └── .ol-validate-baseline  optional list of known failures
 ```
 
@@ -64,6 +63,80 @@ extensions = [
     "ol.docs.branding",
 ]
 ```
+
+## The audio-examples block
+
+A block names a track by its address and either writes it, by giving its examples, or shows a track another block writes:
+
+```markdown
+:::{audio-examples}
+:track: a2/grammar/nebensatz-mit-weil
+:title: Nebensatz mit weil
+:title-en: Subordinate clauses with weil
+:tags: nebensatz, konjunktionen
+
+Ich bleibe zu Hause, weil ich krank bin.
+: I am staying at home because I am ill.
+:::
+```
+
+| Option | Meaning |
+|---|---|
+| `:track:` | The track's address, `level/category/name`, in lower case. With only `level/category`, the name is the page's own name. An album is never part of it. |
+| `:title:` | The track's title in the language taught |
+| `:title-en:` | The title in English |
+| `:tags:` | Words that say what the track is about, separated by commas |
+| `:multiline:` | Each example may run over several lines, as in a model text |
+| `:duplicate:` | The block shows a track another block writes and writes nothing. It carries only `:track:` and, if wanted, `:tags:`. |
+
+The body holds the examples: a sentence, then its translation on the next line after `: `. A sentence and its translation are plain text, with no role markup, backticks or braces.
+
+A block is refused with one of these codes:
+
+| Code | The block |
+|---|---|
+| `unknown_option` | has an option it does not take, such as the retired `:album:`, `:name:`, `:voice:`, `:spotify:` or `:youtube-music:` |
+| `bad_address` | has no `:track:`, or one that is not two or three lower-case names separated by `/` |
+| `missing_examples` | gives no examples and has no `:duplicate:` |
+| `duplicate_writes` | has `:duplicate:` and gives examples, a title or an English title |
+| `sentence_twice` | gives the same sentence twice, compared after Unicode normalisation, with spacing tidied and the emphasis marks `*` and `_` removed. Case and punctuation count. |
+| `written_twice` | writes a track another block writes too. Each of them is refused. |
+| `orphan_duplicate` | has `:duplicate:` and names a track no block writes |
+
+The last two need every page of a build, so `ol validate` reads the whole `docs/` tree for them, whichever files it is checking. The Sphinx extension `ol.docs.audio_examples` reports every code as a build warning, and shows a duplicate with the examples of the block that writes its track.
+
+### Reading blocks in code
+
+```python
+from ol.blocks import BlockCollection, BlockReader
+
+reader = BlockReader()
+block = reader.read(
+    "a2/grammar/nebensatz-mit-weil",
+    {"track": "a2/grammar", "title": "Nebensatz mit weil"},
+    ["Ich bleibe zu Hause, weil ich krank bin.", ": I am staying at home because I am ill."],
+    line=12,
+)
+block.address     # "a2/grammar/nebensatz-mit-weil"
+block.examples    # (Example(sentence="Ich bleibe zu Hause, ...", translation="I am ..."),)
+block.refusals    # ()
+
+for refusal in BlockCollection.from_docs(Path("docs")).refusals():
+    print(refusal.block.page, refusal.block.line, refusal.code, refusal.detail)
+```
+
+| Name | What it is |
+|---|---|
+| `BlockReader.read(page, options, body, line)` | Reads one block from its options, by name, and the lines of its body. A flag's value is ignored. |
+| `BlockReader.find(page, text)` | Reads every block on a page of Markdown. A block quoted in a code fence is not a block. |
+| `BlockReader.sentence_key(text)` | The form two sentences are compared in for `sentence_twice` |
+| `Block` | One block: `page`, `line`, `address`, `level`, `category`, `name`, `title`, `title_en`, `tags`, `examples`, `multiline`, `duplicate`, `writes` and `refusals`, the codes it earns on its own |
+| `Example` | One example: `sentence` and `translation` |
+| `BlockFormatError` | Raised when a body cannot be read as examples, such as a sentence with no translation or a line with markup |
+| `BlockCollection(blocks)` | Every block of a build. `from_pages(pages)` and `from_docs(root)` read them from Markdown. |
+| `BlockCollection.refusals()` | Every `Refusal` of the build: each block's own, then the ones that need more than one page |
+| `Refusal` | A refused `block` and its `code`, with an author-facing `detail`. `Refusal.CODES` lists every code and `Refusal.CROSS_PAGE` the ones that need every page. |
+| `load_samples()` | The sample blocks in `ol/authoring/samples/`, each a `Sample` with its `pages` and the outcome it should get in `expect`: `accepted` or a refusal code. `Sample.blocks()` reads its pages. |
 
 ## Adopting the checks on existing content
 

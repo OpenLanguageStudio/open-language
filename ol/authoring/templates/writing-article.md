@@ -64,7 +64,7 @@ translation in italics or a collapsible block.}}
 ---
 
 :::{audio-examples}
-:album: {{level_lc}}/writing/{{album_name}}
+:track: {{level_lc}}/writing
 :title: {{NATIVE_TITLE}}
 :title-en: {{ENGLISH_TITLE}}
 :multiline:
@@ -74,9 +74,9 @@ translation in italics or a collapsible block.}}
 : {{Translation line 1}}
 : {{Translation line 2}}
 :::
-<!-- REQUIRED once a writing album exists for this level (the model text read
-     aloud). The block IS the track (ADR-0006); :multiline: keeps the text's
-     line breaks on the page and in the audio. Register the name in album.yml. -->
+<!-- REQUIRED: the model text read aloud. The block writes the track this page
+     names (see templates/audio-examples-block.md); :multiline: keeps the
+     text's line breaks on the page and in the audio. -->
 
 ---
 

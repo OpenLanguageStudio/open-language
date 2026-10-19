@@ -1,13 +1,13 @@
-<!-- TEMPLATE: the audio-examples block: one block = one track (ADR-0006).
-Lives in the article under "## Hear it in practice", AFTER the learning
-sections, BEFORE Summary. The block IS the track: title, voice, streaming
-links and examples all live here; album.yml lists only the track name in
-play order. Delete these comment lines: HTML comments are banned in docs. -->
+<!-- TEMPLATE: the audio-examples block. A block with examples writes its
+track; the track is named by its address, never by an album. The block lives
+in the article under "## Hear it in practice", AFTER the learning sections,
+BEFORE Summary. Delete these comment lines: HTML comments are banned in docs. -->
 
 :::{audio-examples}
-:album: {{level}}/{{category}}/{{album-name}}
+:track: {{level}}/{{category}}
 :title: {{NATIVE_TITLE: spoken aloud as the track intro}}
 :title-en: {{ENGLISH_TITLE}}
+:tags: {{tag}}, {{tag}}
 
 {{Native sentence 1}}
 : {{English translation 1}}
@@ -16,18 +16,27 @@ play order. Delete these comment lines: HTML comments are banned in docs. -->
 : {{English translation 2}}
 :::
 
-<!-- Rules:
-- ORDERED. Best/most-representative sentences FIRST: the build cuts from the
-  end when the ~70 s budget is reached (hard floor 45 s), then trims this block
-  to match. Over-author ~12-18 short, natural, at-level sentences.
-- Plain text ONLY: no roles, backticks or braces: the native line goes to
-  the text-to-speech engine verbatim. Coherent ordering improves prosody.
-- :name: {{track-name}}  : REQUIRED if the article has more than one block
-  (defaults to the article file stem). Never churn a name once audio exists.
-- :voice: {{name}}       : only to override the album default.
-- :multiline:            : writing model texts only: examples become
-  blank-line-separated groups (native lines, then ':'-prefixed translation
-  lines); line breaks are preserved on the page and in the audio.
-- :spotify: / :youtube-music:: DO NOT AUTHOR; filled in after release.
-- Register {{track-name}} in albums/{{level}}/{{category}}/{{album-name}}/album.yml
-  tracks: (play order), then run validate_doc.py and `ol audit`. -->
+<!-- Options. A block takes these six and no others:
+- :track: {{level}}/{{category}}/{{name}} : the track's address, in lower
+  case. With only {{level}}/{{category}}, the name is the page's file name.
+  Never change an address once the track has audio.
+- :title: / :title-en: : the title in the language taught (spoken) and in
+  English. A title published in the stores keeps its dash: leave :title-en:
+  out and the app keeps the title it holds.
+- :tags: : words that say what the track is about, separated by commas.
+- :multiline: : writing model texts only: examples become blank-line-separated
+  groups (native lines, then ':'-prefixed translation lines); line breaks are
+  kept on the page and in the audio.
+- :duplicate: : shows a track another block writes, on this page too. It
+  carries :track: and, if wanted, :tags:, and nothing else: no examples, no
+  title, no English title.
+
+Rules:
+- ORDERED. Best and most representative sentences FIRST: the build cuts from
+  the end when the ~70 s budget is reached (hard floor 45 s). Over-author
+  ~12-18 short, natural, at-level sentences.
+- Plain text ONLY: no roles, backticks or braces. The native line goes to the
+  text-to-speech engine verbatim. Coherent ordering improves prosody.
+- Each sentence appears once in a block, whatever its spacing or emphasis.
+- One block writes a track. Any other page that shows it uses :duplicate:.
+- Check the page with `ol validate`. -->
