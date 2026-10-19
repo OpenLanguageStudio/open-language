@@ -10,15 +10,13 @@ Usage:
 - index.md files get index checks (toctree present, entries resolve, no orphan
   articles, no CEFR level in the title, no References section); other .md files
   get article checks per specs.yml.
-- Every :::{audio-examples} block is checked in its ADR-0006 content form:
-  required :album: backlink and :title:, example-pair grammar (single-line or
-  :multiline:), no banned characters (text is fed to TTS verbatim), example
-  count and model-text length within the limits in specs.yml, and no dash in
-  an unpublished :title-en:. When the workspace keeps an albums/ directory,
-  album dir + album.yml must exist (and store no level/category/language) and
-  the track name must be listed in the album.yml tracks: list; a workspace
-  without albums/ skips that wiring. Legacy :track: pointer blocks are ERRORs.
-  Missing streaming links are reported as INFO (pending release).
+- Every :::{audio-examples} block is read by ol.blocks and reported with each
+  refusal code it earns (an option the block does not take, a bad :track:
+  address, missing examples, a duplicate that writes, a sentence given twice).
+  A block that writes its track also needs a :title:, an example count or
+  model-text length within the limits in specs.yml, and no dash in its
+  :title-en:. Refusals that need every page (a track written twice, a
+  duplicate of a track nobody writes) are reported by `ol validate`.
 - Prose is checked for stock machine-writing vocabulary (specs.yml
   ai_vocabulary). Example blocks, tables and code are not prose.
 - Article structure: no CEFR level or category prefix in the title, no
@@ -41,6 +39,8 @@ import sys
 from pathlib import Path
 
 import yaml
+
+from ol.blocks import Block, BlockFormatError, BlockReader, Refusal
 
 SPECS_PATH = Path(__file__).resolve().parent / "specs.yml"
 TEMPLATES_DIR = Path(__file__).resolve().parent / "templates"
@@ -106,200 +106,54 @@ def native_code(workspace: Path | None) -> str:
     return "de"
 
 
-AUDIO_BLOCK_OPTIONS = {
-    "album",
-    "name",
-    "title",
-    "title-en",
-    "voice",
-    "multiline",
-    "spotify",
-    "youtube-music",
-    "track",
-}
-BANNED_EXAMPLE_CHARS = ("`", "{", "}")
+def page_name(path: Path) -> str:
+    """The page's name in the build: its path below docs/ without .md."""
+    parts = path.resolve().with_suffix("").parts
+    if "docs" not in parts:
+        return path.stem
+    return "/".join(parts[parts.index("docs") + 1 :])
 
 
-def find_audio_examples(body: str):
-    """Yield {'options': dict, 'body': [lines], 'line': n} per audio-examples block.
-
-    ADR-0006 content form: the block holds the track (options + example pairs).
-    Canonical fences only (three colons, unindented), and the validator polices
-    the canonical form the engine's parser accepts more leniently.
-    """
-    lines = body.splitlines()
-    i = 0
-    while i < len(lines):
-        if lines[i].strip() != ":::{audio-examples}":
-            i += 1
-            continue
-        start = i
-        i += 1
-        options: dict[str, str] = {}
-        while i < len(lines):
-            m = re.match(r"^:([\w-]+):\s*(.*)$", lines[i].strip())
-            if not m or m.group(1) not in AUDIO_BLOCK_OPTIONS:
-                break
-            options[m.group(1)] = m.group(2).strip().strip("<>")
-            i += 1
-        block_body: list[str] = []
-        while i < len(lines) and lines[i].strip() != ":::":
-            block_body.append(lines[i])
-            i += 1
-        yield {"options": options, "body": block_body, "line": start + 1}
-        i += 1
-
-
-def _example_pairs(rep: Report, where: str, body: list[str], multiline: bool) -> int:
-    """Grammar-check the example body; return the number of pairs."""
-    for raw in body:
-        line = raw.strip()
-        if any(c in line for c in BANNED_EXAMPLE_CHARS):
-            rep.error(
-                f"{where}: example line contains banned char (` {{ }}): "
-                f"plain text only, it is fed to TTS verbatim: {line[:50]!r}"
-            )
-            return 0
-    if multiline:
-        groups: list[list[str]] = [[]]
-        for raw in body:
-            if raw.strip():
-                groups[-1].append(raw.strip())
-            elif groups[-1]:
-                groups.append([])
-        groups = [g for g in groups if g]
-        for g in groups:
-            natives = [ln for ln in g if not ln.startswith(":")]
-            translations = [ln for ln in g if ln.startswith(":")]
-            if not natives or not translations:
-                rep.error(
-                    f"{where}: multiline example needs native lines then "
-                    "':'-prefixed translation lines"
-                )
-        return len(groups)
-    pairs = 0
-    pending = None
-    for raw in body:
-        line = raw.strip()
-        if not line:
-            if pending:
-                rep.error(
-                    f"{where}: native line without ': translation': {pending[:50]!r}"
-                )
-                pending = None
-            continue
-        if line.startswith(":"):
-            if pending is None:
-                rep.error(f"{where}: ': translation' line without a native line above")
-            else:
-                pairs += 1
-                pending = None
-        else:
-            if pending is not None:
-                rep.error(
-                    f"{where}: two consecutive native lines: missing translation "
-                    f"after {pending[:50]!r}"
-                )
-            pending = line
-    if pending:
-        rep.error(f"{where}: native line without ': translation': {pending[:50]!r}")
-    return pairs
-
-
-def check_album_manifest(
-    rep: Report, where: str, workspace: Path, album: str, name: str
-):
-    """Album directory wiring, for workspaces that keep albums as files."""
-    album_dir = workspace / "albums" / album
-    manifest = album_dir / "album.yml"
-    if not album_dir.is_dir():
-        rep.error(f"{where}: album dir missing: albums/{album}")
+def check_audio_block(rep: Report, block: Block, ctype: str | None):
+    """A block's refusals, and the limits a block that writes its track must meet."""
+    where = f"audio-examples (line {block.line})"
+    for code in block.refusals:
+        rep.error(f"{where}: {code}: {Refusal.DETAILS[code]}")
+    if not block.writes:
         return
-    if not manifest.exists():
-        rep.error(f"{where}: no album.yml in albums/{album}")
-        return
-    meta = yaml.safe_load(manifest.read_text(encoding="utf-8")) or {}
-    for key in ("title", "voice"):
-        if key not in meta:
-            rep.error(f"albums/{album}/album.yml missing required key: {key}")
-    for key in ("level", "category", "language"):
-        if key in meta:
-            rep.error(
-                f"albums/{album}/album.yml must not store '{key}' "
-                "(derived from path / open-language.yml)"
-            )
-    if name not in (meta.get("tracks") or []):
-        rep.error(
-            f"{where}: track name '{name}' not listed in "
-            f"albums/{album}/album.yml tracks:"
-        )
-
-
-def check_audio_wiring(
-    rep: Report, block: dict, path: Path, workspace: Path | None, ctype: str | None
-):
-    opts = block["options"]
-    where = f"audio-examples (line {block['line']})"
-    if "track" in opts:
-        rep.error(
-            f"{where}: legacy ADR-0002 :track: pointer: the block itself must "
-            "hold the track content (ADR-0006); run the authoring skill's "
-            "block format"
-        )
-        return
-    album = opts.get("album")
-    if not album:
-        rep.error(f"{where}: missing required :album: backlink")
-        return
-    if not opts.get("title"):
+    if not block.title:
         rep.error(
             f"{where}: missing required :title: (native title, spoken in the intro)"
         )
-    if not opts.get("title-en"):
+    if not block.title_en:
         rep.warn(f"{where}: no :title-en: (store title falls back to the native title)")
-    name = opts.get("name") or path.stem
-    published = bool(opts.get("spotify") or opts.get("youtube-music"))
     limits = SPECS["common"]
 
-    # Published store titles are frozen, dashes included. New ones follow the
-    # "Accusative Case (German A1)" style, which has no dash.
-    title_en = opts.get("title-en", "")
-    if not published and re.search(r"[\u2013\u2014]| - ", title_en):
+    # Store titles follow the "Accusative Case (German A1)" style, which has no
+    # dash. A published title keeps its dash in the app when the block gives no
+    # :title-en: at all.
+    if re.search(r"[\u2013\u2014]| - ", block.title_en or ""):
         rep.error(
-            f"{where}: :title-en: contains a dash ({title_en!r}): store titles "
-            "use no dashes"
+            f"{where}: :title-en: contains a dash ({block.title_en!r}): store "
+            "titles use no dashes"
         )
 
-    multiline = "multiline" in opts
-    n_pairs = _example_pairs(rep, where, block["body"], multiline)
-    if multiline:
+    if block.multiline:
         if ctype == "writing":
-            words = sum(
-                len(ln.split())
-                for ln in block["body"]
-                if ln.strip() and not ln.strip().startswith(":")
-            )
+            words = sum(len(example.sentence.split()) for example in block.examples)
             if words < limits["min_model_text_words"]:
                 rep.error(
                     f"{where}: model text is {words} words (minimum "
                     f"{limits['min_model_text_words']}): shorter texts make a "
                     "track too short for the stores"
                 )
-    elif n_pairs:
-        lo, hi = limits["min_audio_examples"], limits["max_audio_examples"]
-        if not lo <= n_pairs <= hi:
-            rep.error(
-                f"{where}: {n_pairs} examples (a track carries {lo} to {hi}; "
-                "aim for about 20)"
-            )
-
-    if not workspace:
-        rep.warn("cannot wiring-check audio-examples (workspace unknown)")
         return
-    if (workspace / "albums").is_dir():
-        check_album_manifest(rep, where, workspace, album, name)
-    if not published:
-        rep.info(f"{where}: no streaming links yet (pending release)")
+    lo, hi = limits["min_audio_examples"], limits["max_audio_examples"]
+    if not lo <= len(block.examples) <= hi:
+        rep.error(
+            f"{where}: {len(block.examples)} examples (a track carries {lo} to "
+            f"{hi}; aim for about 20)"
+        )
 
 
 def check_doc_links(rep: Report, body: str, workspace: Path | None):
@@ -781,14 +635,18 @@ def validate_article(path: Path, ctype: str, workspace: Path | None) -> Report:
         rep.error("the 'Hear it in practice' section must come BEFORE Summary")
 
     # audio-examples blocks
-    blocks = list(find_audio_examples(body))
-    if len(blocks) < spec.get("min_audio_examples", 0):
-        rep.error(
-            f"needs >= {spec['min_audio_examples']} audio-examples block(s), found {len(blocks)} "
-            "(every article carries its track)"
-        )
-    for block in blocks:
-        check_audio_wiring(rep, block, path, workspace, ctype)
+    try:
+        blocks = BlockReader().find(page_name(path), text)
+    except BlockFormatError as exc:
+        rep.error(f"audio-examples: {exc}")
+    else:
+        if len(blocks) < spec.get("min_audio_examples", 0):
+            rep.error(
+                f"needs >= {spec['min_audio_examples']} audio-examples block(s), "
+                f"found {len(blocks)} (every article carries its track)"
+            )
+        for block in blocks:
+            check_audio_block(rep, block, ctype)
 
     if common.get("check_doc_links"):
         check_doc_links(rep, body, workspace)
