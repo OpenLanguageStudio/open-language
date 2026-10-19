@@ -477,22 +477,26 @@ class Sample:
         """The blocks of the sample's pages."""
         return BlockCollection.from_pages(self.pages, reader).blocks
 
+    @classmethod
+    def load_all(cls) -> list[Sample]:
+        """The samples shipped in ``ol/authoring/samples/``, by name."""
+        samples = []
+        folder = files("ol.authoring").joinpath("samples")
+        for entry in sorted(folder.iterdir(), key=lambda entry: entry.name):
+            if not entry.name.endswith(".yml"):
+                continue
+            data = yaml.safe_load(entry.read_text(encoding="utf-8"))
+            samples.append(
+                cls(
+                    name=entry.name.removesuffix(".yml"),
+                    expect=data["expect"],
+                    description=data["description"],
+                    pages=data["pages"],
+                )
+            )
+        return samples
+
 
 def load_samples() -> list[Sample]:
     """The sample blocks shipped in ``ol/authoring/samples/``, by name."""
-    samples = []
-    for entry in sorted(
-        files("ol.authoring").joinpath("samples").iterdir(), key=lambda e: e.name
-    ):
-        if not entry.name.endswith(".yml"):
-            continue
-        data = yaml.safe_load(entry.read_text(encoding="utf-8"))
-        samples.append(
-            Sample(
-                name=entry.name.removesuffix(".yml"),
-                expect=data["expect"],
-                description=data["description"],
-                pages=data["pages"],
-            )
-        )
-    return samples
+    return Sample.load_all()

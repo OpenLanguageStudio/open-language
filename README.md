@@ -108,18 +108,23 @@ The last two need every page of a build, so `ol validate` reads the whole `docs/
 ### Reading blocks in code
 
 ```python
+from pathlib import Path
+
 from ol.blocks import BlockCollection, BlockReader
 
 reader = BlockReader()
 block = reader.read(
     "a2/grammar/nebensatz-mit-weil",
     {"track": "a2/grammar", "title": "Nebensatz mit weil"},
-    ["Ich bleibe zu Hause, weil ich krank bin.", ": I am staying at home because I am ill."],
+    [
+        "Ich bleibe zu Hause, weil ich krank bin.",
+        ": I am staying at home because I am ill.",
+    ],
     line=12,
 )
-block.address     # "a2/grammar/nebensatz-mit-weil"
-block.examples    # (Example(sentence="Ich bleibe zu Hause, ...", translation="I am ..."),)
-block.refusals    # ()
+block.address  # "a2/grammar/nebensatz-mit-weil"
+block.examples  # (Example(sentence="Ich bleibe zu Hause, ...", translation="I am ..."),)
+block.refusals  # ()
 
 for refusal in BlockCollection.from_docs(Path("docs")).refusals():
     print(refusal.block.page, refusal.block.line, refusal.code, refusal.detail)
