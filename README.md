@@ -103,7 +103,7 @@ A block is refused with one of these codes:
 | `written_twice` | writes a track another block writes too. Each of them is refused. |
 | `orphan_duplicate` | has `:duplicate:` and names a track no block writes |
 
-The last two need every page of a build, so `ol validate` reads the whole `docs/` tree for them, whichever files it is checking. The Sphinx extension `ol.docs.audio_examples` reports every code as a build warning, and shows a duplicate with the examples of the block that writes its track.
+The last two need every page of a build, so `ol validate` reads the whole `docs/` tree for them, whichever files it is checking. The Sphinx extension `ol.docs.audio_examples` reports each of the other codes as a build warning, and shows a duplicate with the examples of the block that writes its track. In a build, an option the block does not take is reported by MyST as an unknown option.
 
 ### Reading blocks in code
 
