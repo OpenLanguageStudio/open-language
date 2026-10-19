@@ -22,11 +22,13 @@ Each language lives in its own workspace repository, which installs this package
 
 ## Install
 
-The package is installed from this repository and is not published to a package index. Pin a tag, or a commit until the first tag exists:
+The package is installed from this repository and is not published to a package index. Pin a release tag:
 
 ```bash
-uv add "open-language @ git+https://github.com/OpenLanguageStudio/open-language@<tag-or-commit>"
+uv add "open-language @ git+https://github.com/OpenLanguageStudio/open-language@v0.1.0"
 ```
+
+Releases and their notes are listed on the repository's Releases page.
 
 ## Scope & philosophy
 
