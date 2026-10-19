@@ -163,6 +163,51 @@ BROKEN_ARTICLES = {
         ),
         "manual navigation link",
     ),
+    "note for the author": (
+        lambda s: s.replace("## Summary", "TODO: more examples.\n\n## Summary", 1),
+        "TODO or FIXME note",
+    ),
+    "level in the title": (
+        lambda s: s.replace(H1, "# A1 Definite Articles\n", 1),
+        "contains the CEFR level",
+    ),
+    "category in the title": (
+        lambda s: s.replace(H1, "# Grammar: Definite Articles\n", 1),
+        "category prefix",
+    ),
+    "further reading in an article": (
+        lambda s: s.replace(
+            "## Related articles", "## Further reading\n\n- x\n\n## Related articles", 1
+        ),
+        "'Further reading' section",
+    ),
+    "see also heading": (
+        lambda s: s.replace("## Related articles", "## See also", 1),
+        "'See also' section",
+    ),
+    "hand-numbered heading": (
+        lambda s: s.replace("## The forms", "## 1. The forms", 1),
+        "numbered heading",
+    ),
+    "too many prerequisites": (
+        lambda s: s.replace(
+            H1,
+            H1
+            + "\n:::{admonition} Prerequisites\n:class: note\n"
+            + "".join(f"- [Page](/{target})\n" for target in LINK_TARGETS[1:])
+            + ":::\n",
+            1,
+        ),
+        "4 prerequisites",
+    ),
+    "collapsed audio section": (
+        lambda s: s.replace(
+            "## Hear it in practice\n",
+            "## Hear it in practice\n\n:::{dropdown} Listen\nx\n:::\n",
+            1,
+        ),
+        "collapsed",
+    ),
     "markup in audio example": (_break_first_audio_line, "banned char"),
     "no album backlink": (
         lambda s: s.replace(":album: a1/grammar/part-1\n", "", 1),
@@ -216,6 +261,66 @@ def test_workspace_without_albums_skips_album_wiring(tmp_path, source):
     article.write_text(source, encoding="utf-8")
     report = validate_file(article, tmp_path)
     assert [msg for lvl, msg in report.items if lvl == "ERROR"] == []
+
+
+def write_articles_index(tmp_path: Path, *entries: str) -> None:
+    index = tmp_path / "docs/a1/grammar/articles/index.md"
+    index.parent.mkdir(parents=True, exist_ok=True)
+    toctree = "\n".join(entries)
+    index.write_text(
+        f"# Articles\n\n```{{toctree}}\n{toctree}\n```\n", encoding="utf-8"
+    )
+
+
+def test_related_link_to_a_toctree_neighbour_warns(tmp_path, source):
+    write_articles_index(tmp_path, "bestimmter-artikel", "unbestimmter-artikel")
+    assert errors(tmp_path, source) == []
+    warnings = [
+        msg
+        for lvl, msg in validate_file(tmp_path / ARTICLE, tmp_path).items
+        if lvl == "WARN"
+    ]
+    assert any("unbestimmter-artikel" in msg for msg in warnings), warnings
+
+
+def test_related_link_past_a_toctree_neighbour_passes(tmp_path, source):
+    write_articles_index(
+        tmp_path, "bestimmter-artikel", "possessivartikel", "unbestimmter-artikel"
+    )
+    assert errors(tmp_path, source) == []
+
+
+def vocabulary_errors(
+    tmp_path: Path, words: int = 12, name: str = "at-the-beach-1"
+) -> list[str]:
+    article = tmp_path / f"docs/a1/vocabulary/{name}.md"
+    article.parent.mkdir(parents=True)
+    rows = "".join(f"| Wort {n} | word {n} |\n" for n in range(words))
+    article.write_text(
+        "# At the Beach 1\n\nA day at the sea, from the sand to the ice cream.\n\n"
+        f"## The words\n\n| German | English |\n|---|---|\n{rows}\n"
+        "## Summary\n\nSand, sea and sun.\n",
+        encoding="utf-8",
+    )
+    return [
+        msg for lvl, msg in validate_file(article, tmp_path).items if lvl == "ERROR"
+    ]
+
+
+@pytest.mark.parametrize("words", [5, 25])
+def test_vocabulary_pack_outside_its_size_is_red(tmp_path, words):
+    found = vocabulary_errors(tmp_path, words)
+    assert any(f"{words} words" in msg for msg in found), found
+
+
+def test_vocabulary_pack_within_its_size_passes(tmp_path):
+    found = vocabulary_errors(tmp_path, 12)
+    assert not any("words" in msg for msg in found), found
+
+
+def test_pack_without_a_running_number_is_red(tmp_path):
+    found = vocabulary_errors(tmp_path, name="at-the-beach")
+    assert any("running number" in msg for msg in found), found
 
 
 def test_short_model_text_is_red(tmp_path):

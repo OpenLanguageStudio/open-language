@@ -9,6 +9,12 @@
 #   - NO blockquote subtitle under the H1
 #   - NO :::{seealso} blocks (use Prerequisites admonition or Related articles)
 #   - doc links resolve; no unfilled {{PLACEHOLDER}}
+#   - NO TODO or FIXME notes (they leak into built HTML)
+#   - NO CEFR level and NO category prefix in article titles
+#   - NO hand-numbered headings, NO external-reading or "See also" section
+#     in an article, NO Related articles link to a toctree neighbour
+#   - Prerequisites lists at most `max_prerequisites` links
+#   - "Hear it in practice" is never collapsed in a dropdown
 #   - example block size, marking limits, audio example counts, model-text
 #     length and stock vocabulary, with the limits under `common` below
 #
@@ -18,10 +24,14 @@
 #   require_summary_admonitions / require_common_mistakes
 #   min_audio_examples: minimum count of :::{audio-examples} blocks
 #   ordered: toctree order in the category index is the learning sequence
+#   min_pack_words / max_pack_words: rows in the first table (the word list)
+#   numbered_filename: the file name ends in a running number (at-the-beach-1)
 
 common:
   description_max_chars: 160
   check_doc_links: true
+  # Prerequisites name true dependencies only.
+  max_prerequisites: 3
   # Inline example blocks. The target is 3 examples; 4 is the hard limit.
   max_examples_per_block: 4
   # Marking scheme: distinct roles a reader holds at once.
@@ -117,6 +127,8 @@ types:
     min_audio_examples: 1
     ordered: false
     english_filename: true
+    # One scenario per article, numbered per register family (email-formal-1).
+    numbered_filename: true
 
   topics:
     required_headings:
@@ -153,3 +165,8 @@ types:
     min_audio_examples: 1
     ordered: false
     english_filename: true
+    # 10 to 15 new words on one theme; a word-class pack runs to 20.
+    min_pack_words: 10
+    max_pack_words: 20
+    # Packs on a theme continue from one another (at-the-beach-1, -2).
+    numbered_filename: true

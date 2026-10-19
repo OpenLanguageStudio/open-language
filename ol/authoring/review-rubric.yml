@@ -72,6 +72,43 @@ items:
       with its correction?
     fail_when: The listed mistakes are invented, or a correction is itself wrong.
 
+  - id: category-fit
+    area: teaching
+    question: >-
+      Does the article do what its category is for? Grammar teaches a
+      structure, and pure vocabulary such as numbers or clock times is not
+      grammar. A vocabulary pack teaches words on one theme, with no grammar
+      and no functional phrases, and every word belongs at the pack's level. A
+      writing article teaches correspondence (an email, a letter, a postcard
+      or a message) in a stated register, never a form to fill in.
+    fail_when: The article teaches what belongs to another category.
+
+  - id: prerequisites-true
+    area: teaching
+    question: >-
+      Does the Prerequisites admonition list only articles this one cannot be
+      read without?
+    fail_when: A listed article is related but not needed to follow this one.
+
+  - id: related-reach
+    area: teaching
+    question: >-
+      Do the Related articles links lead somewhere a reader would not reach
+      by reading on, such as supporting grammar, a concept from another part
+      of the level, or a vocabulary pack?
+    fail_when: The links only repeat what the contents already lead to.
+
+  - id: track-placement
+    area: teaching
+    question: >-
+      Does the article have one "Hear it in practice" section at the end,
+      unless it teaches parallel forms that are worth hearing one at a time?
+      Where telling those forms apart is itself the skill, is there also a
+      mixed section that puts them together?
+    fail_when: >-
+      Sections are split without parallel forms to separate, or parallel forms
+      are only ever heard mixed together.
+
   - id: plain-english
     area: clear-language
     question: >-
@@ -99,6 +136,52 @@ items:
       Does the body text describe the language and its use, without talking to
       the reader about the course?
     fail_when: Body prose tells the reader what they will learn or already know.
+    note: >-
+      Direct "you" belongs in admonitions and in translations, where it is the
+      English of the target language's own "you". A generic "you" deeper in
+      the body that describes what speakers do is fine. Recast a sentence
+      around the language as its subject rather than into the passive.
+
+  - id: lead-content
+    area: clear-language
+    question: >-
+      Does the lead paragraph open on the content itself (the situation, the
+      pattern or the key word) in two to four sentences, and open differently
+      from the articles next to it?
+    fail_when: >-
+      The lead is boilerplate that would fit any article, or opens the same way
+      as its neighbours.
+
+  - id: no-hedging
+    area: clear-language
+    question: >-
+      Is the prose free of hedging that calls something simple or easy
+      ("simply", "just", "easy") and of cheerleading ("amazing", "powerful")?
+    fail_when: The prose reassures or enthuses where it should explain.
+    note: >-
+      "just" and "easy" are fine where they translate a target-language word.
+
+  - id: language-placement
+    area: clear-language
+    question: >-
+      Are the headings and the explanation in English, with target-language
+      words in the prose marked with the course's roles, or in italics where
+      no role fits, and used only to name a word or phrase?
+    fail_when: >-
+      A heading or a sentence of explanation is in the target language, or a
+      target-language word in the prose is left unmarked.
+
+  - id: layout-restraint
+    area: clear-language
+    question: >-
+      Are tables narrow and split by section, with English headers and no
+      full conjugation tables at A levels? Are tip and warning admonitions
+      kept for real traps, with anything that matters in the body text and
+      not in a note? Is the Summary a table when the content is tabular, and
+      prose otherwise?
+    fail_when: >-
+      A reader has to work through a wide table, a run of notes, or a summary
+      in a shape that does not fit its content.
 
   - id: cast-consistent
     area: consistency
