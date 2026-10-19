@@ -1,0 +1,19 @@
+expect: accepted
+description: A multiline block, whose examples run over several lines.
+pages:
+  a1/writing/postkarte: |
+    :::{audio-examples}
+    :track: a1/writing/postkarte
+    :title: Eine Postkarte
+    :multiline:
+
+    Liebe Anna,
+    viele Grüße aus Hamburg.
+    : Dear Anna,
+    : greetings from Hamburg.
+
+    Bis bald,
+    Max
+    : See you soon,
+    : Max
+    :::

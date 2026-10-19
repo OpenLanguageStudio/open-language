@@ -1,0 +1,10 @@
+expect: bad_address
+description: A block with no track address at all.
+pages:
+  a1/grammar/dativ: |
+    :::{audio-examples}
+    :title: Der Dativ
+
+    Ich fahre mit dem Bus.
+    : I go by bus.
+    :::

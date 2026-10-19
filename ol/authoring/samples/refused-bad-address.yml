@@ -1,0 +1,11 @@
+expect: bad_address
+description: A track address with a capital letter in it.
+pages:
+  a1/grammar/dativ: |
+    :::{audio-examples}
+    :track: a1/grammar/Dativ
+    :title: Der Dativ
+
+    Ich fahre mit dem Bus.
+    : I go by bus.
+    :::
