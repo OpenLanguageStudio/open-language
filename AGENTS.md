@@ -39,6 +39,21 @@ See `docs/agents/domain.md`.
 `Lint`, `Test` and `Build` run on every pull request into `main` and on pushes to `main`
 (`.github/workflows/ci.yml`). All three are required.
 
+## Releasing
+
+1. In a pull request, set the new version with `uv version <X.Y.Z>` (never edit
+   `pyproject.toml` alone, because `uv.lock` records it too) and move the entries
+   under `## [Unreleased]` in `CHANGELOG.md` into a new `## [X.Y.Z] - <date>`
+   section. Merge it.
+2. Tag the merge commit on `main` as `vX.Y.Z` and push the tag.
+3. `.github/workflows/release.yml` checks that the tag is on `main`, matches the
+   version and has a changelog section, runs the tests, builds the package and
+   publishes a GitHub release with the changelog section as its notes and the
+   sdist and wheel attached. Nothing is uploaded to a package index.
+
+A change that makes valid content fail is a breaking change and raises the minor
+version while the package is below 1.0.
+
 ## Rules for changes
 
 - A check ships with a test in `ol/tests/` that breaks the fixture article or a sample

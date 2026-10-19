@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+## [0.1.0] - 2026-10-19
+
+The first release.
+
 ### Changed: the audio-examples block takes the form the Open Language app reads
 
 This breaks existing language repositories. For each `audio-examples` block:
