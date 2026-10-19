@@ -1,0 +1,24 @@
+# Templates hold {{PLACEHOLDER}} values that are not valid YAML until filled in, and
+# the static assets ship as their sources supplied them.
+exclude: ^(ol/authoring/templates/|ol/docs/_static/)
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v6.0.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-toml
+  - repo: local
+    hooks:
+      # ruff runs from the locked dev environment, so the version matches CI.
+      - id: ruff
+        name: ruff check
+        entry: uv run ruff check --fix
+        language: system
+        types_or: [python, pyi]
+      - id: ruff-format
+        name: ruff format
+        entry: uv run ruff format
+        language: system
+        types_or: [python, pyi]

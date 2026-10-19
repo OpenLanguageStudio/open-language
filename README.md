@@ -1,5 +1,9 @@
 # Open Language
 
+[![CI](https://github.com/OpenLanguageStudio/open-language/actions/workflows/ci.yml/badge.svg)](https://github.com/OpenLanguageStudio/open-language/actions/workflows/ci.yml)
+[![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+
 Authoring tools for the Open Language coursebooks: the Sphinx extensions that render a language workspace into a coursebook, the article templates, and the checks that keep new content in line with them.
 
 Each language lives in its own workspace repository, which installs this package and runs `ol check` locally and in CI. The package itself holds nothing language-specific.
@@ -17,15 +21,23 @@ Each language lives in its own workspace repository, which installs this package
 
 ## Install
 
-```bash
-uv add open-language
-```
-
-Until the first release is on PyPI, install from the repository:
+The package is installed from this repository and is not published to a package index. Pin a tag, or a commit until the first tag exists:
 
 ```bash
-uv add "open-language @ git+https://github.com/OpenLanguageStudio/open-language"
+uv add "open-language @ git+https://github.com/OpenLanguageStudio/open-language@<tag-or-commit>"
 ```
+
+## Scope & philosophy
+
+**What it is.** The single definition of what an Open Language Coursebook page must be: the article templates, the checks that hold articles to them, the grammar of an `audio-examples` block, and the Sphinx extensions that build the pages. The Open Language app reads pages through the same code, so a page that passes `ol check` is a page the app can show.
+
+**What it deliberately is not.**
+
+- Not a language. It holds no content and no rule that only one language needs.
+- Not an audio tool. Recording and producing tracks happen elsewhere, and this package never depends on audio libraries.
+- Not a place for taste. A check measures something a script can measure. What needs a reader goes in the review rubric.
+
+**When two goals pull apart.** The checks follow what the app can read, because a page it cannot read never reaches a learner. A rule is written once, here, rather than restated in a language repository or a second implementation.
 
 ## A language workspace
 

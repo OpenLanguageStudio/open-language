@@ -47,6 +47,7 @@ include = ["/ol", "/README.md", "/LICENSE"]
 
 [dependency-groups]
 dev = [
+    "pre-commit>=4.7.0",
     "pytest>=9.1",
     "pytest-cov>=7.0",
     "ruff>=0.14",
