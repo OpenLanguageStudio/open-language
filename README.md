@@ -53,7 +53,7 @@ german/
 └── .ol-validate-baseline  optional list of known failures
 ```
 
-The pages sit at the top of the workspace, next to `conf.py`. A workspace that keeps them under `docs/` instead, with `docs/conf.py`, works the same way: when `docs/conf.py` exists, `docs/` is the folder `ol` builds and reads. Paths in `.ol-validate-baseline` are relative to the workspace either way. At the top of a workspace, `_build`, `.venv`, `.github`, `README.md` and `AGENTS.md` are never read as pages.
+The pages sit at the top of the workspace, next to `conf.py`, and the build goes to `_build/html`. Paths in `.ol-validate-baseline` are relative to the workspace. `_build`, `.venv`, `.github`, `README.md` and `AGENTS.md` at the top are never read as pages.
 
 `conf.py` loads the extensions and reads the workspace configuration:
 

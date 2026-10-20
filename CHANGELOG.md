@@ -2,11 +2,9 @@
 
 ## [Unreleased]
 
-### Added: a language repository may keep its pages at the top level
+### Changed: a language repository keeps its pages at the top level
 
-A language repository no longer needs a `docs/` folder. When `docs/conf.py` exists, the pages are read from `docs/` as before. Otherwise they are read from the top of the repository, where `conf.py` sits next to `open-language.yml`. Nothing changes for a repository that keeps its pages under `docs/`.
-
-In a repository without `docs/`:
+This breaks language repositories that keep their pages under `docs/`. `ol` now reads a repository's pages from its top level, where `conf.py` sits next to `open-language.yml`, and no longer looks in `docs/`.
 
 - `ol check` and `ol docs` build the top level into `_build/html`.
 - A page's level, category and name come from its path below the top level (`a1/grammar/dativ.md`), and site-root links (`/a1/grammar/dativ.md`) resolve from there.
@@ -15,7 +13,7 @@ In a repository without `docs/`:
 
 To move a repository, move everything under `docs/` to the top level, change `Path(__file__).parent.parent` to `Path(__file__).parent` in `conf.py`, add `_build`, `.venv`, `.github`, `README.md` and `AGENTS.md` to its `exclude_patterns`, and remove `docs/` from each line of `.ol-validate-baseline`.
 
-`Language.docs_root` follows the same rule. `BlockCollection.from_docs` takes `exclude`, names directly under the root that are not pages.
+`Language.docs_root` is the working directory unless `OPEN_LANGUAGE_DOCS` is set. `BlockCollection.from_docs` takes `exclude`, names directly under the root that are not pages. `ol validate` without `--workspace` takes the nearest folder above a file that holds `open-language.yml` as its workspace.
 
 ## [0.2.0] - 2026-10-19
 

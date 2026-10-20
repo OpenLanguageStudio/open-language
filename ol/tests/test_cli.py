@@ -26,48 +26,41 @@ Grammar articles.
 """
 
 
-def key(src: Path, page: str) -> str:
-    """A page's path relative to the workspace, as reports and baselines give it."""
-    return f"docs/{page}" if src.name == "docs" else page
-
-
-def _workspace(tmp_path: Path, src: Path) -> Path:
+def _workspace(tmp_path: Path) -> Path:
     (tmp_path / "open-language.yml").write_text("language: German\nlanguage_code: de\n")
-    grammar = src / "a1/grammar"
+    grammar = tmp_path / "a1/grammar"
     grammar.mkdir(parents=True)
     (grammar / "broken.md").write_text("# Broken\n\n" + "No frontmatter here. " * 20)
     return tmp_path
 
 
-def test_new_failure_fails_the_run(tmp_path, src):
-    ws = _workspace(tmp_path, src)
+def test_new_failure_fails_the_run(tmp_path):
+    ws = _workspace(tmp_path)
     result = runner.invoke(app, ["validate", "--workspace", str(ws)])
     assert result.exit_code == 1, result.output
-    assert key(src, "a1/grammar/broken.md") in result.output
+    assert "a1/grammar/broken.md" in result.output
 
 
-def test_baselined_failure_passes_the_run(tmp_path, src):
-    ws = _workspace(tmp_path, src)
+def test_baselined_failure_passes_the_run(tmp_path):
+    ws = _workspace(tmp_path)
     written = runner.invoke(
         app, ["validate", "--workspace", str(ws), "--write-baseline"]
     )
     assert written.exit_code == 0, written.output
-    assert (
-        key(src, "a1/grammar/broken.md") in (ws / ".ol-validate-baseline").read_text()
-    )
+    assert "a1/grammar/broken.md" in (ws / ".ol-validate-baseline").read_text()
 
     result = runner.invoke(app, ["validate", "--workspace", str(ws)])
     assert result.exit_code == 0, result.output
 
 
-def test_fixed_baseline_entry_is_reported(tmp_path, src):
-    ws = _workspace(tmp_path, src)
-    (ws / ".ol-validate-baseline").write_text(key(src, "a1/grammar/broken.md") + "\n")
+def test_fixed_baseline_entry_is_reported(tmp_path):
+    ws = _workspace(tmp_path)
+    (ws / ".ol-validate-baseline").write_text("a1/grammar/broken.md\n")
     # A short placeholder page is reported as a stub, not a failure.
-    (src / "a1/grammar/broken.md").write_text("# Broken\n")
+    (ws / "a1/grammar/broken.md").write_text("# Broken\n")
     result = runner.invoke(app, ["validate", "--workspace", str(ws)])
     assert result.exit_code == 0, result.output
-    assert "remove from baseline: " + key(src, "a1/grammar/broken.md") in result.output
+    assert "remove from baseline: a1/grammar/broken.md" in result.output
 
 
 def test_templates_lists_the_article_templates():
@@ -76,19 +69,17 @@ def test_templates_lists_the_article_templates():
     assert "grammar-article.md" in result.output
 
 
-def duplicate_page(src: Path, name: str) -> None:
-    page = src / f"a1/grammar/{name}.md"
+def duplicate_page(workspace: Path, name: str) -> None:
+    page = workspace / f"a1/grammar/{name}.md"
     page.write_text(
         "# Page\n\n:::{audio-examples}\n:track: a1/grammar/dativ\n:duplicate:\n:::\n"
     )
 
 
-def test_a_refusal_across_pages_fails_the_run(tmp_path, src):
-    workspace = _workspace(tmp_path, src)
-    (workspace / ".ol-validate-baseline").write_text(
-        key(src, "a1/grammar/broken.md") + "\n"
-    )
-    duplicate_page(src, "praepositionen")
+def test_a_refusal_across_pages_fails_the_run(tmp_path):
+    workspace = _workspace(tmp_path)
+    (workspace / ".ol-validate-baseline").write_text("a1/grammar/broken.md\n")
+    duplicate_page(workspace, "praepositionen")
 
     result = runner.invoke(app, ["validate", "--workspace", str(workspace), "-v"])
 
@@ -96,10 +87,10 @@ def test_a_refusal_across_pages_fails_the_run(tmp_path, src):
     assert "orphan_duplicate" in result.output
 
 
-def test_a_refusal_across_pages_is_found_when_checking_one_file(tmp_path, src):
-    workspace = _workspace(tmp_path, src)
-    duplicate_page(src, "praepositionen")
-    page = src / "a1/grammar/praepositionen.md"
+def test_a_refusal_across_pages_is_found_when_checking_one_file(tmp_path):
+    workspace = _workspace(tmp_path)
+    duplicate_page(workspace, "praepositionen")
+    page = workspace / "a1/grammar/praepositionen.md"
 
     result = runner.invoke(
         app, ["validate", str(page), "--workspace", str(workspace), "-v"]
@@ -108,16 +99,13 @@ def test_a_refusal_across_pages_is_found_when_checking_one_file(tmp_path, src):
     assert "orphan_duplicate" in result.output
 
 
-def test_a_track_written_on_another_page_is_found(tmp_path, src):
-    workspace = _workspace(tmp_path, src)
+def test_a_track_written_on_another_page_is_found(tmp_path):
+    workspace = _workspace(tmp_path)
     (workspace / ".ol-validate-baseline").write_text(
-        "".join(
-            key(src, f"a1/grammar/{name}.md") + "\n"
-            for name in ("broken", "praepositionen", "dativ")
-        )
+        "a1/grammar/broken.md\na1/grammar/praepositionen.md\na1/grammar/dativ.md\n"
     )
-    duplicate_page(src, "praepositionen")
-    (src / "a1/grammar/dativ.md").write_text(
+    duplicate_page(workspace, "praepositionen")
+    (workspace / "a1/grammar/dativ.md").write_text(
         "# Dativ\n\n:::{audio-examples}\n:track: a1/grammar/dativ\n:title: Dativ\n\n"
         "Ich fahre mit dem Bus.\n: I go by bus.\n:::\n"
     )
@@ -127,12 +115,10 @@ def test_a_track_written_on_another_page_is_found(tmp_path, src):
     assert "orphan_duplicate" not in result.output
 
 
-def test_a_block_that_cannot_be_read_fails_the_run_and_nothing_else(tmp_path, src):
-    workspace = _workspace(tmp_path, src)
-    (workspace / ".ol-validate-baseline").write_text(
-        key(src, "a1/grammar/broken.md") + "\n"
-    )
-    (src / "a1/grammar/dativ.md").write_text(
+def test_a_block_that_cannot_be_read_fails_the_run_and_nothing_else(tmp_path):
+    workspace = _workspace(tmp_path)
+    (workspace / ".ol-validate-baseline").write_text("a1/grammar/broken.md\n")
+    (workspace / "a1/grammar/dativ.md").write_text(
         "# Dativ\n\n:::{audio-examples}\n:track: a1/grammar/dativ\n\n: No sentence.\n:::\n"
         + "Filler prose for the page. " * 10
     )
@@ -140,14 +126,14 @@ def test_a_block_that_cannot_be_read_fails_the_run_and_nothing_else(tmp_path, sr
     result = runner.invoke(app, ["validate", "--workspace", str(workspace)])
 
     assert result.exit_code == 1, result.output
-    assert key(src, "a1/grammar/dativ.md") in result.output
+    assert "a1/grammar/dativ.md" in result.output
 
 
 @pytest.mark.parametrize("sample", load_samples(), ids=lambda s: s.name)
-def test_validate_gives_each_sample_its_outcome(tmp_path, src, sample):
+def test_validate_gives_each_sample_its_outcome(tmp_path, sample):
     (tmp_path / "open-language.yml").write_text("language: German\nlanguage_code: de\n")
     for page, text in sample.pages.items():
-        path = src / f"{page}.md"
+        path = tmp_path / f"{page}.md"
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text(text, encoding="utf-8")
 

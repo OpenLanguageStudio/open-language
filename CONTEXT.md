@@ -27,8 +27,7 @@ Someone who writes a language repository's pages.
 **Article**:
 One page of a Coursebook that teaches one thing, written from the template for
 its category. An article has a level and a category, which come from its path:
-`<level>/<category>/<name>.md`, below `docs/` in a workspace that keeps its
-pages there.
+`<level>/<category>/<name>.md`.
 _Avoid_: lesson, page (when the article itself is meant).
 
 **Category index**:

@@ -8,7 +8,7 @@ from pathlib import Path
 import typer
 
 from ol.blocks import BlockCollection, BlockFormatError, Refusal
-from ol.workspace import root_excludes, source_dir
+from ol.workspace import ROOT_EXCLUDES
 
 app = typer.Typer(help="Open Language authoring tools")
 
@@ -20,13 +20,12 @@ def docs(
     live: bool = typer.Option(False, "--live", help="Auto-rebuild with live server."),
 ):
     """Build the documentation."""
-    source, output = _build_paths(Path("."))
     if live:
         subprocess.run(
             [
                 "sphinx-autobuild",
-                source,
-                output,
+                ".",
+                "_build/html",
                 "--open-browser",
                 "--port",
                 "5000",
@@ -36,13 +35,9 @@ def docs(
             check=True,
         )
     else:
-        subprocess.run(["sphinx-build", "-E", "-b", "html", source, output], check=True)
-
-
-def _build_paths(workspace: Path) -> tuple[str, str]:
-    """The Sphinx source and HTML output, relative to the workspace."""
-    source = source_dir(workspace).relative_to(workspace)
-    return str(source), str(source / "_build" / "html")
+        subprocess.run(
+            ["sphinx-build", "-E", "-b", "html", ".", "_build/html"], check=True
+        )
 
 
 @app.command()
@@ -62,7 +57,7 @@ def outline(
     json: bool = typer.Option(False, "--json", help="Output as JSON."),
 ):
     """Print the heading structure of all CEFR-level docs."""
-    sys.path.insert(0, str(source_dir(Path.cwd())))
+    sys.path.insert(0, str(Path.cwd()))
     from outline import main as outline_main
 
     argv = []
@@ -123,10 +118,9 @@ def context(
 
 
 def _article_files(workspace: Path) -> list[Path]:
-    """Every Markdown file under the CEFR level directories (<source>/<level>/...)."""
+    """Every Markdown file under the CEFR level directories (<level>/...)."""
     files: list[Path] = []
-    source = source_dir(workspace)
-    for level_dir in sorted(p for p in source.iterdir() if p.is_dir()):
+    for level_dir in sorted(p for p in workspace.iterdir() if p.is_dir()):
         if (
             len(level_dir.name) == 2
             and level_dir.name[0] in "abc"
@@ -148,7 +142,7 @@ def _read_baseline(path: Path) -> set[str]:
 def cross_page_refusals(workspace: Path) -> dict[str, list[Refusal]]:
     """The refusals that need every page, by file relative to the workspace.
 
-    Every page of the workspace's source is read, whichever files are being checked, so a
+    Every page of the workspace is read, whichever files are being checked, so a
     duplicate is matched with the block that writes its track wherever it is.
     While a block on any page cannot be read there is nothing to match against,
     and that page's own report fails the run instead.
@@ -157,20 +151,16 @@ def cross_page_refusals(workspace: Path) -> dict[str, list[Refusal]]:
         workspace: The language repository's root.
 
     Returns:
-        The refusals, by file path such as ``a1/grammar/dativ.md``, or
-        ``docs/a1/grammar/dativ.md`` when the pages are under ``docs/``.
+        The refusals, by file path such as ``a1/grammar/dativ.md``.
     """
     found: dict[str, list[Refusal]] = {}
-    source = source_dir(workspace)
     try:
-        collection = BlockCollection.from_docs(source, exclude=root_excludes(workspace))
+        collection = BlockCollection.from_docs(workspace, exclude=ROOT_EXCLUDES)
     except BlockFormatError:
         return found
-    prefix = source.resolve().relative_to(workspace.resolve())
     for refusal in collection.refusals():
         if refusal.code in Refusal.CROSS_PAGE:
-            key = (prefix / f"{refusal.block.page}.md").as_posix()
-            found.setdefault(key, []).append(refusal)
+            found.setdefault(f"{refusal.block.page}.md", []).append(refusal)
     return found
 
 
@@ -337,7 +327,8 @@ def check(
             "-q",
             "-b",
             "html",
-            *_build_paths(workspace),
+            ".",
+            "_build/html",
         ]
         if subprocess.run(cmd, cwd=workspace).returncode:
             failed.append("docs build")

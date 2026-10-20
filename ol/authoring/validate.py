@@ -4,9 +4,8 @@
 Usage:
     ol validate [--workspace /path/to/<language>] [--type TYPE] FILE [FILE...]
 
-- FILE paths must live under <source>/<level>/<category>/... , where the
-  source is <workspace>/docs when it holds conf.py and the workspace root
-  otherwise; the content type is inferred from the path (grammar/concepts/writing/topics/
+- FILE paths must live under <workspace>/<level>/<category>/... ; the
+  content type is inferred from the path (grammar/concepts/writing/topics/
   situations) unless --type is given.
 - index.md files get index checks (toctree present, entries resolve, no orphan
   articles, no CEFR level in the title, no References section); other .md files
@@ -42,7 +41,7 @@ from pathlib import Path
 import yaml
 
 from ol.blocks import Block, BlockFormatError, BlockReader, Refusal
-from ol.workspace import find_workspace, page_path, source_dir
+from ol.workspace import find_workspace, page_path
 
 SPECS_PATH = Path(__file__).resolve().parent / "specs.yml"
 TEMPLATES_DIR = Path(__file__).resolve().parent / "templates"
@@ -85,7 +84,7 @@ def split_frontmatter(text: str):
 
 
 def infer_context(path: Path, workspace: Path | None):
-    """Infer (workspace, level, category) from <source>/<level>/<category>/...
+    """Infer (workspace, level, category) from <workspace>/<level>/<category>/...
 
     The workspace, when not given, is the nearest folder above the file that
     holds open-language.yml.
@@ -112,14 +111,14 @@ def native_code(workspace: Path | None) -> str:
 
 
 def page_name(path: Path, workspace: Path | None = None) -> str:
-    """Return the page's name in the build: its path below the source without .md.
+    """Return the page's name in the build: its path below the workspace without .md.
 
     Args:
         path: The page's file.
         workspace: The language repository's root.
 
     Returns:
-        The name, or the file's stem when it is not under the workspace's source.
+        The name, or the file's stem when it is not under the workspace.
     """
     parts = page_path(path, workspace) if workspace else None
     if parts is None:
@@ -211,9 +210,8 @@ def check_audio_block(rep: Report, block: Block, ctype: str | None):
 def check_doc_links(rep: Report, body: str, workspace: Path | None):
     if not workspace:
         return
-    source = source_dir(workspace)
     for m in re.finditer(r"\]\((/[^)#\s]+\.md)(#[^)]*)?\)", body):
-        target = source / m.group(1).lstrip("/")
+        target = workspace / m.group(1).lstrip("/")
         if not target.exists():
             rep.error(f"broken doc link: {m.group(1)}")
 
@@ -441,7 +439,7 @@ def check_related_neighbours(
         if link.startswith("/"):
             if not workspace:
                 continue
-            target = source_dir(workspace) / link.lstrip("/")
+            target = workspace / link.lstrip("/")
         else:
             target = path.parent / link
         if target.resolve() in neighbours:
@@ -714,8 +712,7 @@ def validate_index(path: Path, ctype: str | None, workspace: Path | None) -> Rep
     # title rules: no CEFR level in category/subcategory index titles
     h1s = headings(body, 1)
     is_level_index = (
-        workspace is not None
-        and path.resolve().parent.parent == source_dir(workspace).resolve()
+        workspace is not None and path.resolve().parent.parent == workspace.resolve()
     )
     if h1s and not is_level_index and re.match(r"^[ABC][12]\b", h1s[0]):
         rep.error(
