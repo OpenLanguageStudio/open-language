@@ -31,9 +31,9 @@ grammar/index
 """
 
 
-def test_check_builds_the_top_level_into_build_html(tmp_path, monkeypatch):
+def test_check_builds_the_top_level_into_build_html(tmp_path, monkeypatch, write_menu):
     (tmp_path / "open-language.yml").write_text(CONFIG)
-    (tmp_path / "a1").mkdir()
+    write_menu(tmp_path)
     calls = []
 
     class Done:
@@ -51,9 +51,9 @@ def test_check_builds_the_top_level_into_build_html(tmp_path, monkeypatch):
     assert (cmd[-2:], cwd) == ([".", "_build/html"], tmp_path)
 
 
-def test_files_at_the_top_that_are_not_pages_are_not_read(tmp_path):
+def test_files_at_the_top_that_are_not_pages_are_not_read(tmp_path, write_menu):
     (tmp_path / "open-language.yml").write_text(CONFIG)
-    (tmp_path / "a1").mkdir()
+    write_menu(tmp_path)
     for name in ("README.md", "AGENTS.md", ".venv/x.md", ".github/x.md", "_build/x.md"):
         (tmp_path / name).parent.mkdir(exist_ok=True)
         (tmp_path / name).write_text(DUPLICATE)

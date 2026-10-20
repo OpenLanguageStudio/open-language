@@ -2,6 +2,23 @@
 
 ## [Unreleased]
 
+### Changed: every language repository builds the same menu
+
+This breaks language repositories whose menu differs. `ol validate` without files, and so `ol check`, now checks the site menu, the toctrees of the top-level `index.md` and of each level index (#18):
+
+- The top-level `index.md` is the Introduction page: its H1 is "Introduction". Its toctree lists the other top-level pages (`how_to_use`, `terminology`, `contributing`, ...) in any order, then the levels. No top-level page comes after a level.
+- The levels are `a1/index`, `a2/index`, `b1/index` and `b2/index`, in that order. There are no levels above B2, so a `c1/` or `c2/` directory fails. Every level directory has an `index.md` listed in the menu, and a level index marked `orphan: true` fails.
+- Each level index lists only `concepts/index`, `grammar/index`, `writing/index` and `vocabulary/index`, in that order. A level may leave a category out. Any other category directory under a level, such as `topics/` or `situations/`, fails.
+- The menu holds nothing else: no external links, no other entries and no second toctree in these pages. A toctree inside an HTML comment is not read.
+
+A menu error is never covered by `.ol-validate-baseline`. Each error names the file and says what to move or remove.
+
+To bring a repository into line, move the top-level pages above the levels in `index.md`, list every level from A1 to B2, remove `orphan: true` from the level indexes, and move the articles in any other category into one of the four.
+
+### Removed: the topics and situations categories
+
+The `topics` and `situations` templates and their rules in `specs.yml` are gone, since the menu has no place for them. An article under `topics/` or `situations/` now fails, and the error says to move it into one of the four categories. Vocabulary articles replace topics, and material about understanding a scenario goes in a concepts article. The level index template lists the four categories in menu order.
+
 ## [0.3.0] - 2026-10-20
 
 ### Changed: a language repository keeps its pages at the top level

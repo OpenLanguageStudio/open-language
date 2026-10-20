@@ -35,11 +35,18 @@ The `index.md` that lists a category's articles for one level. Its toctree order
 is the learning sequence where the category is ordered.
 
 **Level**:
-A CEFR level, written in lower case in paths: `a1`, `a2`, `b1`, `b2`.
+A CEFR level, written in lower case in paths: `a1`, `a2`, `b1`, `b2`. There
+are no levels above B2.
 
 **Category**:
-The kind of article, which decides its template: `grammar`, `concepts`,
-`writing`, `topics`, `situations`, `vocabulary`.
+The kind of article, which decides its template: `concepts`, `grammar`,
+`writing`, `vocabulary`. A level lists them in that order, and no other.
+
+**Menu**:
+The site's navigation, built from the toctree of the top-level `index.md` and of
+each level index. The top-level `index.md` is the Introduction page. Its toctree
+lists the other top-level pages, then the levels from A1 to B2.
+_Avoid_: navigation, sidebar (when the toctrees are meant).
 
 **Template**:
 The Markdown file in `ol/authoring/templates/` that an article of a category is

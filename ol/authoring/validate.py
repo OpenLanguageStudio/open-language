@@ -5,8 +5,8 @@ Usage:
     ol validate [--workspace /path/to/<language>] [--type TYPE] FILE [FILE...]
 
 - FILE paths must live under <workspace>/<level>/<category>/... ; the
-  content type is inferred from the path (grammar/concepts/writing/topics/
-  situations) unless --type is given.
+  content type is inferred from the path (concepts/grammar/writing/
+  vocabulary) unless --type is given.
 - index.md files get index checks (toctree present, entries resolve, no orphan
   articles, no CEFR level in the title, no References section); other .md files
   get article checks per specs.yml.
@@ -47,7 +47,7 @@ SPECS_PATH = Path(__file__).resolve().parent / "specs.yml"
 TEMPLATES_DIR = Path(__file__).resolve().parent / "templates"
 SPECS = yaml.safe_load(SPECS_PATH.read_text(encoding="utf-8"))
 
-CATEGORIES = ("grammar", "concepts", "writing", "topics", "vocabulary", "situations")
+CATEGORIES = ("concepts", "grammar", "writing", "vocabulary")
 STUB_BODY_BYTES = 200
 
 
@@ -779,7 +779,14 @@ def validate_file(
         return validate_index(path, ctype, ws)
     if ctype is None:
         rep = Report(path)
-        rep.error("cannot infer content type from path; pass --type")
+        parts = page_path(path, ws) if ws else None
+        if parts and len(parts) > 2:
+            rep.error(
+                f"{parts[0]}/{parts[1]}/ is not a category: move the article into "
+                f"one of {', '.join(f'{c}/' for c in CATEGORIES)}"
+            )
+        else:
+            rep.error("cannot infer content type from path; pass --type")
         return rep
     return validate_article(path, ctype, ws)
 

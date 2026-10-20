@@ -18,6 +18,9 @@
 #   - example block size, marking limits, audio example counts, model-text
 #     length and stock vocabulary, with the limits under `common` below
 #
+# The site menu (the toctrees of the top-level index.md and each level index)
+# is checked by ol/authoring/menu.py, not per article type.
+#
 # Per-type keys:
 #   required_headings: regexes that must each match at least one ## heading
 #   require_examples_div: at least one ":::{div} ol-examples" block
@@ -130,30 +133,7 @@ types:
     # One scenario per article, numbered per register family (email-formal-1).
     numbered_filename: true
 
-  topics:
-    required_headings:
-      - "^Vocabulary list$"
-      - "^Useful phrases$"
-    require_examples_div: false
-    require_summary_admonitions: false
-    require_common_mistakes: false
-    min_audio_examples: 0
-    ordered: false
-    english_filename: true
-
-  situations:
-    required_headings:
-      - "^The situation$"
-      - "^What you will hear$"
-      - "^Key vocabulary$"
-    require_examples_div: true
-    require_summary_admonitions: false
-    require_common_mistakes: false
-    min_audio_examples: 0
-    ordered: false
-    english_filename: true
-
-  # Vocabulary packs (category renamed from "topics" course-wide).
+  # Vocabulary packs.
   # Interim spec: heading shape is finalized with the V1 exemplar.
   vocabulary:
     required_headings:

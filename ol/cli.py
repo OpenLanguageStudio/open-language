@@ -188,20 +188,33 @@ def file_report(path: Path, workspace: Path, cross_page: dict[str, list[Refusal]
 
 
 def _run_validate(
-    files: list[Path], workspace: Path, baseline_path: Path, verbose: bool
+    files: list[Path],
+    workspace: Path,
+    baseline_path: Path,
+    verbose: bool,
+    menu: bool = False,
 ) -> tuple[list[str], list[str], int]:
-    """Validate files. Returns (new failures, baseline entries now passing, checked)."""
+    """Validate files. Returns (new failures, baseline entries now passing, checked).
+
+    With ``menu``, the site menu is checked too. A menu error fails its file
+    whether or not the file is in the baseline.
+    """
+    from ol.authoring.menu import check_menu
     from ol.authoring.validate import report_status
 
     baseline = _read_baseline(baseline_path)
     cross_page = cross_page_refusals(workspace)
+    menu_errors = check_menu(workspace) if menu else {}
     new_failures: list[str] = []
     now_passing: list[str] = []
     for path in files:
         rel = path.resolve().relative_to(workspace.resolve()).as_posix()
         rep = file_report(path, workspace, cross_page)
         status = report_status(rep)
-        if status == "FAIL" and rel not in baseline:
+        menu_failed = rel in menu_errors
+        for msg in menu_errors.pop(rel, []):
+            rep.error(msg)
+        if menu_failed or (status == "FAIL" and rel not in baseline):
             new_failures.append(rel)
             typer.echo(f"[FAIL] {rel}")
             for lvl, msg in rep.items:
@@ -213,6 +226,11 @@ def _run_validate(
             typer.echo(
                 f"[{status}] {rel}" + ("  (baseline)" if rel in baseline else "")
             )
+    for rel, errors in menu_errors.items():
+        new_failures.append(rel)
+        typer.echo(f"[FAIL] {rel}")
+        for msg in errors:
+            typer.echo(f"    ERROR: {msg}")
     return new_failures, now_passing, len(files)
 
 
@@ -232,7 +250,8 @@ def validate(
 ):
     """Check articles and indexes against the authoring templates.
 
-    Files listed in the baseline may fail without failing the run; any other
+    Without files, the site menu is checked too: the toctrees of the top-level
+    index.md and of each level index. Files listed in the baseline may fail without failing the run; any other
     failure does. A baseline entry that now passes is reported so it can be
     removed, and the baseline only ever shrinks.
     """
@@ -262,7 +281,7 @@ def validate(
         return
 
     new_failures, now_passing, checked = _run_validate(
-        targets, workspace, baseline_path, verbose
+        targets, workspace, baseline_path, verbose, menu=not files
     )
     for rel in now_passing:
         typer.echo(f"PASSING, remove from baseline: {rel}")
@@ -306,7 +325,11 @@ def check(
 
     typer.echo("== ol validate")
     new_failures, now_passing, checked = _run_validate(
-        _article_files(workspace), workspace, workspace / BASELINE_FILE, False
+        _article_files(workspace),
+        workspace,
+        workspace / BASELINE_FILE,
+        False,
+        menu=True,
     )
     for rel in now_passing:
         typer.echo(f"PASSING, remove from baseline: {rel}")
