@@ -1,4 +1,4 @@
-<!-- TEMPLATE: index.md for docs/<level>/ (the level landing page).
+<!-- TEMPLATE: index.md for <level>/ (the level landing page).
      Replace {{PLACEHOLDERS}}; DELETE every template comment.
      The H1 is the bare level name: the one place the CEFR level appears in a title.
      This page carries the level's "Additional reading" (learner-facing external

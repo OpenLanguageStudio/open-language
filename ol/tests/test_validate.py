@@ -15,7 +15,7 @@ import pytest
 from ol.authoring.validate import validate_file
 
 FIXTURE = Path(__file__).parent / "fixtures" / "grammar-article.md"
-ARTICLE = "docs/a1/grammar/articles/bestimmter-artikel.md"
+ARTICLE = "a1/grammar/articles/bestimmter-artikel.md"
 LINK_TARGETS = [
     "a1/grammar/articles/unbestimmter-artikel.md",
     "a1/grammar/articles/negativartikel.md",
@@ -29,7 +29,7 @@ TRACK = ":track: a1/grammar/bestimmter-artikel\n"
 
 def errors(tmp_path: Path, text: str) -> list[str]:
     for target in LINK_TARGETS:
-        page = tmp_path / "docs" / target
+        page = tmp_path / target
         page.parent.mkdir(parents=True, exist_ok=True)
         page.write_text("# Page\n", encoding="utf-8")
     article = tmp_path / ARTICLE
@@ -243,7 +243,7 @@ def test_stock_phrase_in_an_example_is_not_prose(tmp_path, source):
 
 
 def write_articles_index(tmp_path: Path, *entries: str) -> None:
-    index = tmp_path / "docs/a1/grammar/articles/index.md"
+    index = tmp_path / "a1/grammar/articles/index.md"
     index.parent.mkdir(parents=True, exist_ok=True)
     toctree = "\n".join(entries)
     index.write_text(
@@ -272,7 +272,7 @@ def test_related_link_past_a_toctree_neighbour_passes(tmp_path, source):
 def vocabulary_errors(
     tmp_path: Path, words: int = 12, name: str = "at-the-beach-1"
 ) -> list[str]:
-    article = tmp_path / f"docs/a1/vocabulary/{name}.md"
+    article = tmp_path / f"a1/vocabulary/{name}.md"
     article.parent.mkdir(parents=True)
     rows = "".join(f"| Wort {n} | word {n} |\n" for n in range(words))
     article.write_text(
@@ -303,7 +303,7 @@ def test_pack_without_a_running_number_is_red(tmp_path):
 
 
 def test_short_model_text_is_red(tmp_path):
-    article = tmp_path / "docs/a1/writing/postcard.md"
+    article = tmp_path / "a1/writing/postcard.md"
     article.parent.mkdir(parents=True)
     filler = "Writing a postcard is a small, friendly task. " * 6
     article.write_text(

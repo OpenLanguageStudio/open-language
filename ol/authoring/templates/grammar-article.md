@@ -1,5 +1,5 @@
 <!-- TEMPLATE: grammar article (reference style, no learning order)
-     Gold exemplar: german/docs/a1/grammar/artikel/bestimmter-artikel.md
+     Gold exemplar: german/a1/grammar/articles/bestimmter-artikel.md
      Detailed MyST/theme reference: open-language/.github/skills/grammar-article/
      Replace all {{PLACEHOLDERS}}; DELETE every template comment: no HTML
      comments may survive in the docs file (they leak into built HTML).      -->

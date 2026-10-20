@@ -1,5 +1,5 @@
 <!-- TEMPLATE: concepts article (functional ability, ORDERED curriculum)
-     Gold exemplar: german/docs/a1/concepts/introducing-yourself.md
+     Gold exemplar: german/a1/concepts/introducing-yourself.md
      FILENAME MUST BE ENGLISH kebab-case (reusable across languages).
      Replace {{PLACEHOLDERS}}; DELETE every template comment: no HTML comments
      may survive in the docs file.                                            -->

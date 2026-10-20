@@ -4,7 +4,7 @@
 Usage:
     ol validate [--workspace /path/to/<language>] [--type TYPE] FILE [FILE...]
 
-- FILE paths must live under <workspace>/docs/<level>/<category>/... ; the
+- FILE paths must live under <workspace>/<level>/<category>/... ; the
   content type is inferred from the path (grammar/concepts/writing/topics/
   situations) unless --type is given.
 - index.md files get index checks (toctree present, entries resolve, no orphan
@@ -41,6 +41,7 @@ from pathlib import Path
 import yaml
 
 from ol.blocks import Block, BlockFormatError, BlockReader, Refusal
+from ol.workspace import find_workspace, page_path
 
 SPECS_PATH = Path(__file__).resolve().parent / "specs.yml"
 TEMPLATES_DIR = Path(__file__).resolve().parent / "templates"
@@ -83,14 +84,17 @@ def split_frontmatter(text: str):
 
 
 def infer_context(path: Path, workspace: Path | None):
-    """Infer (workspace, level, category) from .../<ws>/docs/<level>/<category>/..."""
-    parts = path.resolve().parts
-    if "docs" not in parts:
-        return workspace, None, None
-    i = parts.index("docs")
-    ws = workspace or Path(*parts[:i])
-    level = parts[i + 1] if len(parts) > i + 1 else None
-    category = parts[i + 2] if len(parts) > i + 2 else None
+    """Infer (workspace, level, category) from <workspace>/<level>/<category>/...
+
+    The workspace, when not given, is the nearest folder above the file that
+    holds open-language.yml.
+    """
+    ws = workspace or find_workspace(path)
+    parts = page_path(path, ws) if ws else None
+    if parts is None:
+        return ws, None, None
+    level = parts[0] if len(parts) > 1 else None
+    category = parts[1] if len(parts) > 2 else None
     if category is not None and category not in CATEGORIES:
         category = None
     return ws, level, category
@@ -106,34 +110,38 @@ def native_code(workspace: Path | None) -> str:
     return "de"
 
 
-def page_name(path: Path) -> str:
-    """Return the page's name in the build: its path below docs/ without .md.
+def page_name(path: Path, workspace: Path | None = None) -> str:
+    """Return the page's name in the build: its path below the workspace without .md.
 
     Args:
         path: The page's file.
+        workspace: The language repository's root.
 
     Returns:
-        The name, or the file's stem when it is not under a docs/ directory.
+        The name, or the file's stem when it is not under the workspace.
     """
-    parts = path.resolve().with_suffix("").parts
-    if "docs" not in parts:
+    parts = page_path(path, workspace) if workspace else None
+    if parts is None:
         return path.stem
-    return "/".join(parts[parts.index("docs") + 1 :])
+    return "/".join(parts)
 
 
-def read_blocks(rep: Report, path: Path, text: str) -> list[Block] | None:
+def read_blocks(
+    rep: Report, path: Path, text: str, workspace: Path | None
+) -> list[Block] | None:
     """Read the page's blocks, reporting a block that cannot be read.
 
     Args:
         rep: The page's report.
         path: The page's file.
         text: The page's Markdown.
+        workspace: The language repository's root.
 
     Returns:
         The blocks, or None when a block cannot be read.
     """
     try:
-        return BlockReader().find(page_name(path), text)
+        return BlockReader().find(page_name(path, workspace), text)
     except BlockFormatError as exc:
         rep.error(f"audio-examples: {exc}")
         return None
@@ -202,9 +210,8 @@ def check_audio_block(rep: Report, block: Block, ctype: str | None):
 def check_doc_links(rep: Report, body: str, workspace: Path | None):
     if not workspace:
         return
-    docs = workspace / "docs"
     for m in re.finditer(r"\]\((/[^)#\s]+\.md)(#[^)]*)?\)", body):
-        target = docs / m.group(1).lstrip("/")
+        target = workspace / m.group(1).lstrip("/")
         if not target.exists():
             rep.error(f"broken doc link: {m.group(1)}")
 
@@ -432,7 +439,7 @@ def check_related_neighbours(
         if link.startswith("/"):
             if not workspace:
                 continue
-            target = workspace / "docs" / link.lstrip("/")
+            target = workspace / link.lstrip("/")
         else:
             target = path.parent / link
         if target.resolve() in neighbours:
@@ -574,7 +581,7 @@ def validate_article(path: Path, ctype: str, workspace: Path | None) -> Report:
 
     if len(body.strip()) < STUB_BODY_BYTES:
         rep.info("STUB: not yet authored (skipping template checks)")
-        for block in read_blocks(rep, path, text) or []:
+        for block in read_blocks(rep, path, text, workspace) or []:
             check_refusals(rep, block)
         # even stubs must not leak notes into the built HTML
         if "<!--" in body:
@@ -680,7 +687,7 @@ def validate_article(path: Path, ctype: str, workspace: Path | None) -> Report:
         rep.error("the 'Hear it in practice' section must come BEFORE Summary")
 
     # audio-examples blocks
-    blocks = read_blocks(rep, path, text)
+    blocks = read_blocks(rep, path, text, workspace)
     if blocks is not None:
         if len(blocks) < spec.get("min_audio_examples", 0):
             rep.error(
@@ -704,7 +711,9 @@ def validate_index(path: Path, ctype: str | None, workspace: Path | None) -> Rep
 
     # title rules: no CEFR level in category/subcategory index titles
     h1s = headings(body, 1)
-    is_level_index = path.parent.parent.name == "docs"
+    is_level_index = (
+        workspace is not None and path.resolve().parent.parent == workspace.resolve()
+    )
     if h1s and not is_level_index and re.match(r"^[ABC][12]\b", h1s[0]):
         rep.error(
             f"index title '{h1s[0]}' contains the CEFR level: use the bare "
@@ -717,7 +726,7 @@ def validate_index(path: Path, ctype: str | None, workspace: Path | None) -> Rep
     ):
         rep.error(
             "external-links section belongs in the LEVEL index "
-            "(docs/<level>/index.md, '## Additional reading'), not here"
+            "(<level>/index.md, '## Additional reading'), not here"
         )
 
     entries = toctree_entries(body)
@@ -789,7 +798,7 @@ def main(argv=None):
         "--workspace",
         type=Path,
         default=None,
-        help="language workspace root (contains docs/)",
+        help="language workspace root (contains open-language.yml)",
     )
     ap.add_argument(
         "--type",

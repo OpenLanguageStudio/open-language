@@ -8,6 +8,7 @@ from pathlib import Path
 import typer
 
 from ol.blocks import BlockCollection, BlockFormatError, Refusal
+from ol.workspace import ROOT_EXCLUDES
 
 app = typer.Typer(help="Open Language authoring tools")
 
@@ -23,8 +24,8 @@ def docs(
         subprocess.run(
             [
                 "sphinx-autobuild",
-                "docs",
-                "docs/_build/html",
+                ".",
+                "_build/html",
                 "--open-browser",
                 "--port",
                 "5000",
@@ -35,7 +36,7 @@ def docs(
         )
     else:
         subprocess.run(
-            ["sphinx-build", "-E", "-b", "html", "docs", "docs/_build/html"], check=True
+            ["sphinx-build", "-E", "-b", "html", ".", "_build/html"], check=True
         )
 
 
@@ -56,7 +57,7 @@ def outline(
     json: bool = typer.Option(False, "--json", help="Output as JSON."),
 ):
     """Print the heading structure of all CEFR-level docs."""
-    sys.path.insert(0, str(Path.cwd() / "docs"))
+    sys.path.insert(0, str(Path.cwd()))
     from outline import main as outline_main
 
     argv = []
@@ -116,10 +117,10 @@ def context(
         typer.echo(f"Sub-section: {ctx['sub_section'] or '-'}")
 
 
-def _article_files(docs_root: Path) -> list[Path]:
-    """Every Markdown file under the CEFR level directories (docs/<level>/...)."""
+def _article_files(workspace: Path) -> list[Path]:
+    """Every Markdown file under the CEFR level directories (<level>/...)."""
     files: list[Path] = []
-    for level_dir in sorted(p for p in docs_root.iterdir() if p.is_dir()):
+    for level_dir in sorted(p for p in workspace.iterdir() if p.is_dir()):
         if (
             len(level_dir.name) == 2
             and level_dir.name[0] in "abc"
@@ -141,7 +142,7 @@ def _read_baseline(path: Path) -> set[str]:
 def cross_page_refusals(workspace: Path) -> dict[str, list[Refusal]]:
     """The refusals that need every page, by file relative to the workspace.
 
-    Every page under docs/ is read, whichever files are being checked, so a
+    Every page of the workspace is read, whichever files are being checked, so a
     duplicate is matched with the block that writes its track wherever it is.
     While a block on any page cannot be read there is nothing to match against,
     and that page's own report fails the run instead.
@@ -150,16 +151,16 @@ def cross_page_refusals(workspace: Path) -> dict[str, list[Refusal]]:
         workspace: The language repository's root.
 
     Returns:
-        The refusals, by file path such as ``docs/a1/grammar/dativ.md``.
+        The refusals, by file path such as ``a1/grammar/dativ.md``.
     """
     found: dict[str, list[Refusal]] = {}
     try:
-        collection = BlockCollection.from_docs(workspace / "docs")
+        collection = BlockCollection.from_docs(workspace, exclude=ROOT_EXCLUDES)
     except BlockFormatError:
         return found
     for refusal in collection.refusals():
         if refusal.code in Refusal.CROSS_PAGE:
-            found.setdefault(f"docs/{refusal.block.page}.md", []).append(refusal)
+            found.setdefault(f"{refusal.block.page}.md", []).append(refusal)
     return found
 
 
@@ -218,7 +219,7 @@ def _run_validate(
 @app.command()
 def validate(
     files: list[Path] = typer.Argument(
-        None, help="Files to check. Default: every article under docs/<level>/."
+        None, help="Files to check. Default: every article under <level>/."
     ),
     workspace: Path = typer.Option(Path("."), help="Language workspace root."),
     baseline: Path = typer.Option(
@@ -238,7 +239,7 @@ def validate(
     from ol.authoring.validate import report_status
 
     baseline_path = baseline or workspace / BASELINE_FILE
-    targets = list(files) if files else _article_files(workspace / "docs")
+    targets = list(files) if files else _article_files(workspace)
 
     if write_baseline:
         failing = []
@@ -305,7 +306,7 @@ def check(
 
     typer.echo("== ol validate")
     new_failures, now_passing, checked = _run_validate(
-        _article_files(workspace / "docs"), workspace, workspace / BASELINE_FILE, False
+        _article_files(workspace), workspace, workspace / BASELINE_FILE, False
     )
     for rel in now_passing:
         typer.echo(f"PASSING, remove from baseline: {rel}")
@@ -326,8 +327,8 @@ def check(
             "-q",
             "-b",
             "html",
-            "docs",
-            "docs/_build/html",
+            ".",
+            "_build/html",
         ]
         if subprocess.run(cmd, cwd=workspace).returncode:
             failed.append("docs build")

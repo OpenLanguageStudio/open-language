@@ -1,4 +1,4 @@
-<!-- TEMPLATE: index.md for docs/<level>/<category>/ (or a grammar subcategory).
+<!-- TEMPLATE: index.md for <level>/<category>/ (or a grammar subcategory).
      Replace {{PLACEHOLDERS}}; DELETE every template comment.
      TITLE: never include the CEFR level ("Grammar", not "A1 Grammar").
      ORDERING: concepts toctree order IS the learning sequence: deliberate.

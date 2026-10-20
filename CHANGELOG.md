@@ -2,6 +2,19 @@
 
 ## [Unreleased]
 
+### Changed: a language repository keeps its pages at the top level
+
+This breaks language repositories that keep their pages under `docs/`. `ol` now reads a repository's pages from its top level, where `conf.py` sits next to `open-language.yml`, and no longer looks in `docs/`.
+
+- `ol check` and `ol docs` build the top level into `_build/html`.
+- A page's level, category and name come from its path below the top level (`a1/grammar/dativ.md`), and site-root links (`/a1/grammar/dativ.md`) resolve from there.
+- Paths in `.ol-validate-baseline` and in reports have no `docs/` prefix.
+- `_build`, `.venv`, `.github`, `README.md` and `AGENTS.md` at the top level are never read as pages.
+
+To move a repository, move everything under `docs/` to the top level, change `Path(__file__).parent.parent` to `Path(__file__).parent` in `conf.py`, add `_build`, `.venv`, `.github`, `README.md` and `AGENTS.md` to its `exclude_patterns`, and remove `docs/` from each line of `.ol-validate-baseline`.
+
+`Language.docs_root` is the working directory unless `OPEN_LANGUAGE_DOCS` is set. `BlockCollection.from_docs` takes `exclude`, names directly under the root that are not pages. `ol validate` without `--workspace` takes the nearest folder above a file that holds `open-language.yml` as its workspace.
+
 ## [0.2.0] - 2026-10-19
 
 ### Changed: a track's address always gives its name

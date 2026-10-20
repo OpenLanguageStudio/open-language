@@ -1,5 +1,5 @@
 <!-- TEMPLATE: topics article (vocabulary theme, no ordering)
-     Base exemplar: german/docs/b2/topics/smalltalk.md (pre-dates the 2026-07-09
+     Base exemplar: german/b2/topics/smalltalk.md (pre-dates the 2026-07-09
      conventions: this template supersedes its formatting).
      English kebab-case filename. English headings only.
      Replace {{PLACEHOLDERS}}; DELETE every template comment. -->

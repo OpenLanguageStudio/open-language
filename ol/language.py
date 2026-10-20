@@ -1,7 +1,7 @@
 """Language workspace configuration, loaded from ``open-language.yml``.
 
-A language workspace is a directory holding ``open-language.yml``, a ``docs/``
-tree of articles and an ``albums/`` tree of album manifests. Paths resolve by
+A language workspace is a directory holding ``open-language.yml``, its articles
+at its top level and an ``albums/`` tree of album manifests. Paths resolve by
 convention from the working directory, or from the ``OPEN_LANGUAGE_CONFIG``,
 ``OPEN_LANGUAGE_DOCS`` and ``OPEN_LANGUAGE_ALBUMS`` environment variables.
 
@@ -38,7 +38,7 @@ class Language:
         self.title: str = config.get("title", "")
         self.description: str = config.get("description", "")
         self.author: str = config.get("author", "")
-        self.docs_root = Path(os.getenv("OPEN_LANGUAGE_DOCS", "docs"))
+        self.docs_root = Path(os.getenv("OPEN_LANGUAGE_DOCS", "."))
         self.albums_root = Path(os.getenv("OPEN_LANGUAGE_ALBUMS", "albums"))
 
     def __repr__(self) -> str:
