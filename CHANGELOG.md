@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [0.5.0] - 2026-10-20
+
 ### Changed: every language repository has the same top-level pages
 
 This breaks language repositories with other top-level pages, or without one of these. The menu check now holds the top level to exactly four pages, in this menu order (#21):
