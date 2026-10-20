@@ -260,6 +260,17 @@ class TestBlockCollection:
             "orphan_duplicate",
         )
 
+    def test_skips_the_excluded_names_at_the_top_only(self, tmp_path: Path):
+        block = ":::{audio-examples}\n:track: a2/grammar/weil\n:duplicate:\n:::\n"
+        (tmp_path / "README.md").write_text(block, encoding="utf-8")
+        nested = tmp_path / "a2/README.md"
+        nested.parent.mkdir()
+        nested.write_text(block, encoding="utf-8")
+
+        refusals = BlockCollection.from_docs(tmp_path, exclude={"README.md"}).refusals()
+
+        assert [refusal.block.page for refusal in refusals] == ["a2/README"]
+
 
 class TestSamples:
     def test_the_package_ships_samples_of_every_outcome(self):

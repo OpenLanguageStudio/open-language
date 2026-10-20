@@ -1,8 +1,9 @@
 """Language workspace configuration, loaded from ``open-language.yml``.
 
-A language workspace is a directory holding ``open-language.yml``, a ``docs/``
-tree of articles and an ``albums/`` tree of album manifests. Paths resolve by
-convention from the working directory, or from the ``OPEN_LANGUAGE_CONFIG``,
+A language workspace is a directory holding ``open-language.yml``, its articles
+and an ``albums/`` tree of album manifests. The articles sit under ``docs/`` when
+``docs/conf.py`` exists and at the top of the workspace otherwise. Paths resolve
+by convention from the working directory, or from the ``OPEN_LANGUAGE_CONFIG``,
 ``OPEN_LANGUAGE_DOCS`` and ``OPEN_LANGUAGE_ALBUMS`` environment variables.
 
 This class carries the configuration the coursebook build and the content
@@ -16,6 +17,8 @@ import os
 from pathlib import Path
 
 import yaml
+
+from ol.workspace import source_dir
 
 
 class Language:
@@ -38,7 +41,8 @@ class Language:
         self.title: str = config.get("title", "")
         self.description: str = config.get("description", "")
         self.author: str = config.get("author", "")
-        self.docs_root = Path(os.getenv("OPEN_LANGUAGE_DOCS", "docs"))
+        docs = os.getenv("OPEN_LANGUAGE_DOCS")
+        self.docs_root = Path(docs) if docs else source_dir(Path("."))
         self.albums_root = Path(os.getenv("OPEN_LANGUAGE_ALBUMS", "albums"))
 
     def __repr__(self) -> str:

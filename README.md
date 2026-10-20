@@ -47,11 +47,15 @@ Releases and their notes are listed on the repository's Releases page.
 ```text
 german/
 ├── open-language.yml      language code, name, title, description
-├── docs/                  conf.py, index.md, then docs/<level>/<category>/...
+├── conf.py
+├── index.md
+├── <level>/<category>/... the pages
 └── .ol-validate-baseline  optional list of known failures
 ```
 
-`docs/conf.py` loads the extensions and reads the workspace configuration:
+The pages sit at the top of the workspace, next to `conf.py`. A workspace that keeps them under `docs/` instead, with `docs/conf.py`, works the same way: when `docs/conf.py` exists, `docs/` is the folder `ol` builds and reads. Paths in `.ol-validate-baseline` are relative to the workspace either way. At the top of a workspace, `_build`, `.venv`, `.github`, `README.md` and `AGENTS.md` are never read as pages.
+
+`conf.py` loads the extensions and reads the workspace configuration:
 
 ```python
 from ol.language import Language
@@ -105,7 +109,7 @@ A block is refused with one of these codes:
 | `written_twice` | writes a track another block writes too. Each of them is refused. |
 | `orphan_duplicate` | has `:duplicate:` and names a track no block writes |
 
-The last two need every page of a build, so `ol validate` reads the whole `docs/` tree for them, whichever files it is checking. The Sphinx extension `ol.docs.audio_examples` reports each of the other codes as a build warning, and shows a duplicate with the examples of the block that writes its track. In a build, an option the block does not take is reported by MyST as an unknown option.
+The last two need every page of a build, so `ol validate` reads every page of the workspace for them, whichever files it is checking. The Sphinx extension `ol.docs.audio_examples` reports each of the other codes as a build warning, and shows a duplicate with the examples of the block that writes its track. In a build, an option the block does not take is reported by MyST as an unknown option.
 
 ### Reading blocks in code
 

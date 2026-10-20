@@ -15,7 +15,7 @@ import pytest
 from ol.authoring.validate import validate_file
 
 FIXTURE = Path(__file__).parent / "fixtures" / "grammar-article.md"
-ARTICLE = "docs/a1/grammar/articles/bestimmter-artikel.md"
+ARTICLE = "a1/grammar/articles/bestimmter-artikel.md"
 LINK_TARGETS = [
     "a1/grammar/articles/unbestimmter-artikel.md",
     "a1/grammar/articles/negativartikel.md",
@@ -27,12 +27,12 @@ H1 = "# Definite Articles\n"
 TRACK = ":track: a1/grammar/bestimmter-artikel\n"
 
 
-def errors(tmp_path: Path, text: str) -> list[str]:
+def errors(tmp_path: Path, src: Path, text: str) -> list[str]:
     for target in LINK_TARGETS:
-        page = tmp_path / "docs" / target
+        page = src / target
         page.parent.mkdir(parents=True, exist_ok=True)
         page.write_text("# Page\n", encoding="utf-8")
-    article = tmp_path / ARTICLE
+    article = src / ARTICLE
     article.write_text(text, encoding="utf-8")
     (tmp_path / "open-language.yml").write_text(
         "language: German\nlanguage_code: de\n", encoding="utf-8"
@@ -47,8 +47,8 @@ def source() -> str:
     return FIXTURE.read_text(encoding="utf-8")
 
 
-def test_fixture_passes(tmp_path, source):
-    assert errors(tmp_path, source) == []
+def test_fixture_passes(tmp_path, src, source):
+    assert errors(tmp_path, src, source) == []
 
 
 def _break_first_audio_line(text: str) -> str:
@@ -229,21 +229,21 @@ BROKEN_ARTICLES = {
 
 
 @pytest.mark.parametrize("case", BROKEN_ARTICLES, ids=list(BROKEN_ARTICLES))
-def test_broken_article_is_red(tmp_path, source, case):
+def test_broken_article_is_red(tmp_path, src, source, case):
     breaker, expected = BROKEN_ARTICLES[case]
     broken = breaker(source)
     assert broken != source, "the mutation did not change the fixture"
-    found = errors(tmp_path, broken)
+    found = errors(tmp_path, src, broken)
     assert any(expected in msg for msg in found), found
 
 
-def test_stock_phrase_in_an_example_is_not_prose(tmp_path, source):
+def test_stock_phrase_in_an_example_is_not_prose(tmp_path, src, source):
     glossed = source.replace(": The harbour is big.", ": The harbour is robust.", 1)
-    assert errors(tmp_path, glossed) == []
+    assert errors(tmp_path, src, glossed) == []
 
 
-def write_articles_index(tmp_path: Path, *entries: str) -> None:
-    index = tmp_path / "docs/a1/grammar/articles/index.md"
+def write_articles_index(src: Path, *entries: str) -> None:
+    index = src / "a1/grammar/articles/index.md"
     index.parent.mkdir(parents=True, exist_ok=True)
     toctree = "\n".join(entries)
     index.write_text(
@@ -251,28 +251,28 @@ def write_articles_index(tmp_path: Path, *entries: str) -> None:
     )
 
 
-def test_related_link_to_a_toctree_neighbour_warns(tmp_path, source):
-    write_articles_index(tmp_path, "bestimmter-artikel", "unbestimmter-artikel")
-    assert errors(tmp_path, source) == []
+def test_related_link_to_a_toctree_neighbour_warns(tmp_path, src, source):
+    write_articles_index(src, "bestimmter-artikel", "unbestimmter-artikel")
+    assert errors(tmp_path, src, source) == []
     warnings = [
         msg
-        for lvl, msg in validate_file(tmp_path / ARTICLE, tmp_path).items
+        for lvl, msg in validate_file(src / ARTICLE, tmp_path).items
         if lvl == "WARN"
     ]
     assert any("unbestimmter-artikel" in msg for msg in warnings), warnings
 
 
-def test_related_link_past_a_toctree_neighbour_passes(tmp_path, source):
+def test_related_link_past_a_toctree_neighbour_passes(tmp_path, src, source):
     write_articles_index(
-        tmp_path, "bestimmter-artikel", "possessivartikel", "unbestimmter-artikel"
+        src, "bestimmter-artikel", "possessivartikel", "unbestimmter-artikel"
     )
-    assert errors(tmp_path, source) == []
+    assert errors(tmp_path, src, source) == []
 
 
 def vocabulary_errors(
-    tmp_path: Path, words: int = 12, name: str = "at-the-beach-1"
+    tmp_path: Path, src: Path, words: int = 12, name: str = "at-the-beach-1"
 ) -> list[str]:
-    article = tmp_path / f"docs/a1/vocabulary/{name}.md"
+    article = src / f"a1/vocabulary/{name}.md"
     article.parent.mkdir(parents=True)
     rows = "".join(f"| Wort {n} | word {n} |\n" for n in range(words))
     article.write_text(
@@ -287,23 +287,23 @@ def vocabulary_errors(
 
 
 @pytest.mark.parametrize("words", [5, 25])
-def test_vocabulary_pack_outside_its_size_is_red(tmp_path, words):
-    found = vocabulary_errors(tmp_path, words)
+def test_vocabulary_pack_outside_its_size_is_red(tmp_path, src, words):
+    found = vocabulary_errors(tmp_path, src, words)
     assert any(f"{words} words" in msg for msg in found), found
 
 
-def test_vocabulary_pack_within_its_size_passes(tmp_path):
-    found = vocabulary_errors(tmp_path, 12)
+def test_vocabulary_pack_within_its_size_passes(tmp_path, src):
+    found = vocabulary_errors(tmp_path, src, 12)
     assert not any("words" in msg for msg in found), found
 
 
-def test_pack_without_a_running_number_is_red(tmp_path):
-    found = vocabulary_errors(tmp_path, name="at-the-beach")
+def test_pack_without_a_running_number_is_red(tmp_path, src):
+    found = vocabulary_errors(tmp_path, src, name="at-the-beach")
     assert any("running number" in msg for msg in found), found
 
 
-def test_short_model_text_is_red(tmp_path):
-    article = tmp_path / "docs/a1/writing/postcard.md"
+def test_short_model_text_is_red(tmp_path, src):
+    article = src / "a1/writing/postcard.md"
     article.parent.mkdir(parents=True)
     filler = "Writing a postcard is a small, friendly task. " * 6
     article.write_text(

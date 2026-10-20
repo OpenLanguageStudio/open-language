@@ -439,16 +439,23 @@ class BlockCollection:
 
     @classmethod
     def from_docs(
-        cls, root: Path, reader: BlockReader | None = None
+        cls,
+        root: Path,
+        reader: BlockReader | None = None,
+        exclude: Iterable[str] = (),
     ) -> BlockCollection:
         """Read the blocks of every Markdown page under a docs directory.
 
         A directory whose name starts with ``_`` or ``.``, such as ``_build``,
-        is skipped. A page's name is its path below ``root`` without ``.md``.
+        is skipped, and so is a file or directory directly under ``root`` whose
+        name is in ``exclude``. A page's name is its path below ``root`` without
+        ``.md``.
 
         Args:
             root: The docs directory.
             reader: The reader to use, a ``BlockReader`` unless given.
+            exclude: Names directly under ``root`` that are not pages, such as
+                ``README.md`` when the docs directory is the repository root.
 
         Returns:
             The collection of every block under ``root``.
@@ -456,14 +463,29 @@ class BlockCollection:
         Raises:
             BlockFormatError: When a block's body cannot be read as examples.
         """
-        pages = {}
-        for path in sorted(Path(root).rglob("*.md")):
-            relative = path.relative_to(root)
-            if any(part.startswith(("_", ".")) for part in relative.parts):
-                continue
-            pages[relative.with_suffix("").as_posix()] = path.read_text(
+        root = Path(root)
+        excluded = set(exclude)
+        paths = []
+        for directory, dirnames, filenames in root.walk():
+            top = directory == root
+            dirnames[:] = [
+                d
+                for d in dirnames
+                if not d.startswith(("_", ".")) and not (top and d in excluded)
+            ]
+            paths.extend(
+                directory / f
+                for f in filenames
+                if f.endswith(".md")
+                and not f.startswith(("_", "."))
+                and not (top and f in excluded)
+            )
+        pages = {
+            path.relative_to(root).with_suffix("").as_posix(): path.read_text(
                 encoding="utf-8"
             )
+            for path in sorted(paths)
+        }
         return cls.from_pages(pages, reader)
 
     def refusals(self) -> list[Refusal]:
