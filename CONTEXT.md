@@ -46,6 +46,11 @@ The kind of article, which decides its template: `concepts`, `grammar`,
 The site's navigation, built from the toctree of the top-level `index.md` and of
 each level index. The top-level `index.md` is the Introduction page. Its toctree
 lists the other top-level pages, then the levels from A1 to B2.
+
+**Top-level page**:
+One of the four pages every Coursebook has at its top level, in menu order:
+Introduction (`index.md`), How to use (`how_to_use.md`), Terminology
+(`terminology.md`) and Contributing (`contributing.md`). There are no others.
 _Avoid_: navigation, sidebar (when the toctrees are meant).
 
 **Template**:

@@ -7,7 +7,13 @@ from pathlib import Path
 import pytest
 
 MENU_PAGES = {
-    "index.md": "# Introduction\n\n```{toctree}\na1/index\n```\n",
+    "index.md": (
+        "# Introduction\n\nThe coursebook.\n\n```{toctree}\n"
+        "how_to_use\nterminology\ncontributing\na1/index\n```\n"
+    ),
+    "how_to_use.md": "# How to use\n\nHow to read it.\n",
+    "terminology.md": "# Terminology\n\nThe terms.\n",
+    "contributing.md": "# Contributing\n\nHow to help.\n",
     "a1/index.md": "# A1\n\n```{toctree}\ngrammar/index\n```\n",
     "a1/grammar/index.md": "# Grammar\n\nGrammar articles.\n\n```{toctree}\nfirst\n```\n",
     "a1/grammar/first.md": "# First\n",
@@ -18,7 +24,8 @@ MENU_PAGES = {
 def write_menu():
     """Give a language repository the smallest menu the menu check passes.
 
-    The menu lists A1, whose grammar index lists one placeholder page.
+    The standard top-level pages, and A1, whose grammar index lists one
+    placeholder page.
     """
 
     def write(root: Path) -> Path:

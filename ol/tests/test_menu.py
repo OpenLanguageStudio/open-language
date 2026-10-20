@@ -1,7 +1,7 @@
 """Every menu rule must go red on a deliberately broken language repository.
 
-The good menu is the Introduction page listing the other top-level pages, then
-every level from A1 to B2, each listing its categories in order. Each case
+The good menu is the Introduction page listing the other standard top-level
+pages in their order, then every level from A1 to B2, each listing its categories in order. Each case
 breaks exactly one thing and asserts the error it should raise.
 """
 
@@ -13,7 +13,7 @@ from pathlib import Path
 import pytest
 from typer.testing import CliRunner
 
-from ol.authoring.menu import check_menu, toctrees
+from ol.authoring.menu import TOP_LEVEL_PAGES, check_menu, toctrees
 from ol.authoring.validate import validate_file
 from ol.cli import app
 
@@ -31,7 +31,7 @@ def toctree(*entries: str) -> str:
 
 
 def root_index(*entries: str, h1: str = "Introduction") -> str:
-    return f"---\ntitle: Home\n---\n# {h1}\n\n" + toctree(*entries)
+    return f"---\ntitle: Home\n---\n# {h1}\n\nThe coursebook.\n\n" + toctree(*entries)
 
 
 def level_index(level: str, *entries: str, orphan: bool = False) -> str:
@@ -48,7 +48,9 @@ def menu_repository(tmp_path: Path) -> Path:
     (tmp_path / "open-language.yml").write_text("language: German\nlanguage_code: de\n")
     (tmp_path / "index.md").write_text(GOOD_ROOT)
     for page in TOP_LEVEL:
-        (tmp_path / f"{page}.md").write_text(f"# {page}\n")
+        (tmp_path / f"{page}.md").write_text(
+            f"# {TOP_LEVEL_PAGES[page]}\n\nWhat the page says.\n"
+        )
     for level in ("a1", "a2", "b1", "b2"):
         for category in ("concepts", "grammar", "writing", "vocabulary"):
             (tmp_path / level / category).mkdir(parents=True)
@@ -73,13 +75,13 @@ def test_a_level_may_leave_a_category_out(tmp_path):
     assert menu_errors(repo) == {}
 
 
-def test_top_level_pages_take_any_order_and_explicit_titles(tmp_path):
+def test_menu_entries_may_carry_a_title_or_a_leading_slash(tmp_path):
     repo = menu_repository(tmp_path)
     (repo / "index.md").write_text(
         root_index(
-            "contributing",
             "How to use <how_to_use>",
             "/terminology",
+            "contributing",
             "a1/index",
             "a2/index",
             "b1/index",
@@ -100,6 +102,13 @@ def test_a_commented_out_toctree_is_not_read():
     assert toctrees(body) == [["a1/index"]]
 
 
+def test_readme_and_agents_at_the_top_are_not_pages(tmp_path):
+    repo = menu_repository(tmp_path)
+    write(repo, "README.md", "# German\n")
+    write(repo, "AGENTS.md", "# Agents\n")
+    assert menu_errors(repo) == {}
+
+
 def write(repo: Path, rel: str, text: str) -> None:
     (repo / rel).write_text(text)
 
@@ -109,7 +118,48 @@ CASES = {
     "root page is not the Introduction": (
         lambda r: write(r, "index.md", GOOD_ROOT.replace("# Introduction", "# Home")),
         "index.md",
-        "its H1 is 'Introduction' (found 'Home')",
+        "the H1 of index.md is 'Introduction' (found 'Home')",
+    ),
+    "root page is a stub": (
+        lambda r: write(r, "index.md", GOOD_ROOT.replace("The coursebook.\n", "")),
+        "index.md",
+        "index.md has no prose below its H1: write at least one paragraph",
+    ),
+    "standard page missing": (
+        lambda r: (r / "terminology.md").unlink(),
+        "terminology.md",
+        "no terminology.md at the top level: every Coursebook has the page 'Terminology'",
+    ),
+    "standard page with the wrong H1": (
+        lambda r: write(r, "how_to_use.md", "# How To Use\n\nText.\n"),
+        "how_to_use.md",
+        "the H1 of how_to_use.md is 'How to use' (found 'How To Use')",
+    ),
+    "standard page that is a stub": (
+        lambda r: write(r, "how_to_use.md", "# How to use\n"),
+        "how_to_use.md",
+        "how_to_use.md has no prose below its H1",
+    ),
+    "another page at the top level": (
+        lambda r: write(r, "glossary.md", "# Glossary\n\nWords.\n"),
+        "glossary.md",
+        "glossary.md is not a standard top-level page",
+    ),
+    "top-level pages out of order": (
+        lambda r: write(
+            r,
+            "index.md",
+            root_index(
+                "terminology", "how_to_use", "contributing", *GOOD_ROOT_ENTRIES[3:]
+            ),
+        ),
+        "index.md",
+        "list the top-level pages in the order how_to_use, terminology, contributing",
+    ),
+    "standard page missing from the menu": (
+        lambda r: write(r, "index.md", root_index(*GOOD_ROOT_ENTRIES[1:])),
+        "index.md",
+        "'how_to_use' is missing from the toctree: list it above the levels",
     ),
     "top-level page after a level": (
         lambda r: write(
@@ -128,10 +178,11 @@ CASES = {
         "index.md",
         "top-level page 'contributing' comes after 'a1/index': move it above the first level",
     ),
-    "top-level page that does not exist": (
-        lambda r: write(r, "index.md", root_index("missing", *GOOD_ROOT_ENTRIES)),
+    "another page in the menu": (
+        lambda r: write(r, "index.md", root_index("glossary", *GOOD_ROOT_ENTRIES)),
         "index.md",
-        "'missing' has no page missing.md: remove it",
+        "'glossary' is not a standard top-level page: the menu lists only "
+        "how_to_use, terminology, contributing and the levels, remove it",
     ),
     "root has no toctree": (
         lambda r: write(r, "index.md", "# Introduction\n\nWelcome.\n"),

@@ -2,6 +2,25 @@
 
 ## [Unreleased]
 
+### Changed: every language repository has the same top-level pages
+
+This breaks language repositories with other top-level pages, or without one of these. The menu check now holds the top level to exactly four pages, in this menu order (#21):
+
+| File | H1 |
+|---|---|
+| `index.md` | Introduction |
+| `how_to_use.md` | How to use |
+| `terminology.md` | Terminology |
+| `contributing.md` | Contributing |
+
+- Each page exists, has exactly that H1, and has at least one paragraph of prose below it.
+- Any other `.md` at the top level fails. `README.md` and `AGENTS.md` are still never read as pages.
+- The root toctree lists `how_to_use`, `terminology` and `contributing` in that order, then the levels. Any other top-level entry fails, and so does a missing one.
+
+`ol templates` adds one template for each page: `introduction.md`, `how-to-use.md`, `terminology.md` and `contributing.md`. A new language starts from them.
+
+To bring a repository into line, give each of the four pages its H1 and a paragraph of prose, list them in order in `index.md`, and move the content of any other top-level page into one of them.
+
 ## [0.4.0] - 2026-10-20
 
 ### Changed: every language repository builds the same menu
