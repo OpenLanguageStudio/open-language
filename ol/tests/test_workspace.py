@@ -13,7 +13,9 @@ from ol.workspace import source_dir
 
 runner = CliRunner()
 
-DUPLICATE = "# Page\n\n:::{audio-examples}\n:track: a1/grammar/dativ\n:duplicate:\n:::\n"
+DUPLICATE = (
+    "# Page\n\n:::{audio-examples}\n:track: a1/grammar/dativ\n:duplicate:\n:::\n"
+)
 
 LEVEL_INDEX = """---
 myst:
@@ -43,7 +45,9 @@ def test_the_source_is_the_workspace_without_docs_conf_py(tmp_path):
 
 
 def test_the_build_reads_the_source_and_writes_below_it(tmp_path, src):
-    expected = ("docs", "docs/_build/html") if src.name == "docs" else (".", "_build/html")
+    expected = (
+        ("docs", "docs/_build/html") if src.name == "docs" else (".", "_build/html")
+    )
     assert tuple(Path(p).as_posix() for p in _build_paths(tmp_path)) == expected
 
 
@@ -100,7 +104,9 @@ def test_the_level_index_may_name_its_level(tmp_path, src):
     level.write_text(LEVEL_INDEX)
     category = src / "a1/grammar/index.md"
 
-    level_errors = [m for lvl, m in validate_file(level, tmp_path).items if lvl == "ERROR"]
+    level_errors = [
+        m for lvl, m in validate_file(level, tmp_path).items if lvl == "ERROR"
+    ]
     category_errors = [
         m for lvl, m in validate_file(category, tmp_path).items if lvl == "ERROR"
     ]
