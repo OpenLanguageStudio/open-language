@@ -41,8 +41,8 @@ def test_new_failure_fails_the_run(tmp_path):
     assert "a1/grammar/broken.md" in result.output
 
 
-def test_baselined_failure_passes_the_run(tmp_path):
-    ws = _workspace(tmp_path)
+def test_baselined_failure_passes_the_run(tmp_path, write_menu):
+    ws = write_menu(_workspace(tmp_path))
     written = runner.invoke(
         app, ["validate", "--workspace", str(ws), "--write-baseline"]
     )
@@ -53,8 +53,8 @@ def test_baselined_failure_passes_the_run(tmp_path):
     assert result.exit_code == 0, result.output
 
 
-def test_fixed_baseline_entry_is_reported(tmp_path):
-    ws = _workspace(tmp_path)
+def test_fixed_baseline_entry_is_reported(tmp_path, write_menu):
+    ws = write_menu(_workspace(tmp_path))
     (ws / ".ol-validate-baseline").write_text("a1/grammar/broken.md\n")
     # A short placeholder page is reported as a stub, not a failure.
     (ws / "a1/grammar/broken.md").write_text("# Broken\n")

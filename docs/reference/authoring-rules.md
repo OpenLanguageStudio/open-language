@@ -19,7 +19,7 @@ A language repository's `AGENTS.md` links this page and does not restate it. It 
 
 ## Categories
 
-Each level has four categories, each a directory directly under the level: `grammar`, `concepts`, `writing` and `vocabulary`. `situations` is not in use; material about understanding a scenario goes in a concepts article.
+Each level has up to four categories, each a directory directly under the level: `concepts`, `grammar`, `writing` and `vocabulary`. There are no others: `topics` and `situations` are not in use, and material about understanding a scenario goes in a concepts article. `ol validate` checks the menu these make (see `CONTEXT.md`, Menu).
 
 ## File names
 

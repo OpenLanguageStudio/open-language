@@ -11,7 +11,7 @@ Each language lives in its own workspace repository, which installs this package
 ## What it provides
 
 - **`ol check`** runs every content check in one pass: template conformance and a strict docs build with warnings as errors. This is the command CI runs.
-- **`ol validate`** checks articles and category indexes against the templates: required sections in order, frontmatter, titles, banned characters, `audio-examples` blocks with a code for each refusal, example and marking limits, Prerequisites and Related articles links, vocabulary pack size, file names, and stock machine-writing vocabulary. The limits and the word list live in `ol/authoring/specs.yml`.
+- **`ol validate`** checks articles and category indexes against the templates: required sections in order, frontmatter, titles, banned characters, `audio-examples` blocks with a code for each refusal, example and marking limits, Prerequisites and Related articles links, vocabulary pack size, file names, and stock machine-writing vocabulary. The limits and the word list live in `ol/authoring/specs.yml`. Run without files, it also checks the site menu (below).
 - **`ol.blocks`** reads `audio-examples` blocks and says why a block is refused. The checks, the Sphinx extension and the Open Language app all read blocks through it. See [The audio-examples block](#the-audio-examples-block).
 - **`ol/authoring/review-rubric.yml`** is the checklist for the part a script cannot judge: level, correctness, teaching value and plain language. Each item is answered pass, concern or fail.
 - **[Authoring rules](docs/reference/authoring-rules.md)** holds the rules neither the checks nor the rubric cover. A language repository's `AGENTS.md` links it instead of restating it.
@@ -54,6 +54,13 @@ german/
 ```
 
 The pages sit at the top of the workspace, next to `conf.py`, and the build goes to `_build/html`. Paths in `.ol-validate-baseline` are relative to the workspace. `_build`, `.venv`, `.github`, `README.md` and `AGENTS.md` at the top are never read as pages.
+
+Every workspace builds the same menu, and `ol validate` fails when it does not:
+
+- The top-level `index.md` is the Introduction page, with the H1 "Introduction". Its one toctree lists the other top-level pages (`how_to_use`, `contributing`, ...) in any order, then `a1/index`, `a2/index`, `b1/index` and `b2/index` in that order.
+- Every level directory has an `index.md` in that toctree, not marked `orphan: true`. There are no levels above B2.
+- Each level index has one toctree listing only `concepts/index`, `grammar/index`, `writing/index` and `vocabulary/index`, in that order. A level may leave a category out. A level has no other category directories.
+- No external links or other entries in these toctrees. A menu error is never covered by the baseline.
 
 `conf.py` loads the extensions and reads the workspace configuration:
 
