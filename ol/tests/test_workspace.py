@@ -63,9 +63,7 @@ def test_check_builds_the_source(tmp_path, src, monkeypatch):
     result = runner.invoke(app, ["check", "--workspace", str(tmp_path)])
 
     assert result.exit_code == 0, result.output
-    assert [Path(p).as_posix() for p in calls[0][-2:]] == list(
-        Path(p).as_posix() for p in _build_paths(tmp_path)
-    )
+    assert tuple(calls[0][-2:]) == _build_paths(tmp_path)
 
 
 def test_pages_outside_the_content_are_not_read_at_the_top(tmp_path):
