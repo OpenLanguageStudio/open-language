@@ -57,7 +57,8 @@ The pages sit at the top of the workspace, next to `conf.py`, and the build goes
 
 Every workspace builds the same menu, and `ol validate` fails when it does not:
 
-- The top-level `index.md` is the Introduction page, with the H1 "Introduction". Its one toctree lists the other top-level pages (`how_to_use`, `contributing`, ...) in any order, then `a1/index`, `a2/index`, `b1/index` and `b2/index` in that order.
+- The top level holds exactly four pages, each with its H1 and at least one paragraph of prose: `index.md` ("Introduction"), `how_to_use.md` ("How to use"), `terminology.md` ("Terminology") and `contributing.md` ("Contributing"). Any other `.md` there fails, apart from `README.md` and `AGENTS.md`. `ol templates` has a template for each: `introduction.md`, `how-to-use.md`, `terminology.md`, `contributing.md`.
+- `index.md` is the Introduction page and holds the menu. Its one toctree lists `how_to_use`, `terminology` and `contributing` in that order, then `a1/index`, `a2/index`, `b1/index` and `b2/index` in that order.
 - Every level directory has an `index.md` in that toctree, not marked `orphan: true`. There are no levels above B2.
 - Each level index has one toctree listing only `concepts/index`, `grammar/index`, `writing/index` and `vocabulary/index`, in that order. A level may leave a category out. A level has no other category directories.
 - No external links or other entries in these toctrees. A menu error is never covered by the baseline.
