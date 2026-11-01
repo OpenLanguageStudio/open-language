@@ -7,12 +7,14 @@ from pathlib import Path
 
 import typer
 
+from ol.authoring.specs_data import SPECS
 from ol.blocks import BlockCollection, BlockFormatError, Refusal
 from ol.workspace import ROOT_EXCLUDES
 
 app = typer.Typer(help="Open Language authoring tools")
 
 BASELINE_FILE = ".ol-validate-baseline"
+RENDER_WIDTH = SPECS["render"]["viewport_width"]
 
 
 @app.command()
@@ -118,8 +120,16 @@ def context(
 
 
 def _article_files(workspace: Path) -> list[Path]:
-    """Every Markdown file under the CEFR level directories (<level>/...)."""
-    files: list[Path] = []
+    """Every page held to the page standard.
+
+    The Introduction and Terminology pages, then every Markdown file under the
+    CEFR level directories (<level>/...).
+    """
+    files = [
+        page
+        for page in (workspace / "index.md", workspace / "terminology.md")
+        if page.is_file()
+    ]
     for level_dir in sorted(p for p in workspace.iterdir() if p.is_dir()):
         if (
             len(level_dir.name) == 2
@@ -311,14 +321,39 @@ def templates(
     typer.echo(path.read_text(encoding="utf-8"), nl=False)
 
 
+def _render_check(workspace: Path) -> bool:
+    """Open a sample of the built pages. A baseline page may scroll sideways."""
+    from ol.authoring.render import (
+        RenderUnavailable,
+        overflowing_pages,
+        sample_pages,
+    )
+
+    pages = sample_pages(workspace)
+    try:
+        overflowing = overflowing_pages(workspace / "_build/html", pages)
+    except RenderUnavailable as exc:
+        typer.echo(f"ERROR: {exc}")
+        return False
+    baseline = _read_baseline(workspace / BASELINE_FILE)
+    failing = [page for page in overflowing if page not in baseline]
+    for page in failing:
+        typer.echo(f"[FAIL] {page}\n    ERROR: the page scrolls sideways")
+    if not failing:
+        typer.echo(f"OK: {len(pages)} page(s), none scrolls sideways.")
+    return not failing
+
+
 @app.command()
 def check(
     workspace: Path = typer.Option(Path("."), help="Language workspace root."),
-    skip_build: bool = typer.Option(False, "--skip-build", help="Skip the docs build."),
+    skip_build: bool = typer.Option(
+        False, "--skip-build", help="Skip the docs build and the render check."
+    ),
 ):
-    """Run every content check: validate, then a strict docs build.
+    """Run every content check: validate, a strict docs build, then the render check.
 
-    This is the same gate CI runs. Both steps run even when the first one
+    This is the same gate CI runs. Every step runs even when an earlier one
     fails, so one pass reports everything.
     """
     failed: list[str] = []
@@ -355,6 +390,10 @@ def check(
         ]
         if subprocess.run(cmd, cwd=workspace).returncode:
             failed.append("docs build")
+
+        typer.echo(f"\n== render check at {RENDER_WIDTH} pixels")
+        if not _render_check(workspace):
+            failed.append("render check")
 
     if failed:
         typer.echo(f"\nFAILED: {', '.join(failed)}")

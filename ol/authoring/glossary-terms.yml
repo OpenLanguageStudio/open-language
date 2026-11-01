@@ -1,0 +1,15 @@
+# The technical terms every Coursebook shares. A language repository adds its
+# own in a glossary-terms.yml next to its open-language.yml.
+#
+# A term on either list has exactly one entry on the Terminology page, and the
+# first use of it in an article's prose is written with the {term} role.
+#
+# An item is the term alone, which also matches the term with an -s, or a
+# mapping that names the other forms an article writes it in:
+#
+#   terms:
+#     - noun
+#     - term: prefix
+#       forms: [prefixes]
+
+terms: []

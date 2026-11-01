@@ -107,3 +107,26 @@ class TestStackRole:
         done = build("# Index\n\nSay {stack}`Guten Morgen` here.\n")
         assert "ol-stack" not in done.output()
         assert "Say Guten Morgen here." in done.output()
+
+
+GLOSSARY = """# Terms
+
+A {term}`noun`.
+
+```{glossary}
+Noun : Nomen
+  A word that names a thing. *Example: der Hund, the dog.*
+```
+"""
+
+
+class TestGlossary:
+    def test_an_entry_shows_its_name_in_brackets(self, build):
+        assert '<span class="ol-term-name"> (Nomen)</span>' in build(GLOSSARY).output()
+
+    def test_the_role_links_to_the_entry(self, build):
+        assert 'href="#term-Noun"' in build(GLOSSARY).output()
+
+    def test_a_term_with_no_entry_is_a_build_warning(self, build):
+        site = build(GLOSSARY.replace("{term}`noun`", "{term}`verb`"))
+        assert "term not in glossary: 'verb'" in site.warnings.getvalue()

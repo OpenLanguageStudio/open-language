@@ -86,6 +86,7 @@ BROKEN_ARTICLES = {
         lambda s: s.replace(
             "Sie liest {akk}`das` Buch.",
             "Ich lese {akk}`das` Heft.\n: I am reading the notebook.\n\n"
+            "Wir nehmen {akk}`die` Tram.\n: We take the tram.\n\n"
             "Sie liest {akk}`das` Buch.",
             1,
         ),
@@ -98,13 +99,9 @@ BROKEN_ARTICLES = {
         "different marks in one sentence",
     ),
     "too many marks in a block": (
-        lambda s: (
-            s.replace(
-                "Er kauft {akk}`den` Käse.", "{nom}`Er` kauft {dat}`dem` Käse.", 1
-            )
-            .replace("Wir nehmen {akk}`die`", "{verb}`Wir` nehmen {gen}`die`", 1)
-            .replace("Sie liest {akk}`das`", "Sie liest {prep}`das`", 1)
-        ),
+        lambda s: s.replace(
+            "Er kauft {akk}`den` Käse.", "{nom}`Er` kauft {dat}`dem` Käse.", 1
+        ).replace("Sie liest {akk}`das`", "{verb}`Sie` liest {prep}`das`", 1),
         "different marks in one block",
     ),
     "too few audio examples": (
@@ -131,11 +128,11 @@ BROKEN_ARTICLES = {
     ),
     "missing audio section": (
         lambda s: s.replace("## Hear it in practice", "## Listen", 1),
-        "^Hear it in practice$",
+        "the section '## Hear it in practice'",
     ),
     "missing summary": (
         lambda s: s.replace("## Summary", "## Recap", 1),
-        "^Summary$",
+        "the section '## Summary'",
     ),
     "blockquote subtitle": (
         lambda s: s.replace(H1, H1 + "\n> The words for 'the'\n", 1),
@@ -268,15 +265,10 @@ def write_articles_index(tmp_path: Path, *entries: str) -> None:
     )
 
 
-def test_related_link_to_a_toctree_neighbour_warns(tmp_path, source):
+def test_related_link_to_a_toctree_neighbour_is_red(tmp_path, source):
     write_articles_index(tmp_path, "bestimmter-artikel", "unbestimmter-artikel")
-    assert errors(tmp_path, source) == []
-    warnings = [
-        msg
-        for lvl, msg in validate_file(tmp_path / ARTICLE, tmp_path).items
-        if lvl == "WARN"
-    ]
-    assert any("unbestimmter-artikel" in msg for msg in warnings), warnings
+    found = errors(tmp_path, source)
+    assert any("unbestimmter-artikel" in msg for msg in found), found
 
 
 def test_related_link_past_a_toctree_neighbour_passes(tmp_path, source):
@@ -311,7 +303,7 @@ def test_vocabulary_pack_outside_its_size_is_red(tmp_path, words):
 
 def test_vocabulary_pack_within_its_size_passes(tmp_path):
     found = vocabulary_errors(tmp_path, 12)
-    assert not any("words" in msg for msg in found), found
+    assert not any("word list" in msg for msg in found), found
 
 
 def test_pack_without_a_running_number_is_red(tmp_path):
@@ -339,7 +331,7 @@ def test_short_model_text_is_red(tmp_path):
 def test_review_rubric_is_well_formed():
     import yaml
 
-    from ol.authoring.validate import SPECS_PATH
+    from ol.authoring.specs_data import SPECS_PATH
 
     rubric = yaml.safe_load(
         (SPECS_PATH.parent / "review-rubric.yml").read_text(encoding="utf-8")

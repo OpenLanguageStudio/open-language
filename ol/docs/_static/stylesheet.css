@@ -526,3 +526,29 @@ summary:focus-visible,
   font-style: italic;
   line-height: 1.4;
 }
+
+/* A glossary entry: the term in bold, its name in the language taught after it. */
+dl.glossary dt {
+  font-weight: 600;
+}
+
+.ol-term-name {
+  font-weight: 400;
+}
+
+/* A long compound in a heading or the next-page link wraps, so a page never
+   scrolls sideways on a phone. */
+.bd-article h1,
+.bd-article h2,
+.bd-article h3,
+.prev-next-info p {
+  overflow-wrap: anywhere;
+}
+
+.prev-next-area a {
+  min-width: 0;
+}
+
+.prev-next-info {
+  min-width: 0;
+}

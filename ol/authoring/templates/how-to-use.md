@@ -14,7 +14,7 @@ myst:
 
 ## How an article is laid out
 
-{{The parts of an article in order: the lead paragraph, the teaching
+{{The parts of an article in order: the lead paragraph, the explanation, the teaching
 sections, Hear it in practice, the Summary, and Related articles.}}
 
 ## The marks in examples

@@ -1,6 +1,6 @@
 [project]
 name = "open-language"
-version = "0.7.0"
+version = "0.8.0"
 description = "Authoring tools for Open Language coursebooks: template checks, album audits and the Sphinx build."
 readme = "README.md"
 license = "MIT"
@@ -28,6 +28,11 @@ dependencies = [
     "typer>=0.15",
 ]
 
+[project.optional-dependencies]
+# The render check in `ol check`. A language repository depends on it; the app,
+# which only reads pages, does not.
+render = ["playwright>=1.50"]
+
 [project.urls]
 Homepage = "https://openlanguage.studio"
 Repository = "https://github.com/OpenLanguageStudio/open-language"
@@ -47,6 +52,7 @@ include = ["/ol", "/docs/reference", "/README.md", "/LICENSE"]
 
 [dependency-groups]
 dev = [
+    "playwright>=1.50",
     "pre-commit>=4.7.0",
     "pytest>=9.1",
     "pytest-cov>=7.0",
@@ -79,4 +85,14 @@ extend-ignore = [
 [tool.forge.docs]
 # These modules have no public Python API: the checks are reached through
 # `ol validate`, the CLI through `ol`, and the Sphinx extensions through conf.py.
-exempt-paths = ["ol/cli.py", "ol/authoring/validate.py", "ol/docs/audio_examples.py", "ol/docs/roles.py"]
+exempt-paths = [
+    "ol/cli.py",
+    "ol/authoring/glossary.py",
+    "ol/authoring/page.py",
+    "ol/authoring/render.py",
+    "ol/authoring/specs_data.py",
+    "ol/authoring/standard.py",
+    "ol/authoring/validate.py",
+    "ol/docs/audio_examples.py",
+    "ol/docs/roles.py",
+]
