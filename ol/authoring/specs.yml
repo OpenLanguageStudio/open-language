@@ -1,6 +1,9 @@
 # Validation spec for Open Language article types.
 # Consumed by ol/authoring/validate.py (`ol validate`).
 #
+# docs/reference/page-standard.md names each rule these limits belong to. A
+# change to a rule changes that page and this file in the same pull request.
+#
 # Common checks (all articles, hardcoded in the script):
 #   - frontmatter with html_meta description/keywords
 #   - exactly one H1; NO CEFR level prefix in index titles
@@ -22,16 +25,61 @@
 # is checked by ol/authoring/menu.py, not per article type.
 #
 # Per-type keys:
-#   required_headings: regexes that must each match at least one ## heading
+#   sections: the article's H2s in order. An item names a `heading`, or a `match`
+#     regex with a `label`, or stands for the sections with names of their own
+#     (`other: true`). `count: [low, high]` is how many it may have; default one.
 #   require_examples_div: at least one ":::{div} ol-examples" block
 #   require_summary_admonitions / require_common_mistakes
 #   min_audio_examples: minimum count of :::{audio-examples} blocks
 #   ordered: toctree order in the category index is the learning sequence
-#   min_pack_words / max_pack_words: rows in the first table (the word list)
+#   min_pack_words / max_pack_words: rows in the table under "The words"
 #   numbered_filename: the file name ends in a running number (at-the-beach-1)
 
 common:
+  # A body shorter than this is a stub, reported but not held to the templates.
+  stub_body_bytes: 200
   description_max_chars: 160
+  # The opening: the lead paragraph, then the explanation paragraph.
+  lead_min_words: 20
+  lead_max_words: 50
+  lead_max_sentences: 2
+  explanation_min_words: 40
+  explanation_max_words: 120
+  opening_max_words: 180
+  # Headings.
+  h1_max_words: 5
+  max_h2: 7
+  max_h3: 6
+  heading_max_words: 8
+  # Tables. Tables of forms are the wider kind, and exist only in grammar.
+  table_max_columns: 3
+  forms_table_max_columns: 5
+  # Plain language. Over the average is a warning, the rest are errors.
+  sentence_max_words: 25
+  paragraph_max_sentences: 5
+  sentence_average_words: 18
+  # A full stop after one of these does not end a sentence.
+  sentence_abbreviations:
+    - "e.g."
+    - "i.e."
+    - "etc."
+    - "vs."
+    - "cf."
+    - "z. B."
+    - "z.B."
+    - "d. h."
+    - "d.h."
+    - "usw."
+    - "Mr."
+    - "Mrs."
+    - "Ms."
+    - "Dr."
+    - "Hr."
+    - "Fr."
+    - "St."
+    - "No."
+  glossary_entry_max_words: 30
+  index_max_sentences: 3
   check_doc_links: true
   # Prerequisites name true dependencies only.
   max_prerequisites: 3
@@ -87,12 +135,43 @@ common:
     - "in conclusion"
     - "rest assured"
 
+# The render check in `ol check`: no page scrolls sideways at this width.
+render:
+  viewport_width: 360
+  viewport_height: 800
+  # Articles opened per category of each level, on top of every index page.
+  articles_per_type: 2
+
+# The level overview page.
+level_page:
+  lead_max_words: 40
+  know_bullets: [3, 5]
+  can_do_bullets: [4, 6]
+  bullet_max_words: 15
+  overview_max_words: 150
+
+# The Introduction page.
+introduction_page:
+  lead_max_words: 60
+  how_max_words: 80
+  level_bullet_max_words: 20
+  category_bullet_max_words: 25
+  start_bullets: [2, 4]
+  page_max_words: 350
+
 types:
   grammar:
-    required_headings:
-      - "^Hear it in practice$"
-      - "^Summary$"
-      - "^Related articles$"
+    # Form, use and contrast sections have names of their own. One of each
+    # kind at least, five in all.
+    sections:
+      - other: true
+        count: [2, 5]
+      - heading: Hear it in practice
+      - heading: Summary
+      - heading: Related articles
+        count: [0, 1]
+    no_h3_sections: [Hear it in practice, Summary, Related articles]
+    max_examples_per_section: 3
     require_examples_div: true
     require_summary_admonitions: true
     require_common_mistakes: true
@@ -100,11 +179,18 @@ types:
     ordered: false
 
   concepts:
-    required_headings:
-      - "^When to use it$"
-      - "^Key phrases$"
-      - "^Hear it in practice$"
-      - "^Summary$"
+    sections:
+      - heading: When to use it
+      - heading: Key phrases
+      - other: true
+        count: [0, 3]
+      - heading: Culture note
+        count: [0, 1]
+      - heading: Hear it in practice
+      - heading: Summary
+      - heading: Related articles
+        count: [0, 1]
+    culture_note_max_words: 80
     require_examples_div: true
     require_summary_admonitions: true
     require_common_mistakes: false
@@ -112,18 +198,18 @@ types:
     ordered: true
     english_filename: true
 
-  # Writing shape updated 2026-07-20 to the operational-guidelines category shape
-  # (model text -> building blocks -> Hear it in practice -> Summary); writing
-  # articles DO carry tracks (decision record #3). Interim pending the W1
-  # exemplar sign-off.
   writing:
-    required_headings:
-      - "^Example: "
-      - "^Building blocks$"
-      - "^Summary$"
-    # Each "Example: ..." section carries its own "### Hear it in practice"
-    # (H3 per the brand rule for sub-section audio; the H2-level required list
-    # cannot see H3s, so the audio block count check carries the enforcement).
+    # Each example holds the model text, a note on it and its own
+    # "### Hear it in practice".
+    sections:
+      - match: "^Example: [A-Z]"
+        label: "Example: <Situation>"
+        count: [1, 2]
+      - heading: Building blocks
+      - heading: Summary
+      - heading: Related articles
+        count: [0, 1]
+    example_note_max_words: 60
     require_examples_div: false
     require_summary_admonitions: true
     require_common_mistakes: true
@@ -134,11 +220,15 @@ types:
     numbered_filename: true
 
   # Vocabulary packs.
-  # Interim spec: heading shape is finalized with the V1 exemplar.
   vocabulary:
-    required_headings:
-      - "^Hear it in practice$"
-      - "^Summary$"
+    sections:
+      - heading: The words
+      - other: true
+        count: [0, 2]
+      - heading: Hear it in practice
+      - heading: Summary
+      - heading: Related articles
+        count: [0, 1]
     require_examples_div: false
     require_summary_admonitions: false
     require_common_mistakes: false

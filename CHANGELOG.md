@@ -2,6 +2,31 @@
 
 ## [Unreleased]
 
+## [0.8.0] - 2026-11-01
+
+### Changed: `ol check` holds every page to the page standard
+
+`docs/reference/page-standard.md` sets the shape of every page, and every rule it tags V, M or B now has its check. This breaks most existing pages. On adopting this version, run `ol validate --write-baseline` once, and the baseline covers them until they are migrated. Menu errors are never baselined.
+
+- `ol validate` now reads the top-level `index.md` and `terminology.md` as well as the level directories.
+- Articles: lead and explanation lengths, the place of Prerequisites, title and heading limits, table columns and headers, an error on a column for the language taught next to one for its translation, sentence and paragraph limits, and the sections of each category in order. Article sections are declared under `sections` in `specs.yml`, which replaces `required_headings`.
+- Level overview and Introduction pages are checked part by part. A category index opens with one to three sentences, and every index page removes the on-this-page navigation.
+- These were warnings and are now errors: an `html_meta.description` over 160 characters, a heading that addresses the reader, and a Related articles link to a toctree neighbour.
+- Grammar articles hold the Common mistakes admonition in the last body section, not in Summary.
+- The menu step fails a `:numbered:` toctree on any page, a root toctree that is not hidden, and a category index whose H1 or sidebar title is not the bare category name.
+
+### Added: the glossary
+
+The Terminology page is now the glossary, written in `{glossary}` directives, and Sphinx's `term` role links to it. A technical term is any word on `ol/authoring/glossary-terms.yml`, which ships empty, or on a language repository's own `glossary-terms.yml`. `ol validate` fails a listed term with no entry or with two, an entry that is not one sentence and one example, and an article whose first use of a listed term is not linked. A build fails on a `{term}` the glossary does not hold. A glossary entry's name in the language taught, written `Noun : Nomen`, shows in brackets after the term.
+
+### Added: the render check
+
+`ol check` opens every top-level and index page and a sample of articles at a 360 pixel viewport after the build, and fails if a page scrolls sideways. A table or code block scrolling inside its own box does not count. A language repository needs the new `render` extra, `open-language[render]`, and a Chrome on the machine or Playwright's Chromium. `--skip-build` skips this step too.
+
+### Changed: the templates follow the standard
+
+Every template now has the standard's shape, and there is a new `vocabulary-article.md`. The stylesheet wraps a long word in a heading or the next-page link, so these no longer push a page wider than a phone.
+
 ## [0.7.0] - 2026-11-01
 
 ### Added: a page's plain examples can be read and spoken

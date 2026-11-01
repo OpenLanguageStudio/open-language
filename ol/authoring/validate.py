@@ -26,6 +26,10 @@ Usage:
   (the build links neighbours). Vocabulary packs hold `min_pack_words` to
   `max_pack_words` words in their word list, and writing and vocabulary file
   names end in a running number.
+- The page standard (docs/reference/page-standard.md): the opening, headings,
+  tables, plain language, the sections of each category, the level and
+  Introduction pages, and the glossary. See ol/authoring/standard.py and
+  ol/authoring/glossary.py.
 - Stub files (< 200 bytes of body) are reported as STUB, not failed line by line.
 
 Exit code: 1 if any ERROR, else 0. Dependency: PyYAML.
@@ -40,15 +44,16 @@ from pathlib import Path
 
 import yaml
 
+from ol.authoring import standard
+from ol.authoring.glossary import check_terminology
+from ol.authoring.specs_data import SPECS
 from ol.blocks import Block, BlockFormatError, BlockReader, Refusal
 from ol.workspace import find_workspace, page_path
 
-SPECS_PATH = Path(__file__).resolve().parent / "specs.yml"
 TEMPLATES_DIR = Path(__file__).resolve().parent / "templates"
-SPECS = yaml.safe_load(SPECS_PATH.read_text(encoding="utf-8"))
 
 CATEGORIES = ("concepts", "grammar", "writing", "vocabulary")
-STUB_BODY_BYTES = 200
+STUB_BODY_BYTES = SPECS["common"]["stub_body_bytes"]
 
 
 class Report:
@@ -100,14 +105,14 @@ def infer_context(path: Path, workspace: Path | None):
     return ws, level, category
 
 
-def native_code(workspace: Path | None) -> str:
-    """language_code from the workspace open-language.yml (fallback de)."""
+def language_name(workspace: Path | None) -> str | None:
+    """The language taught, from the workspace's open-language.yml."""
     if workspace:
         cfg = workspace / "open-language.yml"
         if cfg.exists():
             data = yaml.safe_load(cfg.read_text(encoding="utf-8")) or {}
-            return data.get("language_code") or "de"
-    return "de"
+            return data.get("language")
+    return None
 
 
 def page_name(path: Path, workspace: Path | None = None) -> str:
@@ -280,22 +285,11 @@ _STOCK_OPENER = re.compile(
 def check_direct_address(rep: Report, body: str):
     """Rule 18: body prose does not address the reader.
 
-    Only the LEAD paragraph and H2/H3 headings are checked. Admonitions, example
-    translations and glosses legitimately keep "you" (it is the English of
-    du/Sie), and generic "you" describing real German use is allowed, so a
-    whole-file sweep would be all false positives.
+    Only the LEAD paragraph is checked here, and headings in the standard's
+    checks. Admonitions, example translations and glosses legitimately keep
+    "you" (it is the English of du/Sie), and generic "you" describing real
+    German use is allowed, so a whole-file sweep would be all false positives.
     """
-    # Headings are a WARN, not an ERROR: concepts name a functional ability, and
-    # "Saying who you are" is the category's framing rather than the instructional
-    # address rule 18 targets. Flag it for a human, do not fail the build.
-    for h in headings(body, 2) + headings(body, 3):
-        if _SECOND_PERSON.search(h):
-            rep.warn(
-                f"heading addresses the reader: '{h}' - fine when it names a "
-                "functional ability, wrong when it coaches ('The letters that "
-                "trip you up'). Judgement call (rule 18)"
-            )
-
     m = re.search(r"^# [^\n]+\n+", body, re.M)
     if not m:
         return
@@ -362,10 +356,7 @@ def check_article_headings(rep: Report, body: str):
         )
     for h in headings(body, 2) + headings(body, 3):
         if NUMBERED_HEADING.match(h):
-            rep.error(
-                f"numbered heading '{h}': never number sections by hand; the "
-                "toctree's :numbered: option numbers them"
-            )
+            rep.error(f"numbered heading '{h}': never number sections by hand")
             break
 
 
@@ -419,8 +410,7 @@ def check_related_neighbours(
 
     The theme already renders previous and next links from the toctree, so a
     neighbour under Related articles repeats them. Only the category index in
-    the article's own directory is read. A warning for now; it becomes an
-    error in a later version.
+    the article's own directory is read.
     """
     index = path.parent / "index.md"
     section = RELATED_SECTION.search(body)
@@ -443,21 +433,10 @@ def check_related_neighbours(
         else:
             target = path.parent / link
         if target.resolve() in neighbours:
-            rep.warn(
+            rep.error(
                 f"Related articles links {link}, next to this article in the "
                 "toctree: the build already links it as previous or next"
             )
-
-
-def word_list_size(body: str) -> int:
-    """Rows below the header of the first table in ``body``."""
-    rows = []
-    for line in body.splitlines():
-        if line.startswith("|"):
-            rows.append(line)
-        elif rows:
-            break
-    return max(len(rows) - 2, 0)
 
 
 _EXAMPLES_DIV = re.compile(r"^:::\{div\}\s+ol-examples\s*$")
@@ -616,8 +595,9 @@ def validate_article(path: Path, ctype: str, workspace: Path | None) -> Report:
         if not desc:
             rep.error("html_meta.description missing/empty")
         elif len(desc) > common["description_max_chars"]:
-            rep.warn(
-                f"html_meta.description is {len(desc)} chars (aim <= {common['description_max_chars']})"
+            rep.error(
+                f"html_meta.description is {len(desc)} characters (maximum "
+                f"{common['description_max_chars']})"
             )
         if not hm.get("keywords"):
             rep.error("html_meta.keywords missing/empty")
@@ -647,11 +627,20 @@ def validate_article(path: Path, ctype: str, workspace: Path | None) -> Report:
     check_example_blocks(rep, body)
     check_ai_vocabulary(rep, body)
 
-    # required section headings
-    h2s = headings(body, 2)
-    for pattern in spec.get("required_headings", []):
-        if not any(re.search(pattern, h) for h in h2s):
-            rep.error(f"missing required section heading matching: {pattern}")
+    parts = page_path(path, workspace) if workspace else None
+    found = standard.check_article(
+        rep,
+        body,
+        fm,
+        ctype,
+        spec,
+        {
+            "language": language_name(workspace),
+            "level": parts[0] if parts else None,
+            "workspace": workspace,
+            "offset": text.count("\n", 0, len(text) - len(body)),
+        },
+    )
 
     # standardized example format
     n_divs = len(re.findall(r":::\{div\}\s+ol-examples", body))
@@ -676,9 +665,9 @@ def validate_article(path: Path, ctype: str, workspace: Path | None) -> Report:
         rep.error("Summary lacks ':::{admonition} Common mistakes' block")
 
     if "min_pack_words" in spec:
-        words = word_list_size(body)
+        words = standard.word_table_rows(found)
         lo, hi = spec["min_pack_words"], spec["max_pack_words"]
-        if not lo <= words <= hi:
+        if words is not None and not lo <= words <= hi:
             rep.error(f"word list has {words} words (a pack carries {lo} to {hi})")
 
     # english filename rule
@@ -689,15 +678,6 @@ def validate_article(path: Path, ctype: str, workspace: Path | None) -> Report:
             f"filename '{path.stem}' needs a running number (at-the-beach-1): "
             "the next article on the same theme continues it"
         )
-
-    # "Hear it in practice" section order: heading before Summary, above the block
-    hear = "## Hear it in practice"
-    if (
-        hear in body
-        and "## Summary" in body
-        and body.index(hear) > body.index("## Summary")
-    ):
-        rep.error("the 'Hear it in practice' section must come BEFORE Summary")
 
     # audio-examples blocks
     blocks = read_blocks(rep, path, text, workspace)
@@ -719,8 +699,10 @@ def validate_article(path: Path, ctype: str, workspace: Path | None) -> Report:
 def validate_index(path: Path, ctype: str | None, workspace: Path | None) -> Report:
     rep = Report(path)
     text = path.read_text(encoding="utf-8")
-    _fm, body = split_frontmatter(text)
+    fm, body = split_frontmatter(text)
+    offset = text.count("\n", 0, len(text) - len(body))
     check_common(rep, body)
+    standard.check_index_sidebar(rep, fm)
 
     # title rules: no CEFR level in category/subcategory index titles
     h1s = headings(body, 1)
@@ -746,16 +728,10 @@ def validate_index(path: Path, ctype: str | None, workspace: Path | None) -> Rep
     if entries is None:
         rep.error("no toctree found")
         return rep
-    # grammar subcategory indexes must explain their concept group
-    if ctype == "grammar":
-        h1_match = re.search(r"^# [^\n]+\n", body, re.M)
-        if h1_match:
-            between = body[h1_match.end() : body.index("```{toctree}")]
-            if not between.strip():
-                rep.error(
-                    "index has no explanation paragraph - add 1-3 sentences on what "
-                    "this grammar concept group is"
-                )
+    if is_level_index:
+        standard.check_level_index(rep, body, path.parent.name, offset)
+    else:
+        standard.check_category_index(rep, body, offset)
     if not entries:
         rep.error("toctree is empty")
     directory = path.parent
@@ -782,12 +758,40 @@ def validate_index(path: Path, ctype: str | None, workspace: Path | None) -> Rep
     return rep
 
 
+def validate_introduction(path: Path, workspace: Path) -> Report:
+    """Hold the top-level index.md to the Introduction page's structure."""
+    rep = Report(path)
+    text = path.read_text(encoding="utf-8")
+    fm, body = split_frontmatter(text)
+    check_common(rep, body)
+    standard.check_index_sidebar(rep, fm)
+    offset = text.count("\n", 0, len(text) - len(body))
+    standard.check_introduction(rep, body, workspace, offset)
+    return rep
+
+
+def validate_terminology(path: Path, workspace: Path) -> Report:
+    """Hold the Terminology page to the glossary's rules."""
+    rep = Report(path)
+    text = path.read_text(encoding="utf-8")
+    _fm, body = split_frontmatter(text)
+    check_common(rep, body)
+    offset = text.count("\n", 0, len(text) - len(body))
+    check_terminology(rep, body, workspace, offset)
+    return rep
+
+
 def validate_file(
     path: Path, workspace: Path | None = None, ctype: str | None = None
 ) -> Report:
     """Validate one article or index file and return its report."""
     ws, _level, category = infer_context(path, workspace)
     ctype = ctype or category
+    parts = page_path(path, ws) if ws else None
+    if parts == ("index",):
+        return validate_introduction(path, ws)
+    if parts == ("terminology",):
+        return validate_terminology(path, ws)
     if path.name == "index.md":
         return validate_index(path, ctype, ws)
     if ctype is None:

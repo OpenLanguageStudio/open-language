@@ -6,6 +6,9 @@ is the Introduction: its toctree lists the other standard pages in their order,
 then the levels from A1 to B2. Each level lists its categories in the
 order concepts, grammar, writing, vocabulary. Nothing else goes in the menu.
 
+The sidebar names the categories, and no toctree numbers its entries: the
+course is not read in a line, so the menu never says first, second, third.
+
 The menu belongs to the whole repository, not to one page, so its errors are
 never covered by the baseline.
 """
@@ -29,7 +32,7 @@ TOP_LEVEL_PAGES = {
 MENU_PAGES = tuple(name for name in TOP_LEVEL_PAGES if name != "index")
 
 _LEVEL_DIR = re.compile(r"[abc]\d")
-_TOCTREE = re.compile(r"```\{toctree\}[^\n]*\n(.*?)```", re.S)
+_TOCTREE = re.compile(r"^(`{3,}|:{3,})\{toctree\}[^\n]*\n(.*?)^\1", re.S | re.M)
 _COMMENT = re.compile(r"<!--.*?-->", re.S)
 _EXPLICIT_TITLE = re.compile(r".*<([^<>]+)>$")
 _EXTERNAL = re.compile(r"^[a-z][a-z0-9+.-]*:", re.I)
@@ -50,7 +53,7 @@ def toctrees(body: str) -> list[list[str]]:
     found = []
     for m in _TOCTREE.finditer(_COMMENT.sub("", body)):
         entries = []
-        for line in m.group(1).splitlines():
+        for line in m.group(2).splitlines():
             entry = line.strip()
             if not entry or entry.startswith(":"):
                 continue
@@ -58,6 +61,39 @@ def toctrees(body: str) -> list[list[str]]:
                 entry = title.group(1).strip()
             entries.append(entry)
         found.append(entries)
+    return found
+
+
+def _options(body: str) -> list[list[str]]:
+    """The option lines of every toctree in ``body``.
+
+    Args:
+        body: The page's Markdown.
+
+    Returns:
+        One list of option lines per toctree, in page order.
+    """
+    return [
+        [line.strip() for line in m.group(2).splitlines() if line.startswith(":")]
+        for m in _TOCTREE.finditer(_COMMENT.sub("", body))
+    ]
+
+
+def _titles(body: str) -> dict[str, str]:
+    """The entries of a page's toctrees that give an explicit title.
+
+    Args:
+        body: The page's Markdown.
+
+    Returns:
+        Each title, by the page name it points at.
+    """
+    found = {}
+    for m in _TOCTREE.finditer(_COMMENT.sub("", body)):
+        for line in m.group(2).splitlines():
+            if title := _EXPLICIT_TITLE.match(line.strip()):
+                text = line.strip()[: line.strip().rindex("<")].strip()
+                found[_target(title.group(1).strip())] = text
     return found
 
 
@@ -146,6 +182,10 @@ def _check_root(problems: dict[str, list[str]], workspace: Path) -> set[str]:
     entries = _single_toctree(problems, rel, body)
     if entries is None:
         return set()
+    if ":hidden:" not in _options(body)[0]:
+        errors.append(
+            "menu: the toctree of the Introduction page is hidden: add :hidden:"
+        )
 
     listed: list[str] = []
     pages: list[str] = []
@@ -225,9 +265,17 @@ def _check_level(problems: dict[str, list[str]], workspace: Path, level: str):
     index = directory / "index.md"
     if not index.is_file():
         return
-    entries = _single_toctree(problems, rel, index.read_text(encoding="utf-8"))
+    body = index.read_text(encoding="utf-8")
+    entries = _single_toctree(problems, rel, body)
     if entries is None:
         return
+    for target, title in _titles(body).items():
+        name = target.removesuffix("/index")
+        if name in MENU_CATEGORIES and title != name.capitalize():
+            errors.append(
+                f"menu: '{title}' names the {name} category in the sidebar: the "
+                f"sidebar name is {name.capitalize()}"
+            )
     allowed = [f"{c}/index" for c in MENU_CATEGORIES]
     previous: str | None = None
     seen: set[str] = set()
@@ -251,6 +299,50 @@ def _check_level(problems: dict[str, list[str]], workspace: Path, level: str):
         previous = target
 
 
+def _check_category_names(problems: dict[str, list[str]], workspace: Path, level: str):
+    """A category index has the bare category name as its H1.
+
+    Args:
+        problems: The errors so far, by file.
+        workspace: The language repository's root.
+        level: The level whose categories are checked.
+    """
+    for category in MENU_CATEGORIES:
+        index = workspace / level / category / "index.md"
+        if not index.is_file():
+            continue
+        h1 = re.search(r"^# (.+?)\s*$", index.read_text(encoding="utf-8"), re.M)
+        title = category.capitalize()
+        if not h1 or h1.group(1) != title:
+            found = f"'{h1.group(1)}'" if h1 else "no H1"
+            problems.setdefault(f"{level}/{category}/index.md", []).append(
+                f"menu: the H1 of a category index is the category name, '{title}' "
+                f"(found {found})"
+            )
+
+
+def _check_numbering(problems: dict[str, list[str]], workspace: Path):
+    """No toctree numbers its entries.
+
+    Args:
+        problems: The errors so far, by file.
+        workspace: The language repository's root.
+    """
+    pages = [*sorted(workspace.glob("*.md"))]
+    for directory in sorted(workspace.iterdir()):
+        if directory.is_dir() and _LEVEL_DIR.fullmatch(directory.name):
+            pages += sorted(directory.rglob("*.md"))
+    for page in pages:
+        if page.name in ROOT_EXCLUDES:
+            continue
+        options = _options(page.read_text(encoding="utf-8"))
+        if any(line.startswith(":numbered:") for tree in options for line in tree):
+            problems.setdefault(page.relative_to(workspace).as_posix(), []).append(
+                "menu: a toctree uses :numbered:: the sidebar shows no section "
+                "numbers, remove it"
+            )
+
+
 def check_menu(workspace: Path) -> dict[str, list[str]]:
     """Check the site menu of a language repository.
 
@@ -263,6 +355,7 @@ def check_menu(workspace: Path) -> dict[str, list[str]]:
     """
     problems: dict[str, list[str]] = {}
     _check_top_level_pages(problems, workspace)
+    _check_numbering(problems, workspace)
     listed = _check_root(problems, workspace)
     for d in sorted(p for p in workspace.iterdir() if p.is_dir()):
         if not _LEVEL_DIR.fullmatch(d.name):
@@ -291,4 +384,5 @@ def check_menu(workspace: Path) -> dict[str, list[str]]:
                     "toctree: list it there, in order from A1 to B2"
                 )
         _check_level(problems, workspace, d.name)
+        _check_category_names(problems, workspace, d.name)
     return {rel: errors for rel, errors in problems.items() if errors}

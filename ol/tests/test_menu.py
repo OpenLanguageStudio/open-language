@@ -54,7 +54,9 @@ def menu_repository(tmp_path: Path) -> Path:
     for level in ("a1", "a2", "b1", "b2"):
         for category in ("concepts", "grammar", "writing", "vocabulary"):
             (tmp_path / level / category).mkdir(parents=True)
-            (tmp_path / level / category / "index.md").write_text("# Category\n")
+            (tmp_path / level / category / "index.md").write_text(
+                f"# {category.capitalize()}\n"
+            )
         (tmp_path / level / "index.md").write_text(level_index(level, *GOOD_LEVEL))
     return tmp_path
 
@@ -375,3 +377,58 @@ def test_an_article_outside_the_four_categories_is_told_where_to_go(tmp_path):
         "b2/topics/ is not a category: move the article into one of "
         "concepts/, grammar/, writing/, vocabulary/"
     ]
+
+
+def test_a_numbered_toctree_is_a_menu_error_on_any_page(tmp_path):
+    repo = menu_repository(tmp_path)
+    (repo / "a1/grammar/index.md").write_text(
+        "# Grammar\n\n```{toctree}\n:numbered:\n\nfirst\n```\n"
+    )
+    assert any(":numbered:" in e for e in menu_errors(repo)["a1/grammar/index.md"])
+
+
+def test_a_toctree_in_a_comment_is_not_read_for_numbering(tmp_path):
+    repo = menu_repository(tmp_path)
+    (repo / "a1/grammar/index.md").write_text(
+        "# Grammar\n\n<!--\n```{toctree}\n:numbered:\n```\n-->\n"
+    )
+    assert menu_errors(repo) == {}
+
+
+def test_the_root_toctree_is_hidden(tmp_path):
+    repo = menu_repository(tmp_path)
+    (repo / "index.md").write_text(GOOD_ROOT.replace(":hidden:\n", ""))
+    assert any(":hidden:" in e for e in menu_errors(repo)["index.md"])
+
+
+@pytest.mark.parametrize("title", ["Grammar Topics", "A1 Grammar", "grammar"])
+def test_a_category_index_has_the_bare_category_name(tmp_path, title):
+    repo = menu_repository(tmp_path)
+    (repo / "a1/grammar/index.md").write_text(f"# {title}\n")
+    assert any("'Grammar'" in e for e in menu_errors(repo)["a1/grammar/index.md"])
+
+
+def test_a_subcategory_index_keeps_its_own_name(tmp_path):
+    repo = menu_repository(tmp_path)
+    (repo / "a1/grammar/articles").mkdir()
+    (repo / "a1/grammar/articles/index.md").write_text("# Articles\n")
+    assert menu_errors(repo) == {}
+
+
+def test_a_title_in_the_level_toctree_is_the_category_name(tmp_path):
+    repo = menu_repository(tmp_path)
+    (repo / "a1/index.md").write_text(
+        level_index("a1", "Sentences <grammar/index>", "vocabulary/index")
+    )
+    assert any("'Sentences'" in e for e in menu_errors(repo)["a1/index.md"])
+
+
+def test_a_menu_error_is_never_baselined(tmp_path, write_menu):
+    repo = write_menu(tmp_path)
+    (repo / "open-language.yml").write_text("language: German\nlanguage_code: de\n")
+    index = repo / "a1/grammar/index.md"
+    index.write_text(index.read_text().replace("# Grammar", "# Grammar Topics"))
+    (repo / ".ol-validate-baseline").write_text("a1/grammar/index.md\n")
+    result = runner.invoke(app, ["validate", "--workspace", str(repo)])
+    assert result.exit_code == 1, result.output
+    assert "H1 of a category index" in result.output

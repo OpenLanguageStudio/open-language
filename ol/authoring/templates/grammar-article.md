@@ -1,13 +1,13 @@
 <!-- TEMPLATE: grammar article (reference style, no learning order)
      Gold exemplar: german/a1/grammar/articles/bestimmter-artikel.md
-     Detailed MyST/theme reference: open-language/.github/skills/grammar-article/
+     The shape and every limit are in docs/reference/page-standard.md.
      Replace all {{PLACEHOLDERS}}; DELETE every template comment: no HTML
      comments may survive in the docs file (they leak into built HTML).      -->
 ---
 myst:
   html_meta:
-    description: "{{LEVEL_LC}} grammar: {{NATIVE_TOPIC_WORDS}}: {{ONE_SENTENCE_SUMMARY_MAX_155_CHARS}}"
-    keywords: "{{language}}, {{language}} learning, {{level_lc}}, grammar, {{TOPIC_KEYWORDS_ENGLISH_AND_NATIVE}}"
+    description: "{{SEARCH_SNIPPET_160_CHARS_OR_FEWER}}"
+    keywords: "{{language}}, {{level_lc}}, grammar, {{PHRASINGS_A_LEARNER_WOULD_TYPE}}"
     "property=og:title": "{{NATIVE_NAME}}: {{ENGLISH_TITLE}}"
     "property=og:description": "{{SAME_AS_DESCRIPTION}}"
     "property=og:type": "article"
@@ -15,44 +15,41 @@ myst:
 ---
 
 # {{ENGLISH_TITLE}}
-<!-- Short English H1 (1-5 words): "Definite Articles", "The Dative Case".
-     Article about ONE word → '"mit": Accompaniment and Transport'.
-     NO blockquote subtitle. NO native-language-only titles. -->
+<!-- English, sentence case, five words or fewer: "Definite articles".
+     No level, no category, no number. NO blockquote subtitle. -->
+
+{{LEAD: one or two sentences, 20 to 50 words: what the page covers in plain
+words, using the main phrasing from keywords at least once.}}
+
+{{EXPLANATION: 40 to 120 words: the one idea of the page in plain language.
+Write every technical term in it as {term}`term`. Lead and explanation together
+are 180 words or fewer.}}
+<!-- Do NOT address the reader. Write about the grammar, not about the reader
+     or the page: "The dative marks to whom something happens", not "The dative
+     lets you say to whom something happens". Direct "you" belongs in
+     admonitions and example translations. -->
 
 :::{admonition} Prerequisites
 :class: note
 Before reading this article, make sure you are comfortable with:
 - [{{LEVEL}} > Grammar > {{PREREQ_TITLE}}]({{/level/grammar/subcat/file.md}})
 :::
-<!-- CONDITIONAL: include ONLY when the reader genuinely cannot follow this
-     page without the linked article. Grammar links only, one-way. When in
-     doubt, OMIT and use Related articles instead. -->
+<!-- CONDITIONAL: at most 3 links, true dependencies only. When in doubt, OMIT
+     and use Related articles instead. -->
 
-{{INTRO_1_3_SENTENCES_PLAIN_ENGLISH: what this grammar does and when it turns up. No em dashes, anywhere, ever.}}
-<!-- Do NOT address the reader. Write about the grammar, not about the reader
-     or the page: "The dative marks to whom something happens", not "The dative
-     lets you say to whom something happens"; "the familiar bracket", not "the
-     bracket you already know"; "This page sets out …", not "This page shows
-     you …". Direct "you" belongs in admonitions and example translations. -->
-
-
-
-*Examples:*
-
-- *{{ENGLISH_ONLY_EXAMPLE with the demonstrated feature in **bold**}}*
-<!-- RARE: only when the concept is abstract enough to need pre-framing (e.g.
-     passive voice, hypotheticals). Bold the exact feature being shown. Basic
-     topics (articles, conjugation tables) get NO intro examples. Max 3. -->
-
-## {{SECTION_HEADING_ENGLISH: native words only in italics, e.g. "The forms: *der*, *die*, *das*"}}
-<!-- One H2 per genuinely distinct sub-rule. A short topic can be a single flow
-     with no H2 sections at all: never invent sections to fill the template. -->
+## {{FORM_SECTION: the question it answers, e.g. "The forms: *der*, *die*, *das*"}}
+<!-- One to three H2s on how the structure is built, then one to three on when
+     and why it is used, then an optional one on the structure learners confuse
+     it with. Five at most in all. A heading is 8 words or fewer, has no number
+     and no closing punctuation, and puts words in the language taught in
+     italics. Split one H2 with H3s only for parallel forms. -->
 
 {{EXPLANATION: 1-3 sentences plain English; use a table for paradigms}}
 
 | | Masculine | Feminine | Neuter | Plural |
 |---|---|---|---|---|
 | {{English row label}} | | | | |
+<!-- A table of forms has at most 5 columns. Any other table has at most 3. -->
 
 **Examples:**
 
@@ -63,12 +60,23 @@ Before reading this article, make sure you are comfortable with:
 {{Native sentence 2}}
 : {{English translation 2}}
 :::
-<!-- 3-6 pairs per section. Definition list inside the ol-examples div:
+<!-- At most 3 pairs per section. Definition list inside the ol-examples div:
      native = term, English = definition. No bullet lists for example pairs. -->
+
+## {{USE_SECTION: e.g. "When to use *der*, *die*, *das*"}}
+
+{{EXPLANATION}}
 
 :::{note}
 {{OPTIONAL: one nuance/contrast; prefer one admonition per section max (tip/note/warning)}}
 :::
+
+:::{admonition} Common mistakes
+:class: caution
+
+- *{{Wrong sentence with \* marking the error}}* → {{Correct form in bold}}. ({{one-line why}})
+:::
+<!-- REQUIRED, in the last body section: the mistakes actually made at this level. -->
 
 ## Hear it in practice
 
@@ -84,8 +92,8 @@ Before reading this article, make sure you are comfortable with:
 : {{English translation 2}}
 :::
 <!-- REQUIRED, in this position: after the learning sections, before Summary.
-     The ## Hear it in practice heading puts the section in the sidebar. The block IS the
-     block writes the track this page names (see templates/audio-examples-block.md):
+     The heading puts the section in the on-this-page navigation. The block
+     writes the track this page names (see templates/audio-examples-block.md):
      ordered plain-text pairs, best first, over-author ~12-18. -->
 
 ## Summary
@@ -98,14 +106,9 @@ Before reading this article, make sure you are comfortable with:
 - {{key point 3}}
 :::
 
-:::{admonition} Common mistakes
-:class: caution
-
-- *{{Wrong sentence with \* marking the error}}* → {{Correct form in bold}}. ({{one-line why}})
-:::
-<!-- 3-6 mistakes actually made at this level. Key points ALWAYS before Common mistakes. -->
-
 ## Related articles
 
 - [{{LEVEL}} > Grammar > {{RELATED}}]({{/path.md}})
-<!-- Same-level links encouraged; cross-level only DOWN. Only existing files. -->
+<!-- Links only, none the reader would reach by the next-page link. Leave the
+     section out when it is empty. Same-level links encouraged; cross-level only
+     DOWN. Only existing files. -->

@@ -2,6 +2,7 @@ from html import escape
 
 from docutils import nodes
 from docutils.parsers.rst import roles
+from sphinx import addnodes
 from sphinx.util import logging
 
 from ol.language import Language
@@ -73,6 +74,21 @@ def make_stack_role(code):
     return role
 
 
+def show_term_names(app, doctree):
+    """Show a glossary entry's name in the language taught, in brackets after it.
+
+    Sphinx keeps the classifier of ``Noun : Nomen`` for its index and shows
+    nothing of it on the page.
+    """
+    for term in doctree.findall(nodes.term):
+        for index in term.findall(addnodes.index):
+            name = index["entries"][0][4]
+            if name:
+                term += nodes.inline(
+                    f" ({name})", f" ({name})", classes=["ol-term-name"]
+                )
+
+
 def setup(app):
 
     # Load roles from conf.py
@@ -96,3 +112,4 @@ def setup(app):
 
     # app.add_config_value('latex_elements', {}, 'env')
     app.add_config_value("custom_roles_loaded", True, "env")
+    app.connect("doctree-read", show_term_names)

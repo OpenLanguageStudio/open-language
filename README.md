@@ -10,8 +10,8 @@ Each language lives in its own workspace repository, which installs this package
 
 ## What it provides
 
-- **`ol check`** runs every content check in one pass: template conformance and a strict docs build with warnings as errors. This is the command CI runs.
-- **`ol validate`** checks articles and category indexes against the templates: required sections in order, frontmatter, titles, banned characters, `audio-examples` blocks with a code for each refusal, example and marking limits, Prerequisites and Related articles links, vocabulary pack size, file names, and stock machine-writing vocabulary. The limits and the word list live in `ol/authoring/specs.yml`. Run without files, it also checks the site menu (below).
+- **`ol check`** runs every content check in one pass: `ol validate`, a strict docs build with warnings as errors, then a render check that opens a sample of the built pages at a 360 pixel viewport and fails if one scrolls sideways. This is the command CI runs. The render check needs the `render` extra (`open-language[render]`) and a Chrome on the machine, or Playwright's Chromium.
+- **`ol validate`** checks articles and category indexes against the templates: required sections in order, frontmatter, titles, banned characters, `audio-examples` blocks with a code for each refusal, example and marking limits, Prerequisites and Related articles links, vocabulary pack size, file names, and stock machine-writing vocabulary. It also holds every page to the [page standard](docs/reference/page-standard.md): the opening paragraphs, heading and table limits, sentence and paragraph limits, the sections of each category, the level and Introduction pages, and the glossary. The limits and the word list live in `ol/authoring/specs.yml`. Run without files, it also checks the site menu (below).
 - **`ol.blocks`** reads `audio-examples` blocks and says why a block is refused. The checks, the Sphinx extension and the Open Language app all read blocks through it. See [The audio-examples block](#the-audio-examples-block).
 - **`ol/authoring/review-rubric.yml`** is the checklist for the part a script cannot judge: level, correctness, teaching value and plain language. Each item is answered pass, concern or fail.
 - **[Authoring rules](docs/reference/authoring-rules.md)** holds the rules neither the checks nor the rubric cover. A language repository's `AGENTS.md` links it instead of restating it.
@@ -114,6 +114,10 @@ The role writes this HTML, with both texts escaped. `lang` is the `language_code
 ```
 
 The shared stylesheet shows the phrase in normal weight with the translation beneath it, smaller and muted. A text with no separator shows unstacked and warns with the page and line.
+
+## The glossary
+
+The Terminology page is the glossary, and its entries sit in Sphinx `{glossary}` directives. A technical term is any word on the shared `ol/authoring/glossary-terms.yml` or on a language repository's own `glossary-terms.yml`. `ol validate` fails a listed term with no entry, and the first use of a listed term in an article's prose unless it is written with the `term` role. The build fails on a `{term}` the glossary does not hold. [The authoring rules](docs/reference/authoring-rules.md#the-glossary) show the format.
 
 ## The audio-examples block
 

@@ -1,13 +1,17 @@
 <!-- TEMPLATE: index.md for <level>/<category>/ (or a grammar subcategory).
      Replace {{PLACEHOLDERS}}; DELETE every template comment.
-     TITLE: never include the CEFR level ("Grammar", not "A1 Grammar").
-     ORDERING: concepts toctree order IS the learning sequence: deliberate.
-     grammar toctrees use a LOGICAL order: noun system, verb system, sentence
-     level, modifiers, other last. Grammar subcategory indexes MUST open with
-     1-3 sentences explaining what the grammar concept group is.
+     TITLE: the bare category name, the one the sidebar shows: "Concepts",
+     "Grammar", "Writing" or "Vocabulary". A grammar subcategory takes its own
+     name, such as "Articles".
+     ORDERING: the concepts toctree order is the suggested sequence, and the
+     index says that it is a suggestion and that any article can be read first.
+     Grammar toctrees use a LOGICAL order: noun system, verb system, sentence
+     level, modifiers, other last.
+     NO :numbered: on a toctree: the sidebar shows no section numbers.
      NO References/Additional-reading section here: external links live in the
      LEVEL index (templates/level-index.md). Nothing agent-facing, ever. -->
 ---
+html_theme.sidebar_secondary.remove:
 myst:
   html_meta:
     description: "{{ONE_SENTENCE: what this section covers at this level}}"
@@ -16,8 +20,7 @@ myst:
 
 # {{TITLE: e.g. "Grammar", "Concepts", or subcategory "Articles"}}
 
-{{1-3 sentences: what this section is and how to use it. For grammar: "reference,
-not sequenced". For concepts: "work through in order: each builds on the last."}}
+{{1-3 plain sentences: what the articles here have in common.}}
 
 ```{toctree}
 :maxdepth: 1

@@ -31,8 +31,8 @@ its category. An article has a level and a category, which come from its path:
 _Avoid_: lesson, page (when the article itself is meant).
 
 **Category index**:
-The `index.md` that lists a category's articles for one level. Its toctree order
-is the learning sequence where the category is ordered.
+The `index.md` that lists a category's articles for one level. In concepts its
+toctree order is the suggested sequence.
 
 **Level**:
 A CEFR level, written in lower case in paths: `a1`, `a2`, `b1`, `b2`. There
@@ -96,6 +96,14 @@ A word that says what a track is about, such as `dativ`. "Dativ" and "dativ"
 are one tag.
 
 ## Checking
+
+**Page standard**:
+`docs/reference/page-standard.md`: the shape of every page, and which check
+holds each rule.
+
+**Glossary**:
+The Terminology page's entries. A term on a term list has exactly one, and an
+article links it with the `term` role.
 
 **Check**:
 A rule a script can measure, run by `ol validate` or `ol check`. A check fails
