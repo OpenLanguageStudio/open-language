@@ -139,8 +139,6 @@ common:
 render:
   viewport_width: 360
   viewport_height: 800
-  # Articles opened per category of each level, on top of every index page.
-  articles_per_type: 2
 
 # The level overview page.
 level_page:
