@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [0.8.2] - 2026-11-01
+
+### Changed: the render check opens every built page
+
+`ol check` now opens every page of the built site at a 360 pixel viewport, not a sample of articles, including the search and index pages Sphinx generates. A table or code block scrolling inside its own box still does not count. The check adds about a minute to a site of 230 pages. The `render.articles_per_type` setting in `specs.yml` is gone, and `ol.authoring.render.built_pages` replaces `sample_pages`.
+
 ## [0.8.1] - 2026-11-01
 
 ### Fixed: a link's text is not a use of a term

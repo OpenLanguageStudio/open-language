@@ -172,7 +172,7 @@ A change meets the Open Language standard when `ol check` passes. It runs, in or
 1. `ol validate` for every V rule, against the baseline in `.ol-validate-baseline`, which only shrinks.
 2. The menu step for every M rule. Its errors are never baselined.
 3. `ol docs` with warnings as errors, for the B rules: unresolved links and terms.
-4. A render check that opens a sample page of each type, and each index page, at 360 pixels and fails if the page scrolls sideways.
+4. A render check that opens every built page at 360 pixels and fails if a page scrolls sideways. A table or code block scrolling inside its own box does not count.
 
 The R rules are the review rubric. A pull request description lists the rubric questions answered, and the reviewer ticks them. A change to a rule is a change to this page and to `specs.yml` in the same pull request.
 

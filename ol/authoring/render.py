@@ -10,7 +10,6 @@ from __future__ import annotations
 from collections.abc import Iterable
 from pathlib import Path
 
-from ol.authoring.menu import LEVELS, MENU_CATEGORIES, TOP_LEVEL_PAGES
 from ol.authoring.specs_data import SPECS
 
 # The theme scrolls the article in a box of its own, so the window never moves
@@ -32,33 +31,22 @@ class RenderUnavailable(RuntimeError):
     """The check cannot open a browser."""
 
 
-def sample_pages(workspace: Path) -> list[str]:
-    """The pages the render check opens, as paths relative to the workspace.
-
-    Every top-level page and index page, and the first articles of each
-    category of each level.
+def built_pages(html_root: Path) -> list[str]:
+    """Every page of the built site, as paths to their Markdown.
 
     Args:
-        workspace: The language repository's root.
+        html_root: The built site.
 
     Returns:
-        The pages, such as ``a1/grammar/index.md``.
+        The pages, such as ``a1/grammar/index.md``. Sphinx's own directories,
+        which start with an underscore, hold no pages.
     """
-    per_type = SPECS["render"]["articles_per_type"]
-    found = [f"{name}.md" for name in TOP_LEVEL_PAGES]
-    for level in LEVELS:
-        if not (workspace / level).is_dir():
-            continue
-        found.append(f"{level}/index.md")
-        for category in MENU_CATEGORIES:
-            pages = sorted((workspace / level / category).rglob("*.md"))
-            indexes = [page for page in pages if page.name == "index.md"]
-            articles = [page for page in pages if page.name != "index.md"]
-            found += [
-                page.relative_to(workspace).as_posix()
-                for page in (*indexes, *articles[:per_type])
-            ]
-    return found
+    pages = (page.relative_to(html_root) for page in html_root.rglob("*.html"))
+    return sorted(
+        page.with_suffix(".md").as_posix()
+        for page in pages
+        if not any(part.startswith("_") for part in page.parts)
+    )
 
 
 def _browser(playwright, error):
@@ -105,8 +93,6 @@ def overflowing_pages(html_root: Path, pages: Iterable[str]) -> list[str]:
         tab = browser.new_page(viewport=viewport)
         for page in pages:
             built = html_root / Path(page).with_suffix(".html")
-            if not built.is_file():
-                continue
             tab.goto(built.resolve().as_uri())
             if tab.evaluate(_SCROLLS_SIDEWAYS):
                 overflowing.append(page)

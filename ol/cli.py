@@ -322,16 +322,17 @@ def templates(
 
 
 def _render_check(workspace: Path) -> bool:
-    """Open a sample of the built pages. A baseline page may scroll sideways."""
+    """Open every built page. A baseline page may scroll sideways."""
     from ol.authoring.render import (
         RenderUnavailable,
+        built_pages,
         overflowing_pages,
-        sample_pages,
     )
 
-    pages = sample_pages(workspace)
+    html_root = workspace / "_build/html"
+    pages = built_pages(html_root)
     try:
-        overflowing = overflowing_pages(workspace / "_build/html", pages)
+        overflowing = overflowing_pages(html_root, pages)
     except RenderUnavailable as exc:
         typer.echo(f"ERROR: {exc}")
         return False
