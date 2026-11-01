@@ -61,7 +61,7 @@ A table is read on a phone, where width is scarce and height is not.
 - A table has a header row, and no empty first header cell outside a table of forms. [V]
 - At a 360 pixel viewport no page scrolls sideways. [B: render check in CI, see "Proof" below]
 
-The inline role for stacking the translation under the German is named in `CONTEXT.md` once the engine ships it. Until then the old three-column tables stay, and they are listed in the baseline.
+The stacked cell is written with the `stack` role: ``{stack}`Guten Morgen | Good morning` ``. Inside a pipe table the separator is written `\|`. Old tables with an English column stay in the baseline until they are migrated.
 
 ### Plain language and the glossary
 
