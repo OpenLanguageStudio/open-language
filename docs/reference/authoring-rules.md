@@ -43,6 +43,18 @@ Each level has up to four categories, each a directory directly under the level:
 
 A levels cover emails, short messages and postcards. B levels add formal text types. A model text is written in flowing sentences to be read aloud, and it reaches its length with content, never filler.
 
+## Phrase tables
+
+A table of phrases has two columns, `Phrase` and `Notes`, never a column for the language taught and another for English. A phone has no room for three. Each phrase uses the `stack` role, which shows the translation beneath the phrase:
+
+```markdown
+| Phrase | Notes |
+|---|---|
+| {stack}`Guten Morgen \| Good morning` | Used until about noon. |
+```
+
+Write the separator as `\|` inside a table, because a table splits a cell at every pipe. Outside a table write ` | `. See the README for the role's details.
+
 ## Hear it in practice
 
 At the top level of an article the section is `## Hear it in practice`. Inside a sub-section, for one of several parallel forms, it is `### Hear it in practice`.

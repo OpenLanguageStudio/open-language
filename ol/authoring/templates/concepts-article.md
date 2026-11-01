@@ -48,10 +48,12 @@ Before reading this article, make sure you are comfortable with:
 
 ## Key phrases
 
-| {{Native language name}} | English | Notes |
-|---|---|---|
-| {{phrase}} | {{translation}} | {{register/usage note}} |
-<!-- 5-10 rows. These are the chunks the learner memorises. -->
+| Phrase | Notes |
+|---|---|
+| {stack}`{{phrase}} \| {{translation}}` | {{register/usage note}} |
+<!-- Two columns, so the table fits a phone: the stack role shows the
+     translation beneath the phrase. Inside a table write the separator as
+     `\|`. 5-10 rows. These are the chunks the learner memorises. -->
 
 ---
 

@@ -469,6 +469,29 @@ summary:focus-visible,
   display: none;
 }
 
+/* ── Stacked phrase (.ol-stack) ───────────────────────────────────────────
+   The stack role: the phrase in the language being taught with its
+   translation beneath, for a table cell, a list item or a sentence where
+   there is no room for a column of translations. Same muted italic
+   translation as the audio examples. */
+
+.ol-stack-target,
+.ol-stack-translation {
+  display: block;
+}
+
+.ol-stack-target {
+  font-weight: var(--weight-regular);
+}
+
+.ol-stack-translation {
+  margin-top: 0.15rem;
+  font-size: 0.875rem;
+  color: var(--text-muted);
+  font-style: italic;
+  line-height: 1.4;
+}
+
 /* ── In-article example pairs ─────────────────────────────────────────────
    Authored as a definition list inside :::{div} ol-examples — native
    sentence as the term, English translation as the definition. Mirrors the

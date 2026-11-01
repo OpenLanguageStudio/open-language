@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+### Added: the `stack` role shows a phrase with its translation beneath
+
+`ol.docs.roles` now provides the `stack` role: ``{stack}`Guten Morgen | Good morning` ``. It works in a table cell, a list item and a paragraph, and renders in the html, dirhtml and json builders. Phrase tables can drop the translation column: `| German | English | Notes |` becomes `| Phrase | Notes |`, so they fit a phone. Inside a Markdown table write the separator as `\|`. A text without ` | ` shows unstacked and warns with the page and line. The shared stylesheet styles the new `ol-stack` classes. The concepts and writing templates and the authoring rules use two-column phrase tables.
+
 ## [0.5.0] - 2026-10-20
 
 ### Changed: every language repository has the same top-level pages
