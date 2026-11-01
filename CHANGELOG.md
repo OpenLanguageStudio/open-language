@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [0.9.0] - 2026-11-01
+
 ### Added: paragraphs in a `:multiline:` block
 
 A blank line inside a `:multiline:` example is now a paragraph break, in the text and in its translation, and it is kept on the page and in `Example.sentence` and `Example.translation` as one empty line. A blank line after the translation still ends the example when the next line is text, so every block that was valid before reads exactly as it did. A blank line between a text and its translation is allowed and means nothing. Blocks without `:multiline:` are unchanged.
