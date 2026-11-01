@@ -68,7 +68,7 @@ The stacked cell is written with the `stack` role: ``{stack}`Guten Morgen | Good
 - A sentence is 25 words or fewer, and a paragraph 5 sentences or fewer. Prose averages 18 words a sentence or fewer. [V: error over the limits, warning over the average]
 - Prose is active voice. [R]
 - A technical term is any word on the term list: the engine's shared list (`ol/authoring/glossary-terms.yml`) plus the language repository's own. Every term on the list has exactly one entry in the glossary. [V: a listed term with no entry is an error] [B: an unresolved `{term}` fails the build]
-- The first use of a listed term in each article's prose is written as `{term}` and links to its entry. Headings, example sentences, tables of forms and the glossary itself are exempt. [V]
+- The first use of a listed term in each article's prose is written as `{term}` and links to its entry. Headings, example sentences, the text of a link, tables of forms and the glossary itself are exempt. [V]
 - A term's meaning is also given in the sentence where it is first used, in plain words, so a reader who does not click still follows. [R]
 - A glossary entry has the term in bold, its name in the language taught in brackets when the language repository needs it, one sentence of 30 words or fewer, and one example. [V]
 - No page sends the reader off the site to learn what a term means. [R]

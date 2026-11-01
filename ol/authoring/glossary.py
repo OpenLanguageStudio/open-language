@@ -29,7 +29,7 @@ TERMS_FILE = "glossary-terms.yml"
 SHARED_TERMS = Path(__file__).resolve().parent / TERMS_FILE
 
 _EXAMPLE = re.compile(r"\*Examples?:\s*.+?\*\s*$", re.S)
-_LINK_TARGET = re.compile(r"\]\([^)]*\)")
+_LINK = re.compile(r"\[[^\]]*\]\([^)]*\)")
 
 
 def _read_terms(path: Path) -> dict[str, str]:
@@ -81,12 +81,13 @@ def term_uses(text: str, forms: dict[str, str]) -> list[tuple[str, bool]]:
 
     Returns:
         The term and whether this use is written with the ``term`` role, in
-        order. A word inside another role or inside a link's address is not a use.
+        order. A word inside another role or inside a link is not a use: a link's
+        text cannot hold a role, and it often names another page.
     """
     if not forms:
         return []
     uses = []
-    for m in _scanner(forms).finditer(_LINK_TARGET.sub("]", text)):
+    for m in _scanner(forms).finditer(_LINK.sub(" ", text)):
         if m["bare"]:
             uses.append((forms[m["bare"].lower()], False))
         elif m["linked"] is not None:

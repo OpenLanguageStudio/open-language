@@ -138,6 +138,9 @@ class TestUses:
     def test_another_role_is_not_a_use(self):
         assert term_uses("{stack}`noun | noun`", self.forms) == []
 
+    def test_the_text_of_a_link_is_not_a_use(self):
+        assert term_uses("[A1 > Grammar > The noun](/a1/noun.md)", self.forms) == []
+
     def test_a_link_address_is_not_a_use(self):
         assert term_uses("[here](/a1/noun.md)", self.forms) == []
 
