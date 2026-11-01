@@ -55,6 +55,8 @@ Write the separator as `\|` inside a table, because a table splits a cell at eve
 
 The section is `## Hear it in practice`. In writing, each `## Example: <Situation>` holds its own `### Hear it in practice` instead.
 
+In grammar and concepts, a section with several audio blocks may give each one an H3 naming its track, so that on-this-page reaches it. Every block then has its own H3, and these H3s count towards the article's limit.
+
 ## The glossary
 
 The glossary is the Terminology page. An entry sits in a `{glossary}` directive, with the term's name in the language taught after ` : ` when the language needs it, and an indented definition:

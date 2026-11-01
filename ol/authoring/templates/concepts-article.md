@@ -98,7 +98,10 @@ Before reading this article, make sure you are comfortable with:
 :::
 <!-- REQUIRED, in this position: before Summary. The heading puts the section
      in the on-this-page navigation. The block writes the track this page names
-     (see templates/audio-examples-block.md). -->
+     (see templates/audio-examples-block.md).
+     With several blocks here, each may sit under its own H3 naming that track,
+     so on-this-page reaches it. Every block then has an H3, and they count
+     towards the article's 6. -->
 
 ## Summary
 

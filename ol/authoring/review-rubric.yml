@@ -109,6 +109,13 @@ items:
       Sections are split without parallel forms to separate, or parallel forms
       are only ever heard mixed together.
 
+  - id: track-heading
+    area: teaching
+    question: >-
+      Where "Hear it in practice" has H3s, does each one name the track under
+      it, in words a reader can tell from the other tracks?
+    fail_when: An H3 is a generic label, or it describes something other than its track.
+
   - id: plain-english
     area: clear-language
     question: >-

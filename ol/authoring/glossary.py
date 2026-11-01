@@ -120,22 +120,21 @@ def check_terms(
     rep,
     blocks: list[Block],
     title: str,
-    explanation: Block | None,
     forms: dict[str, str],
 ):
     """The first use of each listed term in an article's prose is linked.
 
-    A term in the title is what the page is about, and is exempt on that page.
+    A term in the title is what the page is about, and is exempt on that page. A
+    term linked in the lead needs no second link in the explanation, and a term
+    first used in the explanation is linked there.
 
     Args:
         rep: The page's report.
         blocks: The page's blocks.
         title: The H1.
-        explanation: The explanation paragraph, where every term is linked.
         forms: The list from ``load_terms``.
     """
-    subject = {term for term, _ in term_uses(title, forms)}
-    seen = set(subject)
+    seen = {term for term, _ in term_uses(title, forms)}
     for line, text in prose(blocks):
         for term, linked in term_uses(text, forms):
             if term in seen:
@@ -146,16 +145,6 @@ def check_terms(
                     f"line {line}: first use of the term '{term}' is not linked: "
                     f"write it as {{term}}`{term}`"
                 )
-    if explanation is None:
-        return
-    uses = term_uses(explanation.text, forms)
-    linked_here = {term for term, linked in uses if linked}
-    for term in sorted({term for term, _ in uses} - linked_here - subject):
-        rep.error(
-            f"line {explanation.line}: the explanation paragraph uses the term "
-            f"'{term}' without linking it: every term in it is written as "
-            f"{{term}}`{term}`"
-        )
 
 
 def glossary_entries(blocks: list[Block]) -> list[tuple[int, list[str], str]]:

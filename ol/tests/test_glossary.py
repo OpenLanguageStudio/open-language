@@ -148,6 +148,7 @@ class TestUses:
 FIXTURE = Path(__file__).parent / "fixtures" / "concepts-article.md"
 ARTICLE = "a1/concepts/greetings.md"
 SENTENCE = "Strangers and customers get the formal greeting."
+LEAD = "Saying hello in German depends"
 EXPLANATION = "A German greeting is a small choice"
 
 
@@ -191,12 +192,26 @@ def test_the_term_a_page_is_about_is_exempt_on_that_page(repository):
     assert article_errors(repository, text) == []
 
 
-def test_every_term_in_the_explanation_is_linked(repository):
+def test_a_term_first_used_in_the_explanation_is_linked_there(repository):
     text = FIXTURE.read_text(encoding="utf-8").replace(
-        "Saying hello in German depends",
-        "Saying hello in German uses a {term}`noun` and depends",
-        1,
+        EXPLANATION, f"Each noun matters. {EXPLANATION}", 1
+    )
+    found = article_errors(repository, text)
+    assert any("first use of the term 'noun'" in m for m in found), found
+
+
+def test_a_term_linked_in_the_lead_needs_no_link_in_the_explanation(repository):
+    text = FIXTURE.read_text(encoding="utf-8").replace(
+        LEAD, "Saying hello in German uses a {term}`noun` and depends", 1
     )
     text = text.replace(EXPLANATION, f"Each noun matters. {EXPLANATION}", 1)
+    assert article_errors(repository, text) == []
+
+
+def test_a_term_used_but_not_linked_in_the_lead_is_red(repository):
+    text = FIXTURE.read_text(encoding="utf-8").replace(
+        LEAD, "Saying hello in German uses a noun and depends", 1
+    )
+    text = text.replace(EXPLANATION, f"Each {{term}}`noun` matters. {EXPLANATION}", 1)
     found = article_errors(repository, text)
-    assert any("the explanation paragraph uses the term" in m for m in found), found
+    assert any("first use of the term 'noun'" in m for m in found), found

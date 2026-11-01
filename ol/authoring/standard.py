@@ -84,16 +84,13 @@ def check_opening(rep, opening, fm, language, level, category):
         language: The language taught.
         level: The page's level.
         category: The page's category.
-
-    Returns:
-        The explanation paragraph, or None when the page has none.
     """
     if not opening or opening[0].kind != "paragraph":
         rep.error(
             "the first thing under the title is the lead paragraph: one or two "
             "sentences on what the page covers"
         )
-        return None
+        return
     lead = opening[0]
     lead_text = plain(lead.text)
     lead_words = word_count(lead_text)
@@ -115,7 +112,6 @@ def check_opening(rep, opening, fm, language, level, category):
             "html_meta.keywords: use the main one a learner would search with"
         )
 
-    explanation = None
     if len(opening) < 2 or opening[1].kind != "paragraph":
         rep.error(
             "the second paragraph under the title is the explanation: the one "
@@ -141,7 +137,6 @@ def check_opening(rep, opening, fm, language, level, category):
                 f"line {block.line}: only a Prerequisites admonition stands "
                 "between the explanation paragraph and the first H2"
             )
-    return explanation
 
 
 def check_prerequisites_place(rep, opening, found):
@@ -248,7 +243,7 @@ def _h3_allowed(section: Section, ctype: str) -> bool:
     if ctype == "grammar":
         return section.title not in SPECS["types"]["grammar"]["no_h3_sections"]
     if ctype == "concepts":
-        return section.title == "Key phrases"
+        return section.title in ("Key phrases", "Hear it in practice")
     if ctype == "writing":
         return section.title.startswith("Example: ")
     return False
@@ -393,6 +388,44 @@ def check_hear_it(rep, found):
         rep.error(f"line {section.line}: 'Hear it in practice' has no audio block")
 
 
+def check_track_headings(rep, found):
+    """Under Hear it in practice, an H3 gives one of several tracks its own heading."""
+    section = _section(found, "Hear it in practice")
+    if section is None:
+        return
+    heads: list[Block] = []
+    parts: list[list[Block]] = [[]]
+    for block in section.blocks:
+        if block.kind == "heading" and block.level == 3:
+            heads.append(block)
+            parts.append([])
+        else:
+            parts[-1].append(block)
+    if not heads:
+        return
+    tracks = [
+        [block for block in walk(part) if block.is_directive("audio-examples")]
+        for part in parts
+    ]
+    if sum(map(len, tracks)) < 2:
+        rep.error(
+            f"line {heads[0].line}: H3 '{plain(heads[0].text)}' under 'Hear it in "
+            "practice': an H3 there names one of several audio blocks"
+        )
+        return
+    for block in tracks[0]:
+        rep.error(
+            f"audio block (line {block.line}) under 'Hear it in practice' has no H3: "
+            "when one block has its own H3, every block does"
+        )
+    for head, held in zip(heads, tracks[1:], strict=True):
+        if len(held) != 1:
+            rep.error(
+                f"line {head.line}: H3 '{plain(head.text)}' under 'Hear it in "
+                f"practice' holds {len(held)} audio blocks: each H3 holds one"
+            )
+
+
 def check_related(rep, found):
     """Related articles is links only, and comes only when there are some."""
     section = _section(found, "Related articles")
@@ -422,6 +455,7 @@ def _admonition_titled(section: Section, title: str) -> bool:
 
 def check_grammar(rep, found):
     """Common mistakes close the body, and each section keeps few examples."""
+    check_track_headings(rep, found)
     body = [
         section
         for section in found
@@ -450,6 +484,7 @@ def check_grammar(rep, found):
 
 def check_concepts(rep, found):
     """Key phrases are grouped under H3s, and the Culture note stays short."""
+    check_track_headings(rep, found)
     limits = SPECS["types"]["concepts"]
     phrases = _section(found, "Key phrases")
     if phrases:
@@ -566,9 +601,7 @@ def check_article(rep, body, fm, ctype, spec, context):
     opening, found = sections(blocks)
     if title:
         check_title(rep, title)
-    explanation = check_opening(
-        rep, opening, fm, context["language"], context["level"], ctype
-    )
+    check_opening(rep, opening, fm, context["language"], context["level"], ctype)
     check_prerequisites_place(rep, opening, found)
     check_headings(rep, blocks, title)
     check_h3_places(rep, found, ctype)
@@ -578,7 +611,7 @@ def check_article(rep, body, fm, ctype, spec, context):
     check_hear_it(rep, found)
     check_related(rep, found)
     CATEGORY_CHECKS[ctype](rep, found)
-    check_terms(rep, blocks, title, explanation, load_terms(context["workspace"]))
+    check_terms(rep, blocks, title, load_terms(context["workspace"]))
     if fm is not None and SIDEBAR_KEY in fm:
         rep.error(
             f"front matter has {SIDEBAR_KEY}: on-this-page navigation shows on "

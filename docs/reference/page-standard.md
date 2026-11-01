@@ -35,10 +35,10 @@ An article is these parts, in this order. The four category sections below fill 
 | 1 | Front matter | `html_meta.description` of 160 characters or fewer, written as the search snippet. `keywords` lists the phrasings a learner would type. | V |
 | 2 | Title (H1) | One per page. English, sentence case, five words or fewer, no level, no category, no number. | V (count, prefix), R (case) |
 | 3 | Lead paragraph | The first paragraph under the title. One or two sentences (20 to 50 words). Says what the page covers in plain words, and uses the main learner phrasing at least once. | V |
-| 4 | Explanation paragraph | The second paragraph. States the one idea of the page in plain language (40 to 120 words). Every technical term in it is linked to the glossary. | V |
+| 4 | Explanation paragraph | The second paragraph. States the one idea of the page in plain language (40 to 120 words). Every technical term in it is linked to the glossary, here or in the lead, so a term is not linked twice two paragraphs apart. | V |
 | 5 | Prerequisites | Optional admonition after the two opening paragraphs, before the first H2. At most 3 links, true dependencies only. | V |
 | 6 | Body sections | The category's own sections (see below). | V |
-| 7 | Hear it in practice | `## Hear it in practice` with the audio block, after the body and before the summary. | V |
+| 7 | Hear it in practice | `## Hear it in practice` with the audio block, after the body and before the summary. In grammar and concepts, several blocks may each sit under an H3 naming the track. | V |
 | 8 | Summary | `## Summary`, as the template for the category shows. | V |
 | 9 | Related articles | `## Related articles` at the very end, only links the reader would not reach by the next-page link. Omitted when empty. | V |
 
@@ -47,7 +47,8 @@ Parts 3 and 4 together stay at 180 words or fewer, so the first screen on a phon
 ### Headings
 
 - Only H1, H2 and H3 exist. There is no H4. [V]
-- An H3 appears only where the category's template names one: under `## Example: ...` in writing, to split one H2 into parallel forms in grammar, and for group names under `## Key phrases` in concepts. An article has at most 6 H3. [V]
+- An H3 appears only where the category's template names one: under `## Example: ...` in writing, to split one H2 into parallel forms in grammar, for group names under `## Key phrases` in concepts, and to name the tracks under `## Hear it in practice` in grammar and concepts. An article has at most 6 H3, these included. [V]
+- An H3 under `## Hear it in practice` needs more than one audio block in the section. When one block has an H3, every block does, and each H3 holds one block. [V] The H3 names its track. [R]
 - An article has at most 7 H2. A page that needs more is two pages. [V]
 - A heading is 8 words or fewer, has no number and no closing punctuation, and does not address the reader. German words in a heading are in italics. [V]
 - A heading never repeats the heading of its parent. [V]
@@ -161,7 +162,7 @@ The page is 350 words or fewer. [V]
   - Order still carries meaning in concepts: the toctree order is the suggested sequence, and the index says so.
 - The sidebar names are the category names: **Concepts**, **Grammar**, **Writing**, **Vocabulary**. [M]
 - On-this-page navigation shows on every article and is removed from every index page. [V]
-  - On an article it is the way to reach *Hear it in practice* directly. With H2s capped at 7 and H3 left out of it, it stays short.
+  - On an article it is the way to reach *Hear it in practice* directly. With H2s capped at 7 and H3s at 6, it stays short, and an H3 under *Hear it in practice* takes the reader straight to that track.
   - An index page is already a list; a second list beside it repeats it.
 - The top-level pages and their order are those in `ol/authoring/menu.py`.
 

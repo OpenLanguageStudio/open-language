@@ -447,6 +447,77 @@ def test_broken_article_is_red(tmp_path, category, case):
     assert any(expected in msg for msg in found), found
 
 
+TRACK_BLOCK = """:::{{audio-examples}}
+:track: a1/{category}/{track}
+:duplicate:
+:::
+"""
+
+
+def tracks_section(category: str, *parts: str) -> str:
+    """The fixture with ``parts`` added after its audio block.
+
+    A part beginning with ``#`` is a heading and any other names a track, except
+    ``first``, which puts ``### First`` above the fixture's own block.
+    """
+    text = fixture(category)
+    added = [
+        part
+        if part.startswith("#")
+        else TRACK_BLOCK.format(category=category, track=part)
+        for part in parts
+        if part != "first"
+    ]
+    if "first" in parts:
+        text = text.replace(
+            "## Hear it in practice\n", "## Hear it in practice\n\n### First\n", 1
+        )
+    return text.replace("\n## Summary", "\n" + "\n".join(added) + "\n## Summary", 1)
+
+
+@pytest.mark.parametrize("category", ["grammar", "concepts"])
+def test_each_of_several_tracks_may_have_its_own_h3(tmp_path, category):
+    text = tracks_section(category, "first", "### Second", "other")
+    assert errors(tmp_path, category, text) == []
+
+
+@pytest.mark.parametrize("category", ["grammar", "concepts"])
+def test_several_tracks_may_stand_without_h3s(tmp_path, category):
+    assert errors(tmp_path, category, tracks_section(category, "other")) == []
+
+
+@pytest.mark.parametrize("category", ["grammar", "concepts"])
+@pytest.mark.parametrize(
+    ("parts", "expected"),
+    [
+        (("first",), "an H3 there names one of several audio blocks"),
+        (("### Second", "other"), "has no H3: when one block has its own H3"),
+        (("first", "other", "### Third", "more"), "holds 2 audio blocks"),
+        (("first", "### Second"), "an H3 there names one of several audio blocks"),
+        (("first", "other", "### Third"), "holds 0 audio blocks"),
+    ],
+    ids=["one block", "a block with no H3", "two blocks", "only one", "an empty H3"],
+)
+def test_a_track_h3_out_of_place_is_red(tmp_path, category, parts, expected):
+    found = errors(tmp_path, category, tracks_section(category, *parts))
+    assert any(expected in msg for msg in found), found
+
+
+def test_track_h3s_count_towards_the_limit(tmp_path):
+    parts = ["first"]
+    for number in range(4):
+        parts += [f"### Track {'abcd'[number]}", f"track-{number}"]
+    found = errors(tmp_path, "concepts", tracks_section("concepts", *parts))
+    assert any("7 H3" in msg for msg in found), found
+
+
+def test_a_vocabulary_article_has_no_h3_under_hear_it_in_practice(tmp_path):
+    found = errors(
+        tmp_path, "vocabulary", tracks_section("vocabulary", "first", "### B", "other")
+    )
+    assert any("has no H3 there" in msg for msg in found), found
+
+
 def test_a_table_of_forms_stays_within_its_limit_only_in_grammar(tmp_path):
     forms = "| | A | B | C | D |\n|-|-|-|-|-|\n| x | 1 | 2 | 3 | 4 |\n\n## Summary"
     assert not any(

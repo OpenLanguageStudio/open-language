@@ -168,7 +168,7 @@ types:
       - heading: Summary
       - heading: Related articles
         count: [0, 1]
-    no_h3_sections: [Hear it in practice, Summary, Related articles]
+    no_h3_sections: [Summary, Related articles]
     max_examples_per_section: 3
     require_examples_div: true
     require_summary_admonitions: true
