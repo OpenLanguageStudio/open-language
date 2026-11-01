@@ -25,7 +25,6 @@ PATHS = {
 }
 LINK_TARGETS = [
     "a1/grammar/articles/unbestimmter-artikel.md",
-    "a1/grammar/articles/negativartikel.md",
     "a1/grammar/cases/nominativ.md",
     "a1/grammar/cases/akkusativ.md",
     "a1/grammar/other/nomen-genus-plural.md",

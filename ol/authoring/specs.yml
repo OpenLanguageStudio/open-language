@@ -15,7 +15,8 @@
 #   - NO TODO or FIXME notes (they leak into built HTML)
 #   - NO CEFR level and NO category prefix in article titles
 #   - NO hand-numbered headings, NO external-reading or "See also" section
-#     in an article, NO Related articles link to a toctree neighbour
+#     in an article, NO Related articles link to another article of the same
+#     subcategory, or, in a flat category directory, to a toctree neighbour
 #   - Prerequisites lists at most `max_prerequisites` links
 #   - "Hear it in practice" is never collapsed in a dropdown
 #   - example block size, marking limits, audio example counts, model-text

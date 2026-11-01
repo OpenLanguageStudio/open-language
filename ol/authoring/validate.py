@@ -22,10 +22,11 @@ Usage:
 - Article structure: no CEFR level or category prefix in the title, no
   hand-numbered headings, no external-reading or "See also" section, at most
   `max_prerequisites` Prerequisites links, an open "Hear it in practice"
-  section, and no Related articles link to the article's toctree neighbour
-  (the build links neighbours). Vocabulary packs hold `min_pack_words` to
-  `max_pack_words` words in their word list, and writing and vocabulary file
-  names end in a running number.
+  section, no Related articles link to another article of the same
+  subcategory (its index links them all), and, in a flat category directory,
+  none to the article's toctree neighbour (the build links neighbours).
+  Vocabulary packs hold `min_pack_words` to `max_pack_words` words in their
+  word list, and writing and vocabulary file names end in a running number.
 - The page standard (docs/reference/page-standard.md): the opening, headings,
   tables, plain language, the sections of each category, the level and
   Introduction pages, and the glossary. See ol/authoring/standard.py and
@@ -403,18 +404,45 @@ def toctree_entries(body: str) -> list[str] | None:
     ]
 
 
+def related_links(
+    body: str, path: Path, workspace: Path | None
+) -> list[tuple[str, Path]]:
+    """Each page link under Related articles, as written and as a file."""
+    section = RELATED_SECTION.search(body)
+    if not section:
+        return []
+    links = []
+    for link in re.findall(r"\]\(([^)#\s]+\.md)", section.group(1)):
+        if not link.startswith("/"):
+            links.append((link, path.parent / link))
+        elif workspace:
+            links.append((link, workspace / link.lstrip("/")))
+    return links
+
+
+def subcategory(path: Path, workspace: Path | None) -> tuple[str, ...] | None:
+    """The subcategory a page sits in, or None in a flat category directory.
+
+    A subcategory is a directory below a category, such as a1/grammar/articles/.
+    """
+    parts = page_path(path, workspace) if workspace else None
+    if parts is None or len(parts) < 4 or parts[1] not in CATEGORIES:
+        return None
+    return parts[:3]
+
+
 def check_related_neighbours(
     rep: Report, body: str, path: Path, workspace: Path | None
 ):
-    """Related articles never links the article's toctree neighbours.
+    """Related articles in a flat category directory skips toctree neighbours.
 
     The theme already renders previous and next links from the toctree, so a
     neighbour under Related articles repeats them. Only the category index in
-    the article's own directory is read.
+    the article's own directory is read. Inside a subcategory the neighbours
+    fall under check_related_subcategory.
     """
     index = path.parent / "index.md"
-    section = RELATED_SECTION.search(body)
-    if not index.exists() or not section:
+    if not index.exists() or subcategory(path, workspace):
         return
     entries = toctree_entries(index.read_text(encoding="utf-8")) or []
     if path.stem not in entries:
@@ -425,17 +453,30 @@ def check_related_neighbours(
         for j in (i - 1, i + 1)
         if 0 <= j < len(entries)
     }
-    for link in re.findall(r"\]\(([^)#\s]+\.md)", section.group(1)):
-        if link.startswith("/"):
-            if not workspace:
-                continue
-            target = workspace / link.lstrip("/")
-        else:
-            target = path.parent / link
+    for link, target in related_links(body, path, workspace):
         if target.resolve() in neighbours:
             rep.error(
                 f"Related articles links {link}, next to this article in the "
                 "toctree: the build already links it as previous or next"
+            )
+
+
+def check_related_subcategory(
+    rep: Report, body: str, path: Path, workspace: Path | None
+):
+    """Related articles never links another article of the same subcategory.
+
+    The directory already says they belong together, and the subcategory's
+    index links them all. The index itself is not an article.
+    """
+    own = subcategory(path, workspace)
+    if own is None:
+        return
+    for link, target in related_links(body, path, workspace):
+        if target.stem != "index" and subcategory(target, workspace) == own:
+            rep.error(
+                f"Related articles links {link}, an article in the same "
+                "subcategory: its index already links it"
             )
 
 
@@ -623,6 +664,7 @@ def validate_article(path: Path, ctype: str, workspace: Path | None) -> Report:
     check_prerequisites(rep, body)
     check_audio_section_open(rep, body)
     check_related_neighbours(rep, body, path, workspace)
+    check_related_subcategory(rep, body, path, workspace)
     check_direct_address(rep, body)
     check_example_blocks(rep, body)
     check_ai_vocabulary(rep, body)

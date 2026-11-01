@@ -179,8 +179,6 @@ Die Tür ist offen.
 
 ## Related articles
 
-- [A1 > Grammar > Indefinite Articles](/a1/grammar/articles/unbestimmter-artikel.md)
-- [A1 > Grammar > Negative Articles](/a1/grammar/articles/negativartikel.md)
 - [A1 > Grammar > The Nominative Case](/a1/grammar/cases/nominativ.md)
 - [A1 > Grammar > The Accusative Case](/a1/grammar/cases/akkusativ.md)
 - [A1 > Grammar > Noun Gender and Plurals](/a1/grammar/other/nomen-genus-plural.md)

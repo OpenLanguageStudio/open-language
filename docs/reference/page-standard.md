@@ -40,7 +40,7 @@ An article is these parts, in this order. The four category sections below fill 
 | 6 | Body sections | The category's own sections (see below). | V |
 | 7 | Hear it in practice | `## Hear it in practice` with the audio block, after the body and before the summary. In grammar and concepts, several blocks may each sit under an H3 naming the track. | V |
 | 8 | Summary | `## Summary`, as the template for the category shows. | V |
-| 9 | Related articles | `## Related articles` at the very end, only links the reader would not reach by the next-page link. Omitted when empty. | V |
+| 9 | Related articles | `## Related articles` at the very end, only links the reader would not reach by the next-page link. In a subcategory, a directory below a category such as `a1/grammar/articles/`, an article links no other article of that subcategory: the directory already relates them and the subcategory index links them all. Links outside the subcategory are fine. In a flat category directory, such as `b1/grammar/` or `a1/concepts/`, sharing the directory says nothing about two topics being related, so only the toctree neighbours are left out. Omitted when empty. | V |
 
 Parts 3 and 4 together stay at 180 words or fewer, so the first screen on a phone shows what the page is and why it matters, then the first heading.
 
