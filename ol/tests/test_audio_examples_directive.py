@@ -144,6 +144,17 @@ class TestPageExamples:
 
 
 class TestAudioExamplesDirective:
+    def test_a_paragraph_break_in_a_model_text_shows_as_a_gap(self, tmp_path):
+        page = (
+            "# Brief\n\n:::{audio-examples}\n:track: a1/writing/brief\n"
+            ":multiline:\n\nLiebe Anna,\n\nbis bald.\n"
+            ": Dear Anna,\n\n: see you soon.\n:::\n"
+        )
+        built = Build(tmp_path, {"brief": page})
+        html = (built.out / "brief.html").read_text(encoding="utf-8")
+        assert "Liebe Anna,<br><br>bis bald." in html
+        assert "Dear Anna,<br><br>see you soon." in html
+
     def test_a_block_that_writes_shows_its_examples_escaped(self, build):
         html = build({"a2/grammar/weil": WRITER}).html("a2/grammar/weil")
         assert "weil ich &lt;krank&gt; bin." in html

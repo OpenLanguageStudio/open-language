@@ -141,10 +141,12 @@ Ich bleibe zu Hause, weil ich krank bin.
 | `:title:` | The track's title in the language taught |
 | `:title-en:` | The title in English |
 | `:tags:` | Words that say what the track is about, separated by commas |
-| `:multiline:` | Each example may run over several lines, as in a model text |
+| `:multiline:` | Each example may run over several lines, as in a model text, and a blank line inside its text or its translation is a paragraph break |
 | `:duplicate:` | The block shows a track another block writes and writes nothing. It carries only `:track:` and, if wanted, `:tags:`. |
 
 The body holds the examples: a sentence, then its translation on the next line after `: `. A sentence and its translation are plain text, with no role markup, backticks or braces.
+
+In a `:multiline:` block, an example is its lines, then its translation's lines each after `: `. A blank line ends the example only after its translation, where the next line is the next example's text. Any blank line before that is a paragraph break, on the page and in the audio.
 
 A block is refused with one of these codes:
 
