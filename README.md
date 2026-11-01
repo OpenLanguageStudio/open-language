@@ -78,6 +78,21 @@ extensions = [
 ]
 ```
 
+## Plain examples
+
+An `ol-examples` block shows sentences beside the explanation they illustrate, each with its translation under it. It is a `div` holding a definition list, and a sentence may be marked up with roles and bold:
+
+```markdown
+:::{div} ol-examples
+{article}`Der` Hafen ist groß.
+: The harbour is big.
+:::
+```
+
+What is spoken is the sentence as the reader sees it, with its roles and emphasis gone. A page names who speaks its plain examples under `presenter:` in its front matter, as the presenter's slug. `ol validate` fails a `presenter:` that is not a slug and a block that gives one sentence twice. It cannot know who the presenters are, since that is not part of a language workspace. Whoever serves the pages decides what a name means and what happens with a page that names nobody.
+
+`ol.docs.page_examples.PageExamples.read(doctree)` reads a built page's blocks into `ol.blocks.Example` values, in page order, skipping a block that holds anything but sentences and translations. `ol.blocks.BlockReader.spoken(text)` gives the same sentence from a page's Markdown.
+
 ## The stack role
 
 `ol.docs.roles` adds the `stack` role, which shows a phrase with its translation beneath it. It suits a table cell, a list item or a sentence, where a separate column of translations would be too wide for a phone:

@@ -499,9 +499,14 @@ def check_example_blocks(rep: Report, body: str):
                 "to the audio track)"
             )
         roles = set()
+        sentences = set()
         for ln in block:
             if not ln.strip() or ln.startswith(":"):
                 continue
+            spoken = BlockReader.spoken(ln)
+            if spoken in sentences:
+                rep.error(f"{where}: gives the sentence {spoken[:50]!r} twice")
+            sentences.add(spoken)
             in_line = set(_ROLE.findall(ln))
             roles |= in_line
             if len(in_line) > limits["max_roles_per_sentence"]:
@@ -598,6 +603,14 @@ def validate_article(path: Path, ctype: str, workspace: Path | None) -> Report:
     else:
         if "html_meta" in fm:
             rep.error("top-level 'html_meta' is deprecated: nest it under 'myst:'")
+        if "presenter" in fm and not (
+            isinstance(fm["presenter"], str)
+            and BlockReader.SLUG.fullmatch(fm["presenter"])
+        ):
+            rep.error(
+                f"presenter: {fm['presenter']!r} is not a slug, the lower-case "
+                "name a presenter goes by, such as emilia-berger"
+            )
         hm = (fm.get("myst") or {}).get("html_meta") or fm.get("html_meta") or {}
         desc = hm.get("description", "")
         if not desc:

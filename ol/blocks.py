@@ -145,6 +145,7 @@ class BlockReader:
     SLUG: ClassVar[re.Pattern] = re.compile(r"[-a-z0-9_]+")
     # Example text reaches speech verbatim, so role markup and code are refused.
     BANNED: ClassVar[tuple[str, ...]] = ("`", "{", "}")
+    ROLE: ClassVar[re.Pattern] = re.compile(r"\{[a-z-]+\}`([^`]*)`")
     markdown: ClassVar[MarkdownIt] = MarkdownIt("commonmark").use(colon_fence_plugin)
 
     def read(
@@ -249,6 +250,22 @@ class BlockReader:
         """
         text = unicodedata.normalize("NFC", text).replace("*", "").replace("_", "")
         return re.sub(r"\s+", " ", text).strip()
+
+    @classmethod
+    def spoken(cls, text: str) -> str:
+        """Return a sentence of an ``ol-examples`` block as a presenter says it.
+
+        A page may mark up these sentences, so the roles go as well as what
+        ``sentence_key`` removes.
+
+        Args:
+            text: A sentence as a page gives it.
+
+        Returns:
+            The sentence with its roles and emphasis removed and its spacing
+            tidied.
+        """
+        return cls.sentence_key(cls.ROLE.sub(r"\1", text))
 
     def examples(
         self, body: Sequence[str], multiline: bool, where: str

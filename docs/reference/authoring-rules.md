@@ -72,3 +72,5 @@ An en dash (–) appears in three places only: between the two halves of a title
 ## Frontmatter
 
 Write `html_meta.description` for the snippet a search engine shows under the title.
+
+Write `presenter:` with a presenter's slug to name who speaks the page's `ol-examples` blocks. One presenter speaks a whole page. Leave it out to use the language's usual presenter.
