@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## [0.10.0] - 2026-11-01
+
+### Changed: a term linked in the lead counts for the explanation
+
+A term linked in the lead paragraph no longer has to be linked again in the explanation paragraph, so the same term is not linked twice two paragraphs apart. A term whose first use is in the explanation is still linked there. The "first use of the term" error now covers this case, and the separate "the explanation paragraph uses the term" error is gone.
+
+### Added: a heading for each track under Hear it in practice
+
+In grammar and concepts, a `## Hear it in practice` section with more than one audio block may put each block under its own H3 naming the track, so on-this-page reaches it. `ol validate` accepts these H3s when the section has several blocks, every block has an H3 and each H3 holds one block. They count towards the limit of 6 H3. The review rubric gains `track-heading`, which asks whether each H3 names its track. Vocabulary and writing are unchanged.
+
 ## [0.9.0] - 2026-11-01
 
 ### Added: paragraphs in a `:multiline:` block
