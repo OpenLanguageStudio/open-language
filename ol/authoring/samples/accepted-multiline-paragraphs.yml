@@ -1,0 +1,24 @@
+expect: accepted
+description: A multiline block whose text has paragraphs, a blank line between them.
+pages:
+  a1/writing/brief: |
+    :::{audio-examples}
+    :track: a1/writing/brief
+    :title: Ein Brief
+    :multiline:
+
+    Liebe Anna,
+
+    ich bin in Hamburg.
+    Es ist sehr schön.
+
+    Viele Grüße
+    Max
+    : Dear Anna,
+
+    : I am in Hamburg.
+    : It is very nice.
+
+    : Best wishes
+    : Max
+    :::

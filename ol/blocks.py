@@ -275,7 +275,9 @@ class BlockReader:
         A sentence is followed by its translation on the next line after ``: ``,
         and examples may be separated by blank lines. In a ``:multiline:`` block
         each example is a group of sentence lines then translation lines,
-        separated from the next by a blank line, and keeps its line breaks.
+        separated from the next by a blank line, and keeps its line breaks. A
+        blank line inside its sentence lines or its translation lines is a
+        paragraph break.
 
         Args:
             body: The lines after the options.
@@ -339,43 +341,50 @@ class BlockReader:
     def multiline_examples(self, lines: list[str], where: str) -> list[Example]:
         """Read examples of several sentence lines then several translation lines.
 
+        A blank line ends an example only where the next line is a sentence and
+        the example already has a translation. Any other blank line is inside
+        the example: a paragraph break, kept as one empty line however many
+        there are, or nothing at all between the sentences and the translations.
+
         Args:
             lines: The body's lines, stripped.
             where: The page and line, for the error message.
 
         Returns:
-            The examples, in order, each keeping its line breaks.
+            The examples, in order, each keeping its line breaks and paragraphs.
 
         Raises:
             BlockFormatError: When a group is not sentence lines followed by
                 translation lines.
         """
+        refused = (
+            "{where} (body line {offset}): an example is sentence lines, then "
+            "': translation' lines, then a blank line"
+        )
         examples = []
-        group: list[str] = []
-        for offset, line in enumerate([*lines, ""], start=1):
-            if line:
-                group.append(line)
+        sentences: list[str] = []
+        translations: list[str] = []
+        blank = False
+        for offset, line in enumerate(lines, start=1):
+            if not line:
+                blank = True
                 continue
-            if not group:
-                continue
-            split = next(
-                (i for i, part in enumerate(group) if part.startswith(":")), None
-            )
-            sentences = group[:split]
-            translations = [part[1:].strip() for part in group[split or 0 :]]
-            if (
-                split is None
-                or not sentences
-                or any(not part.startswith(":") for part in group[split:])
-                or not all(translations)
-            ):
-                msg = (
-                    f"{where} (body line {offset - 1}): an example is sentence "
-                    "lines, then ': translation' lines, then a blank line"
-                )
-                raise BlockFormatError(msg)
+            is_translation = line.startswith(":")
+            text = line[1:].strip() if is_translation else line
+            ended = translations and not is_translation
+            if not text or (is_translation and not sentences) or (ended and not blank):
+                raise BlockFormatError(refused.format(where=where, offset=offset))
+            if ended:
+                examples.append(Example("\n".join(sentences), "\n".join(translations)))
+                sentences, translations = [], []
+                blank = False
+            part = translations if is_translation else sentences
+            part += ["", text] if blank and part else [text]
+            blank = False
+        if sentences and not translations:
+            raise BlockFormatError(refused.format(where=where, offset=len(lines)))
+        if sentences:
             examples.append(Example("\n".join(sentences), "\n".join(translations)))
-            group = []
         return examples
 
     def find(self, page: str, text: str) -> list[Block]:

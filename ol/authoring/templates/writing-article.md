@@ -53,7 +53,8 @@ Before reading this article, make sure you are comfortable with:
      "### Hear it in practice" holding a complete at-level model text of 60
      words or more, read aloud. Each block writes its own track, so give each a
      name of its own in :track: (see templates/audio-examples-block.md);
-     :multiline: keeps the text's line breaks on the page and in the audio. -->
+     :multiline: keeps the text's line breaks on the page and in the audio, and
+     a blank line inside the text or its translation is a paragraph break. -->
 
 ## Building blocks
 

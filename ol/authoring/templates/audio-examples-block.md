@@ -26,7 +26,9 @@ BEFORE Summary. Delete these comment lines: HTML comments are banned in docs. --
 - :tags: : words that say what the track is about, separated by commas.
 - :multiline: : writing model texts only: examples become blank-line-separated
   groups (native lines, then ':'-prefixed translation lines); line breaks are
-  kept on the page and in the audio.
+  kept on the page and in the audio. A blank line inside the native lines or
+  the translation lines is a paragraph break. Only a blank line after the
+  translation, with native lines following it, starts the next example.
 - :duplicate: : shows a track another block writes, on this page too. It
   carries :track: and, if wanted, :tags:, and nothing else: no examples, no
   title, no English title.

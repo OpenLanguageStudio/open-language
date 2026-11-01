@@ -150,6 +150,48 @@ class TestBlockReader:
             Example("Liebe Anna,\nbis bald.", "Dear Anna,\nsee you soon."),
         )
 
+    def test_a_blank_line_inside_a_multiline_text_is_a_paragraph_break(self):
+        body = ["Liebe Anna,", "", "bis bald.", ": Dear Anna,", "", ": see you soon."]
+        block = read({"track": "a1/writing/brief", "multiline": None}, body=body)
+        assert block.examples == (
+            Example("Liebe Anna,\n\nbis bald.", "Dear Anna,\n\nsee you soon."),
+        )
+
+    def test_blank_lines_in_a_row_are_one_paragraph_break(self):
+        body = ["Eins.", "", "", "Zwei.", ": One.", ": Two."]
+        block = read({"track": "a1/writing/brief", "multiline": None}, body=body)
+        assert block.examples == (Example("Eins.\n\nZwei.", "One.\nTwo."),)
+
+    def test_a_blank_line_after_a_translation_still_starts_the_next_example(self):
+        body = ["Eins.", ": One.", "", "Zwei.", "", "Drei.", ": Two and three."]
+        block = read({"track": "a1/writing/brief", "multiline": None}, body=body)
+        assert block.examples == (
+            Example("Eins.", "One."),
+            Example("Zwei.\n\nDrei.", "Two and three."),
+        )
+
+    def test_a_blank_line_before_the_translation_is_no_paragraph_break(self):
+        body = ["Eins.", "", ": One."]
+        block = read({"track": "a1/writing/brief", "multiline": None}, body=body)
+        assert block.examples == (Example("Eins.", "One."),)
+
+    @pytest.mark.parametrize(
+        "body",
+        [
+            ["Eins.", "", "Zwei."],
+            ["Eins.", ": One.", "", "Zwei.", "", "Drei."],
+            ["", ": Only a translation.", "", ": And another."],
+            ["Eins.", ": One.", "Zwei.", "", ": Two."],
+        ],
+    )
+    def test_a_multiline_text_with_a_gap_still_needs_its_translation(self, body):
+        with pytest.raises(BlockFormatError):
+            read({"track": "a1/writing/brief", "multiline": None}, body=body)
+
+    def test_a_single_line_block_takes_no_paragraph_break(self):
+        with pytest.raises(BlockFormatError):
+            read({"track": "a2/grammar/weil"}, body=["Eins.", "", ": One."])
+
     def test_examples_need_no_blank_line_between_them(self):
         body = ["Eins.", ": One.", "Zwei.", ": Two."]
         block = read({"track": "a2/grammar/weil"}, body=body)
