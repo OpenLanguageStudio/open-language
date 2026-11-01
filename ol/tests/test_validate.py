@@ -27,12 +27,12 @@ H1 = "# Definite Articles\n"
 TRACK = ":track: a1/grammar/bestimmter-artikel\n"
 
 
-def errors(tmp_path: Path, text: str) -> list[str]:
+def errors(tmp_path: Path, text: str, name: str = ARTICLE) -> list[str]:
     for target in LINK_TARGETS:
         page = tmp_path / target
         page.parent.mkdir(parents=True, exist_ok=True)
         page.write_text("# Page\n", encoding="utf-8")
-    article = tmp_path / ARTICLE
+    article = tmp_path / name
     article.write_text(text, encoding="utf-8")
     (tmp_path / "open-language.yml").write_text(
         "language: German\nlanguage_code: de\n", encoding="utf-8"
@@ -152,7 +152,7 @@ BROKEN_ARTICLES = {
         "PLACEHOLDER",
     ),
     "broken doc link": (
-        lambda s: s.replace("negativartikel.md", "missing-page.md", 1),
+        lambda s: s.replace("nomen-genus-plural.md", "missing-page.md", 1),
         "broken doc link",
     ),
     "stock opener": (
@@ -256,26 +256,86 @@ def test_stock_phrase_in_an_example_is_not_prose(tmp_path, source):
     assert errors(tmp_path, glossed) == []
 
 
-def write_articles_index(tmp_path: Path, *entries: str) -> None:
-    index = tmp_path / "a1/grammar/articles/index.md"
+def related(source: str, link: str) -> str:
+    """The article with one more link under Related articles."""
+    return source.rstrip() + f"\n- [Another page]({link})\n"
+
+
+def write_index(tmp_path: Path, directory: str, *entries: str) -> None:
+    index = tmp_path / directory / "index.md"
     index.parent.mkdir(parents=True, exist_ok=True)
     toctree = "\n".join(entries)
-    index.write_text(
-        f"# Articles\n\n```{{toctree}}\n{toctree}\n```\n", encoding="utf-8"
-    )
+    index.write_text(f"# Index\n\n```{{toctree}}\n{toctree}\n```\n", encoding="utf-8")
+
+
+FLAT_ARTICLE = "a1/grammar/bestimmter-artikel.md"
+
+
+def write_page(tmp_path: Path, name: str) -> None:
+    page = tmp_path / name
+    page.parent.mkdir(parents=True, exist_ok=True)
+    page.write_text("# Page\n", encoding="utf-8")
 
 
 def test_related_link_to_a_toctree_neighbour_is_red(tmp_path, source):
-    write_articles_index(tmp_path, "bestimmter-artikel", "unbestimmter-artikel")
-    found = errors(tmp_path, source)
-    assert any("unbestimmter-artikel" in msg for msg in found), found
+    write_index(tmp_path, "a1/grammar", "bestimmter-artikel", "sein")
+    write_page(tmp_path, "a1/grammar/sein.md")
+    found = errors(tmp_path, related(source, "/a1/grammar/sein.md"), FLAT_ARTICLE)
+    assert any("next to this article in the toctree" in msg for msg in found), found
 
 
 def test_related_link_past_a_toctree_neighbour_passes(tmp_path, source):
-    write_articles_index(
-        tmp_path, "bestimmter-artikel", "possessivartikel", "unbestimmter-artikel"
+    write_index(tmp_path, "a1/grammar", "bestimmter-artikel", "haben", "sein")
+    write_page(tmp_path, "a1/grammar/sein.md")
+    linked = related(source, "/a1/grammar/sein.md")
+    assert errors(tmp_path, linked, FLAT_ARTICLE) == []
+
+
+@pytest.mark.parametrize(
+    "link",
+    [
+        "/a1/grammar/articles/negativartikel.md",
+        "negativartikel.md",
+        "../articles/negativartikel.md",
+        "/a1/grammar/articles/negativartikel.md#the-forms",
+    ],
+)
+def test_related_link_inside_the_subcategory_is_red(tmp_path, source, link):
+    write_page(tmp_path, "a1/grammar/articles/negativartikel.md")
+    found = errors(tmp_path, related(source, link))
+    assert any("same subcategory" in msg for msg in found), found
+
+
+def test_related_link_to_a_subcategory_neighbour_is_reported_once(tmp_path, source):
+    write_index(tmp_path, "a1/grammar/articles", "bestimmter-artikel", "negativartikel")
+    write_page(tmp_path, "a1/grammar/articles/negativartikel.md")
+    linked = related(source, "/a1/grammar/articles/negativartikel.md")
+    assert len(errors(tmp_path, linked)) == 1
+
+
+@pytest.mark.parametrize(
+    "target",
+    [
+        "a1/grammar/articles/index.md",
+        "a1/grammar/articles.md",
+        "a1/grammar/sein.md",
+        "a2/grammar/articles/adjektivendungen.md",
+    ],
+)
+def test_related_link_outside_the_subcategory_passes(tmp_path, source, target):
+    write_page(tmp_path, target)
+    assert errors(tmp_path, related(source, f"/{target}")) == []
+
+
+def test_subcategory_rule_reads_only_related_articles(tmp_path, source):
+    prerequisites = source.replace(
+        "## The forms",
+        ":::{admonition} Prerequisites\n:class: note\n"
+        "- [Indefinite Articles](/a1/grammar/articles/unbestimmter-artikel.md)\n"
+        ":::\n\n## The forms",
+        1,
     )
-    assert errors(tmp_path, source) == []
+    assert "same subcategory" not in " ".join(errors(tmp_path, prerequisites))
 
 
 def vocabulary_errors(

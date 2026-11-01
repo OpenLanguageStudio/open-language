@@ -112,6 +112,8 @@ Before reading this article, make sure you are comfortable with:
 ## Related articles
 
 - [{{LEVEL}} > Grammar > {{RELATED}}]({{/path.md}})
-<!-- Links only, none the reader would reach by the next-page link. Leave the
-     section out when it is empty. Same-level links encouraged; cross-level only
-     DOWN. Only existing files. -->
+<!-- Links only, none the reader would reach by the next-page link. In a
+     subcategory such as a1/grammar/articles/, no other article of that
+     subcategory: its index links them all. Leave the section out when it is
+     empty. Same-level links encouraged; cross-level only DOWN. Only existing
+     files. -->

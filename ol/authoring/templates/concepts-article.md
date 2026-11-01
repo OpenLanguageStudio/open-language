@@ -124,5 +124,6 @@ Before reading this article, make sure you are comfortable with:
 <!-- Links only. NEVER link the previous/next concept: Sphinx generates that
      navigation from the toctree and the theme renders it in the page footer.
      Related articles is for NON-adjacent links only: supporting grammar, a
-     concept elsewhere in the sequence, a vocabulary pack. Leave the section out
-     when it is empty. -->
+     concept elsewhere in the sequence, a vocabulary pack. In a subcategory, no
+     other article of that subcategory: its index links them all. Leave the
+     section out when it is empty. -->

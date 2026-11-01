@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [0.11.0] - 2026-11-02
+
+### Changed: articles in a subcategory do not link each other
+
+`ol validate` now reports an error when Related articles links another article of the same subcategory, a directory below a category such as `a1/grammar/articles/`. The directory already says the two belong together, and the subcategory's index links them all. Remove the link, and leave the section out if nothing remains. An article may still link articles outside its subcategory, and its own subcategory's index. In a subcategory this rule covers the toctree neighbour check, which now applies to flat category directories only, such as `b1/grammar/` or `a1/concepts/`. Pages that link this way now fail until the link is removed.
+
 ## [0.10.0] - 2026-11-01
 
 ### Changed: a term linked in the lead counts for the explanation
