@@ -70,6 +70,18 @@ def _keep_audio_pairs(text: str, keep: int) -> str:
 
 
 BROKEN_ARTICLES = {
+    "a sentence twice in an examples block": (
+        lambda s: s.replace(
+            '{article}`Die` Brücke heißt „Alsterbrücke".',
+            "**Der** Hafen ist groß.",
+            1,
+        ),
+        "gives the sentence",
+    ),
+    "a presenter that is not a slug": (
+        lambda s: s.replace("---\n", "---\npresenter: Emilia Berger\n", 1),
+        "presenter:",
+    ),
     "too many inline examples": (
         lambda s: s.replace(
             "Sie liest {akk}`das` Buch.",
@@ -235,6 +247,11 @@ def test_broken_article_is_red(tmp_path, source, case):
     assert broken != source, "the mutation did not change the fixture"
     found = errors(tmp_path, broken)
     assert any(expected in msg for msg in found), found
+
+
+def test_a_page_can_name_its_presenter(tmp_path, source):
+    named = source.replace("---\n", "---\npresenter: emilia-berger\n", 1)
+    assert errors(tmp_path, named) == []
 
 
 def test_stock_phrase_in_an_example_is_not_prose(tmp_path, source):

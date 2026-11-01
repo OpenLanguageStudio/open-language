@@ -122,6 +122,18 @@ class TestBlockReader:
         )
         assert block.refusals == ("duplicate_writes",)
 
+    @pytest.mark.parametrize(
+        ("written", "said"),
+        [
+            ("{article}`Der` Hafen ist **groß**.", "Der Hafen ist groß."),
+            ("Ich sehe {akk}`den` {noun}`Turm`.", "Ich sehe den Turm."),
+            ("Ein  *ganz*\neinfacher Satz.", "Ein ganz einfacher Satz."),
+            ("Du kommst?", "Du kommst?"),
+        ],
+    )
+    def test_what_is_spoken_has_no_markup(self, written, said):
+        assert BlockReader.spoken(written) == said
+
     def test_a_sentence_given_twice_is_refused(self):
         body = [*BODY, "", "Ich  bleibe zu Hause, weil ich *krank* bin.", ": Again."]
         block = read({"track": "a2/grammar/weil"}, body=body)

@@ -2,6 +2,20 @@
 
 ## [Unreleased]
 
+## [0.7.0] - 2026-11-01
+
+### Added: a page's plain examples can be read and spoken
+
+`ol-examples` blocks stay as they are written, and these additions let them be heard:
+
+- A page can name who speaks its `ol-examples` blocks with `presenter:` in its front matter, a presenter's slug. `ol validate` fails a value that is not a slug.
+- `ol.docs.page_examples.PageExamples.read(doctree)` reads a built page's blocks into `ol.blocks.Example` values, as the reader sees each sentence: roles and emphasis gone, typographic quotation marks in. A block holding anything but sentences and translations gives none.
+- `ol.blocks.BlockReader.spoken(text)` gives a sentence from a page's Markdown with its roles and emphasis removed.
+
+### Changed: a sentence given twice in an `ol-examples` block fails
+
+This breaks a page that repeats a sentence within one block, compared as it is spoken. `ol validate` names the block and the sentence. Remove one of the two.
+
 ## [0.6.0] - 2026-11-01
 
 ### Added: the `stack` role shows a phrase with its translation beneath

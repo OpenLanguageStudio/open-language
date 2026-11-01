@@ -8,6 +8,9 @@ from pathlib import Path
 import pytest
 from sphinx.application import Sphinx
 
+from ol.blocks import Example
+from ol.docs.page_examples import PageExamples
+
 WRITER = """# Weil
 
 :::{audio-examples}
@@ -68,6 +71,76 @@ class Build:
 @pytest.fixture
 def build(tmp_path):
     return lambda pages: Build(tmp_path, pages)
+
+
+PLAIN = """# Hafen
+
+:::{div} ol-examples
+{mark}`Der` Hafen ist **groß**.
+: The harbour is big.
+
+Die Brücke heißt "Alsterbrücke".
+: The bridge is called "Alsterbrücke".
+
+    A second paragraph of the translation.
+:::
+
+:::{div} other
+Nicht hier.
+: Not here.
+:::
+
+:::{div} ol-examples
+Der Satz.
+: The sentence.
+: Another translation.
+:::
+
+:::{div} ol-examples
+Ein Absatz, kein Beispiel.
+:::
+
+:::{div} ol-examples
+Noch ein Satz.
+: One more sentence.
+:::
+"""
+
+
+class TestPageExamples:
+    def read(self, tmp_path: Path) -> list[Example]:
+        src = tmp_path / "src"
+        src.mkdir()
+        (src / "conf.py").write_text(
+            'extensions = ["myst_parser", "sphinx_design", "ol.docs.roles"]\n'
+            'myst_enable_extensions = ["colon_fence", "deflist"]\n'
+            'custom_roles = ["mark"]\n'
+            "suppress_warnings = ['toc.not_readable']\n"
+        )
+        (src / "index.md").write_text(PLAIN, encoding="utf-8")
+        app = Sphinx(
+            str(src),
+            str(src),
+            str(tmp_path / "out"),
+            str(tmp_path / "doctrees"),
+            "html",
+            status=None,
+            warning=StringIO(),
+        )
+        app.build()
+        return PageExamples.read(app.env.get_doctree("index"))
+
+    def test_a_page_gives_what_its_blocks_show_with_no_markup(self, tmp_path):
+        examples = self.read(tmp_path)
+        assert examples[0] == Example("Der Hafen ist groß.", "The harbour is big.")
+        assert examples[1].sentence == "Die Brücke heißt “Alsterbrücke”."
+        assert examples[1].translation.endswith(
+            "\nA second paragraph of the translation."
+        )
+
+    def test_a_block_of_anything_but_pairs_gives_nothing(self, tmp_path):
+        sentences = [example.sentence for example in self.read(tmp_path)]
+        assert sentences[2:] == ["Noch ein Satz."]
 
 
 class TestAudioExamplesDirective:
