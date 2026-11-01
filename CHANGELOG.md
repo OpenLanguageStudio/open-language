@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [0.8.1] - 2026-11-01
+
+### Fixed: a link's text is not a use of a term
+
+`ol validate` counted a listed term in a link's text as its first use, and asked for the `term` role there, where a link cannot hold one. The usual case is a Related articles entry that names another page, such as `[A1 > Grammar > The verb sein](/a1/grammar/sein.md)`. The text of a link is now exempt, and the page standard says so.
+
 ## [0.8.0] - 2026-11-01
 
 ### Changed: `ol check` holds every page to the page standard
