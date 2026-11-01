@@ -82,7 +82,7 @@ class TestStackRole:
         assert STACKED in json.loads(done.output("index.fjson"))["body"]
 
     def test_the_phrase_and_translation_are_escaped(self, build):
-        done = build("# Index\n\n{stack}`<b>Hallo</b> | Hi & \"bye\"`\n")
+        done = build('# Index\n\n{stack}`<b>Hallo</b> | Hi & "bye"`\n')
         assert "&lt;b&gt;Hallo&lt;/b&gt;" in done.output()
         assert "Hi &amp; &quot;bye&quot;" in done.output()
 

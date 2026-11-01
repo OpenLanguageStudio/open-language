@@ -78,6 +78,28 @@ extensions = [
 ]
 ```
 
+## The stack role
+
+`ol.docs.roles` adds the `stack` role, which shows a phrase with its translation beneath it. It suits a table cell, a list item or a sentence, where a separate column of translations would be too wide for a phone:
+
+```markdown
+Say {stack}`Guten Morgen | Good morning` to a friend.
+
+| Phrase | Notes |
+|---|---|
+| {stack}`Guten Morgen \| Good morning` | Used until about noon. |
+```
+
+The phrase and its translation are separated by the first ` | ` (a space, a pipe and a space). The translation may contain more pipes. Inside a Markdown table a pipe splits the cell, so write the separator as `\|` there.
+
+The role writes this HTML, with both texts escaped. `lang` is the `language_code` in `open-language.yml` and is left out when none is set:
+
+```html
+<span class="ol-stack"><span class="ol-stack-target" lang="de">Guten Morgen</span><span class="ol-stack-translation">Good morning</span></span>
+```
+
+The shared stylesheet shows the phrase in normal weight with the translation beneath it, smaller and muted. A text with no separator shows unstacked and warns with the page and line.
+
 ## The audio-examples block
 
 A block names a track by its address and either writes it, by giving its examples, or shows a track another block writes:

@@ -78,5 +78,5 @@ extend-ignore = [
 
 [tool.forge.docs]
 # These modules have no public Python API: the checks are reached through
-# `ol validate`, the CLI through `ol`, and the Sphinx extension through conf.py.
-exempt-paths = ["ol/cli.py", "ol/authoring/validate.py", "ol/docs/audio_examples.py"]
+# `ol validate`, the CLI through `ol`, and the Sphinx extensions through conf.py.
+exempt-paths = ["ol/cli.py", "ol/authoring/validate.py", "ol/docs/audio_examples.py", "ol/docs/roles.py"]

@@ -49,10 +49,10 @@ real context, and the register (formal/informal).}}
 
 ## Building blocks
 
-| Purpose | {{Native language name}} | English |
-|---|---|---|
-| Greeting (formal) | {{…}} | {{…}} |
-| {{purpose}} | {{phrase}} | {{translation}} |
+| Purpose | Phrase |
+|---|---|
+| Greeting (formal) | {stack}`{{…}} \| {{…}}` |
+| {{purpose}} | {stack}`{{phrase}} \| {{translation}}` |
 
 ## Summary
 
