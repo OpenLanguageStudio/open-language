@@ -55,6 +55,13 @@ common:
   # Tables. Tables of forms are the wider kind, and exist only in grammar.
   table_max_columns: 3
   forms_table_max_columns: 5
+  # A table header holding one of these whole words, in any position, is a
+  # translation column, which no table has. A language adds the words its own
+  # headers use under `translation_headers` in open-language.yml.
+  translation_headers:
+    - English
+    - Translation
+    - Meaning
   # Plain language. Over the average is a warning, the rest are errors.
   sentence_max_words: 25
   paragraph_max_sentences: 5

@@ -185,7 +185,7 @@ GRAMMAR = {
         lambda s: s.replace(
             "## Summary", "| German | English |\n|-|-|\n| a | b |\n\n## Summary", 1
         ),
-        "a column for the language taught",
+        "'English' is a column for the translation",
     ),
     "long sentence": (
         lambda s: s.replace(
@@ -377,7 +377,7 @@ VOCABULARY = {
     ),
     "English column": (
         lambda s: s.replace("| Word | Notes |", "| German | English |", 1),
-        "a column for the language taught",
+        "'English' is a column for the translation",
     ),
     "three columns": (
         lambda s: s.replace(
@@ -546,6 +546,75 @@ def test_a_long_average_warns_and_does_not_fail(tmp_path):
     items = report(tmp_path, "concepts", long_prose).items
     assert any(lvl == "WARN" and "words a sentence" in m for lvl, m in items)
     assert not any(lvl == "ERROR" and "words a sentence" in m for lvl, m in items)
+
+
+def with_table(category: str, header: str) -> str:
+    """The category's fixture with a table of that header before its last section."""
+    cells = header.count("|") - 1
+    rows = f"{header}\n|{'-|' * cells}\n|{' a |' * cells}\n\n"
+    last = re.findall(r"^## .+$", fixture(category), re.M)[-1]
+    return fixture(category).replace(last, rows + last, 1)
+
+
+@pytest.mark.parametrize("category", PATHS)
+@pytest.mark.parametrize(
+    ("header", "cell"),
+    [
+        ("| Formal | Informal | English |", "English"),
+        ("| Word | Meaning | Example |", "Meaning"),
+        ("| Nominative | Accusative | English |", "English"),
+        ("| Preposition | Core meaning | Example |", "Core meaning"),
+        ("| English meaning | Example |", "English meaning"),
+        ("| Translation | Notes |", "Translation"),
+        ("| Verb | **MEANING** |", "MEANING"),
+    ],
+)
+def test_a_translation_column_is_red_in_any_category(tmp_path, category, header, cell):
+    found = errors(tmp_path, category, with_table(category, header))
+    assert any(
+        f"'{cell}' is a column for the translation" in msg
+        and "stack role" in msg
+        and "Notes" in msg
+        for msg in found
+    ), found
+
+
+def test_an_unnamed_column_is_red(tmp_path):
+    table = with_table("grammar", "| Singular | | Plural | |")
+    found = errors(tmp_path, "grammar", table)
+    assert any("empty header cell" in msg and "stack role" in msg for msg in found)
+
+
+@pytest.mark.parametrize(
+    "header",
+    [
+        "| | Masculine | Feminine | Neuter | Plural |",
+        "| Person | Ending | Example |",
+        "| Englishman | Meaningful |",
+    ],
+)
+def test_a_table_with_no_translation_column_passes(tmp_path, header):
+    found = errors(tmp_path, "grammar", with_table("grammar", header))
+    assert not any(
+        "column for the translation" in msg or "empty header cell" in msg
+        for msg in found
+    ), found
+
+
+def test_a_language_adds_its_own_translation_headers(tmp_path):
+    table = with_table("grammar", "| Verb | Bedeutung | Beispiel |")
+    assert not any(
+        "column for the translation" in msg
+        for msg in errors(tmp_path, "grammar", table)
+    )
+    (tmp_path / "open-language.yml").write_text(
+        "language: German\ntranslation_headers:\n  - Bedeutung\n", encoding="utf-8"
+    )
+    page = tmp_path / PATHS["grammar"]
+    assert any(
+        "'Bedeutung' is a column for the translation" in msg
+        for _, msg in validate_file(page, tmp_path).items
+    )
 
 
 def test_a_table_in_a_fence_is_not_read(tmp_path):

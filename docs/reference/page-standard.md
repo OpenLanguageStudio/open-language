@@ -57,9 +57,9 @@ Parts 3 and 4 together stay at 180 words or fewer, so the first screen on a phon
 
 A table is read on a phone, where width is scarce and height is not.
 
-- A word or phrase table has two columns: the phrase with its translation stacked beneath it, and Notes. There is no separate English column. [V: error on a header row that pairs a German column with an English one]
+- A word or phrase table has two columns: the phrase with its translation stacked beneath it, and Notes. No table has a separate translation column. [V: error on any table, of any category, with a header cell holding English, Translation or Meaning as a whole word, or a word the language repository adds under `translation_headers` in `open-language.yml`]
 - A table has at most 3 columns. A table of forms, such as a declension, may have up to 5, and only in grammar. [V]
-- A table has a header row, and no empty first header cell outside a table of forms. [V]
+- A table has a header row. Every header cell has a name, except the first cell of a table of forms. [V]
 - At a 360 pixel viewport no page scrolls sideways. [B: render check in CI, see "Proof" below]
 
 The stacked cell is written with the `stack` role: ``{stack}`Guten Morgen | Good morning` ``. Inside a pipe table the separator is written `\|`. Old tables with an English column stay in the baseline until they are migrated.

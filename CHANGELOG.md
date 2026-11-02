@@ -8,6 +8,16 @@
 
 This is a breaking change. A repository whose Terminology page lacks those entries, or whose article uses a listed term with no link, now fails `ol validate`. Add the entries and links, or on adopting this version run `ol validate --write-baseline` once, and the baseline covers those pages until they are fixed.
 
+### Changed: no table has a translation column
+
+`ol validate` now reports an error on a table of any category when a header cell holds `English`, `Translation` or `Meaning` as a whole word, in any position, such as `Core meaning`. Before, this fired only when another header named the language taught or a word such as `Word` or `Phrase`, so tables such as `Formal | Informal | English` passed. The translation goes under its phrase with the `stack` role, and anything else goes in a Notes column.
+
+A header cell after the first may no longer be empty either, so a translation cannot sit in an unnamed column, as in `Singular | | Plural | |`. The first cell of a table of forms in grammar may still be empty.
+
+A language repository adds the words its own headers use under `translation_headers` in `open-language.yml`, for example `translation_headers: [Bedeutung]`.
+
+This is a breaking change. A page with such a column now fails `ol validate` until the column is gone, or until the page is in the baseline.
+
 ## [0.11.0] - 2026-11-02
 
 ### Changed: articles in a subcategory do not link each other
