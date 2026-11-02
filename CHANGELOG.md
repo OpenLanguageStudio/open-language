@@ -4,7 +4,9 @@
 
 ### Added: the shared term list
 
-`ol/authoring/glossary-terms.yml` now lists the grammar terms a coursebook in any language needs, such as `noun`, `verb` and `subject`. Every listed term must have an entry on a language repository's Terminology page, and the first use of each in an article's prose must link to it. A repository without those entries now fails `ol validate`, so add them or baseline the pages before upgrading. Language-specific terms stay on the repository's own `glossary-terms.yml`.
+`ol/authoring/glossary-terms.yml` now lists the grammar terms a coursebook in any language needs, such as `noun`, `verb` and `subject`. Every listed term must have an entry on a language repository's Terminology page, and the first use of each in an article's prose must link to it. Language-specific terms stay on the repository's own `glossary-terms.yml`.
+
+This is a breaking change. A repository whose Terminology page lacks those entries, or whose article uses a listed term with no link, now fails `ol validate`. Add the entries and links, or on adopting this version run `ol validate --write-baseline` once, and the baseline covers those pages until they are fixed.
 
 ## [0.11.0] - 2026-11-02
 

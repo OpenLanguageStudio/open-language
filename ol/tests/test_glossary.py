@@ -5,11 +5,45 @@ from __future__ import annotations
 from pathlib import Path
 
 import pytest
+import yaml
 
-from ol.authoring.glossary import load_terms, term_uses
+from ol.authoring.glossary import TERMS_FILE, load_terms, term_uses
 from ol.authoring.validate import validate_file
 
 CONFIG = "language: German\nlanguage_code: de\n"
+SHIPPED_LIST = Path(__file__).parents[1] / "authoring" / TERMS_FILE
+SHIPPED_TERMS = {
+    "adjective",
+    "adverb",
+    "clause",
+    "comparative",
+    "conjugation",
+    "conjunction",
+    "direct object",
+    "future tense",
+    "imperative",
+    "indirect object",
+    "infinitive",
+    "main clause",
+    "negation",
+    "noun",
+    "object",
+    "past tense",
+    "personal pronoun",
+    "plural",
+    "preposition",
+    "present tense",
+    "pronoun",
+    "question word",
+    "relative clause",
+    "singular",
+    "subject",
+    "subordinate clause",
+    "superlative",
+    "tense",
+    "verb",
+    "word order",
+}
 TERMINOLOGY = """# Terminology
 
 Grammar has its own words, and each one is explained here in one plain sentence with one example.
@@ -27,14 +61,20 @@ Dative case : Dativ
 
 
 @pytest.fixture
-def repository(tmp_path, monkeypatch):
+def repository(tmp_path):
     (tmp_path / "open-language.yml").write_text(CONFIG, encoding="utf-8")
     (tmp_path / "glossary-terms.yml").write_text(
         "terms:\n  - noun\n  - term: dative case\n    forms: [dative]\n",
         encoding="utf-8",
     )
-    monkeypatch.setattr("ol.authoring.glossary.SHARED_TERMS", tmp_path / "none.yml")
     return tmp_path
+
+
+@pytest.fixture
+def shipped_items(monkeypatch):
+    """Put back the list this package ships, and give its items as written."""
+    monkeypatch.setattr("ol.authoring.glossary.SHARED_TERMS", SHIPPED_LIST)
+    return yaml.safe_load(SHIPPED_LIST.read_text(encoding="utf-8"))["terms"]
 
 
 def terminology_errors(root: Path, text: str) -> list[str]:
@@ -43,9 +83,29 @@ def terminology_errors(root: Path, text: str) -> list[str]:
     return [m for lvl, m in validate_file(page, root).items if lvl == "ERROR"]
 
 
-def test_the_shared_list_is_read(tmp_path):
-    (tmp_path / "list.yml").write_text("terms: []\n", encoding="utf-8")
-    assert load_terms(None) == {}
+def test_the_shared_list_is_read(shipped_items):
+    forms = load_terms(None)
+    assert set(forms.values()) == SHIPPED_TERMS
+    assert forms["nouns"] == "noun"
+    assert forms["negated"] == "negation"
+
+
+def test_every_shared_term_parses_and_no_form_collides(shipped_items):
+    owners: dict[str, set[str]] = {}
+    terms = []
+    for item in shipped_items:
+        if isinstance(item, str):
+            term, extra = item, []
+        else:
+            assert set(item) <= {"term", "forms"}, item
+            term, extra = item["term"], item.get("forms", [])
+        terms.append(term.lower())
+        for form in (term, f"{term}s", *extra):
+            owners.setdefault(form.lower(), set()).add(term.lower())
+
+    assert sorted(terms) == sorted(set(terms))
+    assert {form: found for form, found in owners.items() if len(found) > 1} == {}
+    assert load_terms(None) == {form: found.pop() for form, found in owners.items()}
 
 
 def test_both_lists_are_read(repository, monkeypatch):
