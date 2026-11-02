@@ -106,14 +106,13 @@ def infer_context(path: Path, workspace: Path | None):
     return ws, level, category
 
 
-def language_name(workspace: Path | None) -> str | None:
-    """The language taught, from the workspace's open-language.yml."""
+def language_config(workspace: Path | None) -> dict:
+    """The workspace's open-language.yml, or nothing when it has none."""
     if workspace:
         cfg = workspace / "open-language.yml"
         if cfg.exists():
-            data = yaml.safe_load(cfg.read_text(encoding="utf-8")) or {}
-            return data.get("language")
-    return None
+            return yaml.safe_load(cfg.read_text(encoding="utf-8")) or {}
+    return {}
 
 
 def page_name(path: Path, workspace: Path | None = None) -> str:
@@ -670,6 +669,7 @@ def validate_article(path: Path, ctype: str, workspace: Path | None) -> Report:
     check_ai_vocabulary(rep, body)
 
     parts = page_path(path, workspace) if workspace else None
+    config = language_config(workspace)
     found = standard.check_article(
         rep,
         body,
@@ -677,7 +677,8 @@ def validate_article(path: Path, ctype: str, workspace: Path | None) -> Report:
         ctype,
         spec,
         {
-            "language": language_name(workspace),
+            "language": config.get("language"),
+            "translation_headers": config.get("translation_headers") or [],
             "level": parts[0] if parts else None,
             "workspace": workspace,
             "offset": text.count("\n", 0, len(text) - len(body)),

@@ -46,7 +46,7 @@ Releases and their notes are listed on the repository's Releases page.
 
 ```text
 german/
-├── open-language.yml      language code, name, title, description
+├── open-language.yml      language code, name, title, description, translation_headers
 ├── conf.py
 ├── index.md
 ├── <level>/<category>/... the pages

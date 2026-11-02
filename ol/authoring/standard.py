@@ -38,8 +38,6 @@ _EMPHASIS = re.compile(
 )
 _QUOTED = re.compile(r"[\"“„][^\"”“]*[\"”“]")
 _OPTION = re.compile(r"^:[a-z-]+:")
-_TRANSLATION_HEADERS = re.compile(r"\b(english|translation|meaning)\b", re.I)
-_TAUGHT_HEADERS = ("phrase", "word", "sentence", "expression")
 _NOT_BASE_FORM = re.compile(r"[^su]s$|\w{3}ing$", re.I)
 
 
@@ -262,7 +260,7 @@ def check_h3_places(rep, found, ctype):
                 )
 
 
-def check_table(rep, block, ctype, language):
+def check_table(rep, block, ctype, translation_headers):
     """One table's columns and header row."""
     where = f"table (line {block.line})"
     limit = COMMON["table_max_columns"]
@@ -278,23 +276,35 @@ def check_table(rep, block, ctype, language):
             f"{where}: the first header cell is empty: only a table of forms "
             "in a grammar article leaves it empty"
         )
-    names = [plain(cell).lower() for cell in block.header]
-    taught_names = {*_TAUGHT_HEADERS, (language or "").lower()} - {""}
-    pairs_taught = any(
-        word in taught_names for name in names for word in _WORD.findall(name)
-    )
-    if pairs_taught and any(_TRANSLATION_HEADERS.search(name) for name in names):
+    elif not all(cell.strip() for cell in block.header[1:]):
         rep.error(
-            f"{where}: a column for the language taught next to one for its "
-            "translation: use the stack role and a Notes column instead"
+            f"{where}: a column has an empty header cell: name every column, and "
+            "put a translation under its phrase with the stack role"
         )
+    for cell in block.header:
+        if translation_headers.search(plain(cell)):
+            rep.error(
+                f"{where}: '{plain(cell)}' is a column for the translation: put "
+                "the translation under its phrase with the stack role, and "
+                "anything else in a Notes column"
+            )
 
 
-def check_tables(rep, blocks, ctype, language):
-    """Every table on the page."""
+def check_tables(rep, blocks, ctype, extra_headers):
+    """Every table on the page.
+
+    Args:
+        rep: The page's report.
+        blocks: The page's blocks.
+        ctype: The article's category.
+        extra_headers: The language repository's own translation headers.
+    """
+    words = [*COMMON["translation_headers"], *extra_headers]
+    alternatives = "|".join(re.escape(word) for word in words)
+    translation_headers = re.compile(rf"\b(?:{alternatives})\b", re.I)
     for block in walk(blocks):
         if block.kind == "table":
-            check_table(rep, block, ctype, language)
+            check_table(rep, block, ctype, translation_headers)
 
 
 def check_prose(rep, blocks):
@@ -589,8 +599,8 @@ def check_article(rep, body, fm, ctype, spec, context):
         fm: The front matter.
         ctype: The article's category.
         spec: The category's entry in ``specs.yml``.
-        context: The article's ``language``, ``level``, ``workspace`` and
-            ``offset``, the lines above ``body``.
+        context: The article's ``language``, ``level``, ``workspace``,
+            ``translation_headers`` and ``offset``, the lines above ``body``.
 
     Returns:
         The article's H2 sections.
@@ -605,7 +615,7 @@ def check_article(rep, body, fm, ctype, spec, context):
     check_prerequisites_place(rep, opening, found)
     check_headings(rep, blocks, title)
     check_h3_places(rep, found, ctype)
-    check_tables(rep, blocks, ctype, context["language"])
+    check_tables(rep, blocks, ctype, context["translation_headers"])
     check_prose(rep, blocks)
     check_section_order(rep, found, ctype, spec["sections"])
     check_hear_it(rep, found)

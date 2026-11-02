@@ -41,7 +41,7 @@ Each level has up to four categories, each a directory directly under the level:
 
 ## Phrase tables
 
-A table of phrases has two columns, `Phrase` and `Notes`, never a column for the language taught and another for English. A phone has no room for three. Each phrase uses the `stack` role, which shows the translation beneath the phrase:
+A table of phrases has two columns, `Phrase` and `Notes`, and no table has a column for the translation. A phone has no room for three. Each phrase uses the `stack` role, which shows the translation beneath the phrase:
 
 ```markdown
 | Phrase | Notes |
