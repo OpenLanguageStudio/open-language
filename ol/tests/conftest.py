@@ -49,6 +49,17 @@ MENU_PAGES = {
 }
 
 
+@pytest.fixture(autouse=True)
+def no_shared_terms(tmp_path, monkeypatch):
+    """Hide the term list this package ships.
+
+    A test's pages then need not link the list's words, and its Terminology page
+    need not hold an entry for each. A test about term lists sets its own, and
+    ``test_glossary.py`` reads the shipped one.
+    """
+    monkeypatch.setattr("ol.authoring.glossary.SHARED_TERMS", tmp_path / "none.yml")
+
+
 @pytest.fixture
 def write_menu():
     """Give a language repository the smallest pages the checks pass.

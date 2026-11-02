@@ -12,4 +12,45 @@
 #     - term: prefix
 #       forms: [prefixes]
 
-terms: []
+terms:
+  # Parts of speech
+  - noun
+  - pronoun
+  - personal pronoun
+  - verb
+  - adjective
+  - adverb
+  - preposition
+  - conjunction
+  - question word
+
+  # Number
+  - singular
+  - plural
+
+  # Verbs
+  - infinitive
+  - term: conjugation
+    forms: [conjugate, conjugates, conjugated, conjugating]
+  - tense
+  - present tense
+  - past tense
+  - future tense
+  - imperative
+
+  # Comparing
+  - comparative
+  - superlative
+
+  # Sentences
+  - subject
+  - object
+  - direct object
+  - indirect object
+  - clause
+  - main clause
+  - subordinate clause
+  - relative clause
+  - word order
+  - term: negation
+    forms: [negate, negates, negated, negating]
