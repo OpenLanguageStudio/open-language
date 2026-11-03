@@ -19,6 +19,7 @@ Each language lives in its own workspace repository, which installs this package
 - **`ol docs`** builds the coursebook, with `--live` for a local preview that rebuilds on save.
 - **`ol outline`** prints the heading structure of the CEFR-level docs.
 - The Sphinx extensions `ol.docs.audio_examples`, `ol.docs.roles` and `ol.docs.branding`, plus the shared stylesheet, fonts and brand assets.
+- The page layout in `ol/docs/_templates`, which a workspace's `conf.py` adds to `templates_path`. Its footer says, on every page, that the text is © Open Language under [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/) and that the audio recordings are not covered by that licence: all rights reserved, no use for AI training.
 
 ## Install
 

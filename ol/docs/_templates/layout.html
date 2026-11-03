@@ -9,3 +9,17 @@
     <p><strong>Note:</strong> An active GitHub account is required to leave feedback.</p>
 </div>
 {% endblock %}
+
+{#- The licence the coursebook's text is published under, in the footer of every
+    page. The JSON build carries only each page's body, so a site that serves that
+    build draws its own footer and its own notice. -#}
+{%- block footer %}
+  <footer class="bd-footer">
+    {%- include "sections/footer.html" %}
+    <div class="bd-footer__inner bd-page-width">
+      <div class="footer-item">
+        <p class="ol-licence-notice">Text © Open Language, licensed under <a href="https://creativecommons.org/licenses/by-sa/4.0/" rel="license">CC BY-SA 4.0</a>. Audio recordings are not covered by this licence: all rights reserved, no use for AI training.</p>
+      </div>
+    </div>
+  </footer>
+{%- endblock footer %}
