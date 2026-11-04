@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+### Added: the licence notice in every page's footer
+
+Every page of a coursebook built with the shared layout now ends with: "Text © Open Language, licensed under CC BY-SA 4.0. Audio recordings are not covered by this licence: all rights reserved, no use for AI training." CC BY-SA 4.0 links to the licence. A language repository gets it by keeping `ol/docs/_templates` on its `templates_path`, as the language repositories already do. A JSON build carries only each page's body, so a site serving one draws its own notice.
+
 ### Added: the shared term list
 
 `ol/authoring/glossary-terms.yml` now lists the grammar terms a coursebook in any language needs, such as `noun`, `verb` and `subject`. Every listed term must have an entry on a language repository's Terminology page, and the first use of each in an article's prose must link to it. Language-specific terms stay on the repository's own `glossary-terms.yml`.
