@@ -166,6 +166,33 @@ def check_title(rep, title):
         rep.error(f"title '{title}' has a number: a title carries none")
 
 
+_ING_VERBS = {"bring", "cling", "fling", "ring", "sing", "sling", "spring", "sting"}
+_ING_VERBS |= {"string", "swing", "wring"}
+_NOT_A_VERB = {"a", "an", "the", "my", "your", "our", "some", "this", "these"}
+_NOT_A_VERB |= {"that", "those", "what", "when", "where", "which", "who", "how"}
+
+
+def check_how_to_title(rep, title):
+    """A how-to title finishes the phrase "How to ...", so it opens on a verb.
+
+    A first word ending in -ing ("Ordering food") or a word that cannot be a
+    verb ("The weather") is reported. Any other word is taken to be a verb.
+    """
+    words = _WORD.findall(title)
+    first = words[0].lower() if words else ""
+    if first.endswith("ing") and first not in _ING_VERBS:
+        rep.error(
+            f"title '{title}' opens on '{words[0]}': a how-to title finishes "
+            '"How to ...", so write the verb in its base form, as in '
+            "'Introduce yourself'"
+        )
+    elif first in _NOT_A_VERB:
+        rep.error(
+            f"title '{title}' opens on '{words[0]}': a how-to title finishes "
+            "\"How to ...\", so it opens on a verb, as in 'Order food and drink'"
+        )
+
+
 def taught_words(blocks: list[Block]) -> tuple[set[str], set[str]]:
     """The words in the language taught on a page, and the page's English words.
 
@@ -240,7 +267,7 @@ def check_headings(rep, blocks, parent_title):
 def _h3_allowed(section: Section, ctype: str) -> bool:
     if ctype == "grammar":
         return section.title not in SPECS["types"]["grammar"]["no_h3_sections"]
-    if ctype == "concepts":
+    if ctype == "how-to":
         return section.title in ("Key phrases", "Hear it in practice")
     if ctype == "writing":
         return section.title.startswith("Example: ")
@@ -492,10 +519,10 @@ def check_grammar(rep, found):
             )
 
 
-def check_concepts(rep, found):
+def check_how_to(rep, found):
     """Key phrases are grouped under H3s, and the Culture note stays short."""
     check_track_headings(rep, found)
-    limits = SPECS["types"]["concepts"]
+    limits = SPECS["types"]["how-to"]
     phrases = _section(found, "Key phrases")
     if phrases:
         if not any(
@@ -584,7 +611,7 @@ def word_table_rows(found) -> int | None:
 
 CATEGORY_CHECKS = {
     "grammar": check_grammar,
-    "concepts": check_concepts,
+    "how-to": check_how_to,
     "writing": check_writing,
     "vocabulary": check_vocabulary,
 }
@@ -611,6 +638,8 @@ def check_article(rep, body, fm, ctype, spec, context):
     opening, found = sections(blocks)
     if title:
         check_title(rep, title)
+    if title and ctype == "how-to":
+        check_how_to_title(rep, title)
     check_opening(rep, opening, fm, context["language"], context["level"], ctype)
     check_prerequisites_place(rep, opening, found)
     check_headings(rep, blocks, title)

@@ -6,14 +6,16 @@ from pathlib import Path
 
 import pytest
 
-CATEGORIES = ("concepts", "grammar", "writing", "vocabulary")
+from ol.authoring.menu import CATEGORY_NAMES
+
+CATEGORIES = ("how-to", "grammar", "writing", "vocabulary")
 SIDEBAR = "---\nhtml_theme.sidebar_secondary.remove:\n---\n"
 INTRODUCTION = (
     f"{SIDEBAR}# Introduction\n\nA free, open coursebook.\n\n"
     "## How the course works\n\nAny page can be read first.\n\n"
     "## Levels\n\n- [A1](a1/index.md): the first days.\n\n"
     "## Categories\n\n"
-    "- [Concepts](a1/concepts/index.md): what to say.\n"
+    "- [How to](a1/how-to/index.md): what to say.\n"
     "- [Grammar](a1/grammar/index.md): how it is built.\n"
     "- [Writing](a1/writing/index.md): model texts.\n"
     "- [Vocabulary](a1/vocabulary/index.md): word packs.\n\n"
@@ -28,7 +30,7 @@ LEVEL = (
     "- Word order.\n\n"
     "## What learners can do\n\n- Greet someone.\n- Order food.\n"
     "- Ask the way.\n- Spell a name.\n\n"
-    "```{toctree}\n:maxdepth: 2\n\nconcepts/index\ngrammar/index\n"
+    "```{toctree}\n:maxdepth: 2\n\nhow-to/index\ngrammar/index\n"
     "writing/index\nvocabulary/index\n```\n\n"
     "## Additional reading\n\n- [A list](https://example.org/list): the words.\n"
 )
@@ -40,7 +42,7 @@ MENU_PAGES = {
     "a1/index.md": LEVEL,
     **{
         f"a1/{category}/index.md": (
-            f"{SIDEBAR}# {category.capitalize()}\n\nThe {category} articles.\n\n"
+            f"{SIDEBAR}# {CATEGORY_NAMES[category]}\n\nThe {category} articles.\n\n"
             "```{toctree}\nfirst\n```\n"
         )
         for category in CATEGORIES

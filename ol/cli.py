@@ -46,7 +46,7 @@ def docs(
 def outline(
     level: str = typer.Option("", help="Filter by CEFR level(s), e.g. 'a2 b1'."),
     category: str = typer.Option(
-        "", help="Filter by category(ies), e.g. 'grammar concepts'."
+        "", help="Filter by category(ies), e.g. 'grammar how-to'."
     ),
     hide_sections: bool = typer.Option(
         False,

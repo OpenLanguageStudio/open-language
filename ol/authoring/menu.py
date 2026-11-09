@@ -4,7 +4,7 @@ The menu is the toctree of the root ``index.md`` and of each level index. The
 top level holds exactly the standard pages in ``TOP_LEVEL_PAGES``. The root page
 is the Introduction: its toctree lists the other standard pages in their order,
 then the levels from A1 to B2. Each level lists its categories in the
-order concepts, grammar, writing, vocabulary. Nothing else goes in the menu.
+order how-to, grammar, writing, vocabulary. Nothing else goes in the menu.
 
 The sidebar names the categories, and no toctree numbers its entries: the
 course is not read in a line, so the menu never says first, second, third.
@@ -21,7 +21,14 @@ from pathlib import Path
 from ol.workspace import ROOT_EXCLUDES
 
 LEVELS = ("a1", "a2", "b1", "b2")
-MENU_CATEGORIES = ("concepts", "grammar", "writing", "vocabulary")
+CATEGORY_NAMES = {
+    "how-to": "How to",
+    "grammar": "Grammar",
+    "writing": "Writing",
+    "vocabulary": "Vocabulary",
+}
+"""Every category, by directory, with the name the sidebar shows, in menu order."""
+MENU_CATEGORIES = tuple(CATEGORY_NAMES)
 TOP_LEVEL_PAGES = {
     "index": "Introduction",
     "how_to_use": "How to use",
@@ -271,10 +278,10 @@ def _check_level(problems: dict[str, list[str]], workspace: Path, level: str):
         return
     for target, title in _titles(body).items():
         name = target.removesuffix("/index")
-        if name in MENU_CATEGORIES and title != name.capitalize():
+        if name in MENU_CATEGORIES and title != CATEGORY_NAMES[name]:
             errors.append(
                 f"menu: '{title}' names the {name} category in the sidebar: the "
-                f"sidebar name is {name.capitalize()}"
+                f"sidebar name is {CATEGORY_NAMES[name]}"
             )
     allowed = [f"{c}/index" for c in MENU_CATEGORIES]
     previous: str | None = None
@@ -312,7 +319,7 @@ def _check_category_names(problems: dict[str, list[str]], workspace: Path, level
         if not index.is_file():
             continue
         h1 = re.search(r"^# (.+?)\s*$", index.read_text(encoding="utf-8"), re.M)
-        title = category.capitalize()
+        title = CATEGORY_NAMES[category]
         if not h1 or h1.group(1) != title:
             found = f"'{h1.group(1)}'" if h1 else "no H1"
             problems.setdefault(f"{level}/{category}/index.md", []).append(

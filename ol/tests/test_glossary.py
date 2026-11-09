@@ -205,8 +205,8 @@ class TestUses:
         assert term_uses("[here](/a1/noun.md)", self.forms) == []
 
 
-FIXTURE = Path(__file__).parent / "fixtures" / "concepts-article.md"
-ARTICLE = "a1/concepts/greetings.md"
+FIXTURE = Path(__file__).parent / "fixtures" / "how-to-article.md"
+ARTICLE = "a1/how-to/greetings.md"
 SENTENCE = "Strangers and customers get the formal greeting."
 LEAD = "Saying hello in German depends"
 EXPLANATION = "A German greeting is a small choice"
@@ -246,7 +246,7 @@ def test_a_term_in_an_example_or_a_heading_is_exempt(repository):
 def test_the_term_a_page_is_about_is_exempt_on_that_page(repository):
     text = (
         FIXTURE.read_text(encoding="utf-8")
-        .replace("# Greetings", "# The noun", 1)
+        .replace("# Greet someone", "# Use a noun", 1)
         .replace(SENTENCE, f"{SENTENCE} A noun comes next.", 1)
     )
     assert article_errors(repository, text) == []

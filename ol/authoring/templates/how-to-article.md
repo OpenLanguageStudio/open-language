@@ -1,5 +1,5 @@
-<!-- TEMPLATE: concepts article (a goal a learner meets in real situations)
-     Gold exemplar: german/a1/concepts/introducing-yourself.md
+<!-- TEMPLATE: how-to article (a goal a learner meets in real situations)
+     Gold exemplar: german/a1/how-to/introduce-yourself.md
      FILENAME MUST BE ENGLISH kebab-case (reusable across languages).
      The shape and every limit are in docs/reference/page-standard.md.
      Replace {{PLACEHOLDERS}}; DELETE every template comment: no HTML comments
@@ -8,7 +8,7 @@
 myst:
   html_meta:
     description: "{{SEARCH_SNIPPET_160_CHARS_OR_FEWER}}"
-    keywords: "{{language}}, {{level_lc}}, concepts, {{PHRASINGS_A_LEARNER_WOULD_TYPE}}"
+    keywords: "{{language}}, {{level_lc}}, how to, {{PHRASINGS_A_LEARNER_WOULD_TYPE}}"
     "property=og:title": "{{ENGLISH_TITLE}}"
     "property=og:description": "{{SAME_AS_DESCRIPTION}}"
     "property=og:type": "article"
@@ -17,7 +17,9 @@ myst:
 
 # {{ENGLISH_TITLE}}
 <!-- English, sentence case, five words or fewer. No level, no category, no
-     number. -->
+     number. The title finishes the phrase "How to ...", so it opens on a verb
+     in its base form: "Order food and drink", "Introduce yourself", never
+     "Ordering food and drink". -->
 
 {{LEAD: one or two sentences, 20 to 50 words: what the page covers in plain
 words, using the main phrasing from keywords at least once.}}
@@ -32,15 +34,15 @@ are 180 words or fewer.}}
      ..."), the pattern ("A German self-introduction rests on four sentences:
      ..."), or the key word ("Weather talk costs almost nothing to learn: ...
      es"). Direct "you" is reserved for admonitions and example translations. -->
-<!-- Vary the opening move between articles. Read the two neighbours in the
-     toctree before writing this paragraph. -->
+<!-- Vary the opening move between articles. Read two other articles in the
+     category before writing this paragraph. -->
 
 :::{admonition} Prerequisites
 :class: note
 Before reading this article, make sure you are comfortable with:
 - [{{LEVEL}} > Grammar > {{PREREQ}}]({{/level/grammar/subcat/file.md}})
 :::
-<!-- CONDITIONAL: at most 3 links, and only when the concept truly cannot be
+<!-- CONDITIONAL: at most 3 links, and only when the goal truly cannot be
      used without that grammar (e.g. Polite Requests needs Konjunktiv II).
      Otherwise put grammar links in Related articles. -->
 
@@ -89,7 +91,7 @@ Before reading this article, make sure you are comfortable with:
 ## Hear it in practice
 
 :::{audio-examples}
-:track: {{level_lc}}/concepts/{{track-name}}
+:track: {{level_lc}}/how-to/{{track-name}}
 :title: {{NATIVE_TITLE}}
 :title-en: {{ENGLISH_TITLE}}
 
@@ -121,9 +123,9 @@ Before reading this article, make sure you are comfortable with:
 ## Related articles
 
 - [{{LEVEL}} > Grammar > {{SUPPORTING_GRAMMAR}}]({{/path.md}})
-<!-- Links only. NEVER link the previous/next concept: Sphinx generates that
+<!-- Links only. NEVER link the previous/next article: Sphinx generates that
      navigation from the toctree and the theme renders it in the page footer.
-     Related articles is for NON-adjacent links only: supporting grammar, a
-     concept elsewhere in the sequence, a vocabulary pack. In a subcategory, no
+     Related articles is for NON-adjacent links only: supporting grammar, another
+     how-to article, a vocabulary pack. In a subcategory, no
      other article of that subcategory: its index links them all. Leave the
      section out when it is empty. -->

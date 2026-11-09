@@ -30,7 +30,7 @@ read first, and that each ends with sentences to listen to.}}
 
 ## Categories
 
-- [Concepts]({{first_level}}/concepts/index.md): {{what to say in a situation, 25 words or fewer}}
+- [How to]({{first_level}}/how-to/index.md): {{what to say in a situation, 25 words or fewer}}
 - [Grammar]({{first_level}}/grammar/index.md): {{how the language is built}}
 - [Writing]({{first_level}}/writing/index.md): {{model texts for everyday tasks}}
 - [Vocabulary]({{first_level}}/vocabulary/index.md): {{word packs on one theme}}

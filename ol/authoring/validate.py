@@ -5,7 +5,7 @@ Usage:
     ol validate [--workspace /path/to/<language>] [--type TYPE] FILE [FILE...]
 
 - FILE paths must live under <workspace>/<level>/<category>/... ; the
-  content type is inferred from the path (concepts/grammar/writing/
+  content type is inferred from the path (how-to/grammar/writing/
   vocabulary) unless --type is given.
 - index.md files get index checks (toctree present, entries resolve, no orphan
   articles, no CEFR level in the title, no References section); other .md files
@@ -53,7 +53,7 @@ from ol.workspace import find_workspace, page_path
 
 TEMPLATES_DIR = Path(__file__).resolve().parent / "templates"
 
-CATEGORIES = ("concepts", "grammar", "writing", "vocabulary")
+CATEGORIES = ("how-to", "grammar", "writing", "vocabulary")
 STUB_BODY_BYTES = SPECS["common"]["stub_body_bytes"]
 
 

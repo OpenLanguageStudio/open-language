@@ -20,7 +20,7 @@ A language repository's `AGENTS.md` links this page and does not restate it. It 
 
 ## Categories
 
-Each level has up to four categories, each a directory directly under the level: `concepts`, `grammar`, `writing` and `vocabulary`. There are no others: `topics` and `situations` are not in use, and material about understanding a scenario goes in a concepts article. `ol validate` checks the menu these make (see `CONTEXT.md`, Menu).
+Each level has up to four categories, each a directory directly under the level: `how-to`, `grammar`, `writing` and `vocabulary`. There are no others: `topics` and `situations` are not in use, and material about understanding a scenario goes in a how-to article. `ol validate` checks the menu these make (see `CONTEXT.md`, Menu).
 
 ## File names
 
@@ -33,7 +33,7 @@ Each level has up to four categories, each a directory directly under the level:
 
 **Grammar.** Grammar at B levels adds depth, such as exceptions and register, rather than more topics.
 
-**Concepts.** A goal a learner meets in real situations. The toctree order is a suggested sequence, so a concept names what it truly depends on in its Prerequisites, and nothing else.
+**How to.** A goal a learner meets in real situations. Its title finishes the phrase "How to ...", so it opens on a verb in its base form, such as "Order food and drink". The articles are read in any order, so an article names what it truly depends on in its Prerequisites, and nothing else.
 
 **Vocabulary.** One theme. At higher levels a pack may widen the words for one meaning ("Ways to say big"). A theme that cannot fill a pack with words at its level waits for a higher level.
 
@@ -55,7 +55,7 @@ Write the separator as `\|` inside a table, because a table splits a cell at eve
 
 The section is `## Hear it in practice`. In writing, each `## Example: <Situation>` holds its own `### Hear it in practice` instead.
 
-In grammar and concepts, a section with several audio blocks may give each one an H3 naming its track, so that on-this-page reaches it. Every block then has its own H3, and these H3s count towards the article's limit.
+In grammar and how-to, a section with several audio blocks may give each one an H3 naming its track, so that on-this-page reaches it. Every block then has its own H3, and these H3s count towards the article's limit.
 
 ## The glossary
 
@@ -79,7 +79,7 @@ An en dash (–) appears in three places only: between the two halves of a title
 ## Index pages
 
 - A grammar index lists its articles in a logical order: the noun system, then verbs, sentence structure, modifiers and anything else.
-- A concepts index lists its articles in the suggested order, and says that any article can be read first.
+- A how-to index never says to work through its articles in order: they are read in any order.
 
 ## Frontmatter
 
