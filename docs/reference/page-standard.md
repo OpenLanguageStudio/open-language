@@ -38,16 +38,16 @@ An article is these parts, in this order. The four category sections below fill 
 | 4 | Explanation paragraph | The second paragraph. States the one idea of the page in plain language (40 to 120 words). Every technical term in it is linked to the glossary, here or in the lead, so a term is not linked twice two paragraphs apart. | V |
 | 5 | Prerequisites | Optional admonition after the two opening paragraphs, before the first H2. At most 3 links, true dependencies only. | V |
 | 6 | Body sections | The category's own sections (see below). | V |
-| 7 | Hear it in practice | `## Hear it in practice` with the audio block, after the body and before the summary. In grammar and concepts, several blocks may each sit under an H3 naming the track. | V |
+| 7 | Hear it in practice | `## Hear it in practice` with the audio block, after the body and before the summary. In grammar and how-to, several blocks may each sit under an H3 naming the track. | V |
 | 8 | Summary | `## Summary`, as the template for the category shows. | V |
-| 9 | Related articles | `## Related articles` at the very end, only links the reader would not reach by the next-page link. In a subcategory, a directory below a category such as `a1/grammar/articles/`, an article links no other article of that subcategory: the directory already relates them and the subcategory index links them all. Links outside the subcategory are fine. In a flat category directory, such as `b1/grammar/` or `a1/concepts/`, sharing the directory says nothing about two topics being related, so only the toctree neighbours are left out. Omitted when empty. | V |
+| 9 | Related articles | `## Related articles` at the very end, only links the reader would not reach by the next-page link. In a subcategory, a directory below a category such as `a1/grammar/articles/`, an article links no other article of that subcategory: the directory already relates them and the subcategory index links them all. Links outside the subcategory are fine. In a flat category directory, such as `b1/grammar/` or `a1/how-to/`, sharing the directory says nothing about two topics being related, so only the toctree neighbours are left out. Omitted when empty. | V |
 
 Parts 3 and 4 together stay at 180 words or fewer, so the first screen on a phone shows what the page is and why it matters, then the first heading.
 
 ### Headings
 
 - Only H1, H2 and H3 exist. There is no H4. [V]
-- An H3 appears only where the category's template names one: under `## Example: ...` in writing, to split one H2 into parallel forms in grammar, for group names under `## Key phrases` in concepts, and to name the tracks under `## Hear it in practice` in grammar and concepts. An article has at most 6 H3, these included. [V]
+- An H3 appears only where the category's template names one: under `## Example: ...` in writing, to split one H2 into parallel forms in grammar, for group names under `## Key phrases` in how-to, and to name the tracks under `## Hear it in practice` in grammar and how-to. An article has at most 6 H3, these included. [V]
 - An H3 under `## Hear it in practice` needs more than one audio block in the section. When one block has an H3, every block does, and each H3 holds one block. [V] The H3 names its track. [R]
 - An article has at most 7 H2. A page that needs more is two pages. [V]
 - A heading is 8 words or fewer, has no number and no closing punctuation, and does not address the reader. German words in a heading are in italics. [V]
@@ -93,7 +93,9 @@ Where a page genuinely differs, add up to the limit shown for "other sections" b
 
 Form, use and contrast sections together do not exceed 5 H2s. Inline examples sit in `:::{div} ol-examples`, at most 3 pairs per section.
 
-### Concepts
+### How to
+
+The H1 finishes the phrase "How to ...", so it opens on a verb in its base form: **Order food and drink**, **Introduce yourself**, never **Ordering food and drink**. The five-word limit still applies. [V]
 
 | Order | Section | Rule |
 |---|---|---|
@@ -128,7 +130,7 @@ An index page is not an article. It has no Hear it in practice and no summary.
 
 ### Category index
 
-H1 is the bare category name: **Concepts**, **Grammar**, **Writing**, **Vocabulary**. [M] The page opens with one to three plain sentences on what its articles have in common. [V] The toctree lists the articles, hidden numbering off. A concepts index says the order is a suggestion and that any article can be read first. [R]
+H1 is the bare category name: **How to**, **Grammar**, **Writing**, **Vocabulary**. [M] The page opens with one to three plain sentences on what its articles have in common. [V] The toctree lists the articles, hidden numbering off. A how-to index never says to work through its articles in order: they are read in any order. [R]
 
 ### Level overview page
 
@@ -137,7 +139,7 @@ H1 is the bare level name. The one place the CEFR level appears in a title. The 
 1. A lead paragraph of 40 words or fewer: where the level sits in the CEFR and where it starts.
 2. `## What learners know`: 3 to 5 bullets of 15 words or fewer. What the course has taught by the end of the level, in plain words.
 3. `## What learners can do`: 4 to 6 bullets of 15 words or fewer. Each starts with a verb in its base form, and each is something a learner could be asked to do and a listener could judge.
-4. The toctree of the level's categories, in the order concepts, grammar, writing, vocabulary. [M]
+4. The toctree of the level's categories, in the order how-to, grammar, writing, vocabulary. [M]
 5. `## Additional reading`, as external links only.
 
 Parts 1 to 3 total 150 words or fewer. Levels stop at B2 for now. A level page makes no claim about an exam. It may cite the Council of Europe descriptors, which are public. [R]
@@ -149,7 +151,7 @@ The top-level `index.md`. H1 is exactly **Introduction**. [M] The sections are, 
 1. A lead of 60 words or fewer: what the coursebook is, who it is for, that it is free and open.
 2. `## How the course works`: that the pages are not a sequence, that any page can be read first, and that each ends with sentences to listen to. 80 words or fewer.
 3. `## Levels`: one bullet per level that exists, each linking to its level page, 20 words or fewer. A level that exists has a bullet, and a bullet names a level that exists.
-4. `## Categories`: exactly four bullets, in the order concepts, grammar, writing, vocabulary, each linking to the first level's category index, 25 words or fewer.
+4. `## Categories`: exactly four bullets, in the order how-to, grammar, writing, vocabulary, each linking to the first level's category index, 25 words or fewer.
 5. `## Where to start`: two to four bullets, each pairing a situation with a link: new to the language, a single problem, an unfamiliar term. The last always links to the glossary.
 6. The hidden toctree: `how_to_use`, `terminology`, `contributing`, then each level. [M]
 
@@ -159,8 +161,7 @@ The page is 350 words or fewer. [V]
 
 - The menu is plain. No toctree uses `:numbered:`, so the sidebar shows no section numbers. [M]
   - The course is not read in a line. A number says "first, second, third" and tells a reader who came for one problem that they skipped something.
-  - Order still carries meaning in concepts: the toctree order is the suggested sequence, and the index says so.
-- The sidebar names are the category names: **Concepts**, **Grammar**, **Writing**, **Vocabulary**. [M]
+- The sidebar names are the category names: **How to**, **Grammar**, **Writing**, **Vocabulary**. [M]
 - On-this-page navigation shows on every article and is removed from every index page. [V]
   - On an article it is the way to reach *Hear it in practice* directly. With H2s capped at 7 and H3s at 6, it stays short, and an H3 under *Hear it in practice* takes the reader straight to that track.
   - An index page is already a list; a second list beside it repeats it.

@@ -19,7 +19,7 @@ from ol.authoring.validate import TEMPLATES_DIR, validate_file
 FIXTURES = Path(__file__).parent / "fixtures"
 PATHS = {
     "grammar": "a1/grammar/articles/bestimmter-artikel.md",
-    "concepts": "a1/concepts/greetings.md",
+    "how-to": "a1/how-to/greetings.md",
     "writing": "a1/writing/email-formal-1.md",
     "vocabulary": "a1/vocabulary/at-the-beach-1.md",
 }
@@ -275,7 +275,15 @@ def test_broken_grammar_article_is_red(tmp_path, case):
     assert any(expected in msg for msg in found), found
 
 
-CONCEPTS = {
+HOW_TO = {
+    "title opens on an -ing word": (
+        lambda s: s.replace("# Greet someone", "# Greeting someone", 1),
+        "write the verb in its base form",
+    ),
+    "title opens on no verb": (
+        lambda s: s.replace("# Greet someone", "# The greetings", 1),
+        "so it opens on a verb",
+    ),
     "no When to use it": (
         lambda s: s.replace("## When to use it", "## Situations", 1),
         "the section '## When to use it'",
@@ -427,15 +435,15 @@ VOCABULARY = {
 @pytest.mark.parametrize(
     ("category", "case"),
     [
-        *(("concepts", case) for case in CONCEPTS),
+        *(("how-to", case) for case in HOW_TO),
         *(("writing", case) for case in WRITING),
         *(("vocabulary", case) for case in VOCABULARY),
     ],
-    ids=[*CONCEPTS, *WRITING, *VOCABULARY],
+    ids=[*HOW_TO, *WRITING, *VOCABULARY],
 )
 def test_broken_article_is_red(tmp_path, category, case):
     breaker, expected = {
-        "concepts": CONCEPTS,
+        "how-to": HOW_TO,
         "writing": WRITING,
         "vocabulary": VOCABULARY,
     }[category][case]
@@ -444,6 +452,18 @@ def test_broken_article_is_red(tmp_path, category, case):
     assert broken != source, "the mutation did not change the fixture"
     found = errors(tmp_path, category, broken)
     assert any(expected in msg for msg in found), found
+
+
+@pytest.mark.parametrize("title", ["Bring a friend", "Introduce yourself"])
+def test_a_how_to_title_may_open_on_any_verb(tmp_path, title):
+    text = fixture("how-to").replace("# Greet someone", f"# {title}", 1)
+    assert errors(tmp_path, "how-to", text) == []
+
+
+def test_a_grammar_title_need_not_open_on_a_verb(tmp_path):
+    text = fixture("grammar")
+    assert not text.startswith("# Greet")
+    assert not any("opens on" in msg for msg in errors(tmp_path, "grammar", text))
 
 
 TRACK_BLOCK = """:::{{audio-examples}}
@@ -474,18 +494,18 @@ def tracks_section(category: str, *parts: str) -> str:
     return text.replace("\n## Summary", "\n" + "\n".join(added) + "\n## Summary", 1)
 
 
-@pytest.mark.parametrize("category", ["grammar", "concepts"])
+@pytest.mark.parametrize("category", ["grammar", "how-to"])
 def test_each_of_several_tracks_may_have_its_own_h3(tmp_path, category):
     text = tracks_section(category, "first", "### Second", "other")
     assert errors(tmp_path, category, text) == []
 
 
-@pytest.mark.parametrize("category", ["grammar", "concepts"])
+@pytest.mark.parametrize("category", ["grammar", "how-to"])
 def test_several_tracks_may_stand_without_h3s(tmp_path, category):
     assert errors(tmp_path, category, tracks_section(category, "other")) == []
 
 
-@pytest.mark.parametrize("category", ["grammar", "concepts"])
+@pytest.mark.parametrize("category", ["grammar", "how-to"])
 @pytest.mark.parametrize(
     ("parts", "expected"),
     [
@@ -506,7 +526,7 @@ def test_track_h3s_count_towards_the_limit(tmp_path):
     parts = ["first"]
     for number in range(4):
         parts += [f"### Track {'abcd'[number]}", f"track-{number}"]
-    found = errors(tmp_path, "concepts", tracks_section("concepts", *parts))
+    found = errors(tmp_path, "how-to", tracks_section("how-to", *parts))
     assert any("7 H3" in msg for msg in found), found
 
 
@@ -526,7 +546,7 @@ def test_a_table_of_forms_stays_within_its_limit_only_in_grammar(tmp_path):
         )
     )
     found = errors(
-        tmp_path, "concepts", fixture("concepts").replace("## Summary", forms, 1)
+        tmp_path, "how-to", fixture("how-to").replace("## Summary", forms, 1)
     )
     assert any("5 columns (maximum 3)" in msg for msg in found), found
 
@@ -540,10 +560,10 @@ def test_a_heading_may_quote_the_word_you(tmp_path):
 
 def test_a_long_average_warns_and_does_not_fail(tmp_path):
     sentence = " ".join(["word"] * 24) + ". "
-    long_prose = fixture("concepts").replace(
+    long_prose = fixture("how-to").replace(
         "Strangers and customers get the formal greeting.", sentence * 5, 1
     )
-    items = report(tmp_path, "concepts", long_prose).items
+    items = report(tmp_path, "how-to", long_prose).items
     assert any(lvl == "WARN" and "words a sentence" in m for lvl, m in items)
     assert not any(lvl == "ERROR" and "words a sentence" in m for lvl, m in items)
 
@@ -812,7 +832,7 @@ INTRODUCTION_PAGE = {
     ),
     "categories out of order": (
         lambda s: s.replace(
-            "[Concepts](a1/concepts/index.md)", "[X](a1/grammar/index.md)", 1
+            "[How to](a1/how-to/index.md)", "[X](a1/grammar/index.md)", 1
         ),
         "'Categories' links, in order",
     ),

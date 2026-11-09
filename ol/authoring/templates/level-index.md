@@ -26,7 +26,7 @@ html_theme.sidebar_secondary.remove:
 ```{toctree}
 :maxdepth: 2
 
-{{concepts/index: when the category exists}}
+{{how-to/index: when the category exists}}
 {{grammar/index: when the category exists}}
 {{writing/index: when the category exists}}
 {{vocabulary/index: when the category exists}}

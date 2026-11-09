@@ -2,9 +2,9 @@
 myst:
   html_meta:
     description: "Greeting people in German through the day, formally and with friends."
-    keywords: "german, a1, concepts, greetings, saying hello in german"
+    keywords: "german, a1, how to, greetings, saying hello in german"
 ---
-# Greetings
+# Greet someone
 
 Saying hello in German depends on the time of day and on how well the two people know each other.
 
@@ -51,9 +51,9 @@ Regional greetings such as *Moin* in the north say more about a place than about
 ## Hear it in practice
 
 :::{audio-examples}
-:track: a1/concepts/greetings
+:track: a1/how-to/greetings
 :title: Begrüßungen
-:title-en: Greetings
+:title-en: Greet someone
 
 Guten Morgen, Frau Weber.
 : Good morning, Ms Weber.

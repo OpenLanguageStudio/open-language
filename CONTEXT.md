@@ -31,16 +31,17 @@ its category. An article has a level and a category, which come from its path:
 _Avoid_: lesson, page (when the article itself is meant).
 
 **Category index**:
-The `index.md` that lists a category's articles for one level. In concepts its
-toctree order is the suggested sequence.
+The `index.md` that lists a category's articles for one level. Its H1 is the
+category's name, such as "How to".
 
 **Level**:
 A CEFR level, written in lower case in paths: `a1`, `a2`, `b1`, `b2`. There
 are no levels above B2.
 
 **Category**:
-The kind of article, which decides its template: `concepts`, `grammar`,
+The kind of article, which decides its template: `how-to`, `grammar`,
 `writing`, `vocabulary`. A level lists them in that order, and no other.
+The sidebar shows each by its name: How to, Grammar, Writing, Vocabulary.
 
 **Menu**:
 The site's navigation, built from the toctree of the top-level `index.md` and of

@@ -13,7 +13,7 @@ from pathlib import Path
 import pytest
 from typer.testing import CliRunner
 
-from ol.authoring.menu import TOP_LEVEL_PAGES, check_menu, toctrees
+from ol.authoring.menu import CATEGORY_NAMES, TOP_LEVEL_PAGES, check_menu, toctrees
 from ol.authoring.validate import validate_file
 from ol.cli import app
 
@@ -41,7 +41,7 @@ def level_index(level: str, *entries: str, orphan: bool = False) -> str:
 
 GOOD_ROOT_ENTRIES = (*TOP_LEVEL, "a1/index", "a2/index", "b1/index", "b2/index")
 GOOD_ROOT = root_index(*GOOD_ROOT_ENTRIES)
-GOOD_LEVEL = ("concepts/index", "grammar/index", "writing/index", "vocabulary/index")
+GOOD_LEVEL = ("how-to/index", "grammar/index", "writing/index", "vocabulary/index")
 
 
 def menu_repository(tmp_path: Path) -> Path:
@@ -52,10 +52,10 @@ def menu_repository(tmp_path: Path) -> Path:
             f"# {TOP_LEVEL_PAGES[page]}\n\nWhat the page says.\n"
         )
     for level in ("a1", "a2", "b1", "b2"):
-        for category in ("concepts", "grammar", "writing", "vocabulary"):
+        for category in ("how-to", "grammar", "writing", "vocabulary"):
             (tmp_path / level / category).mkdir(parents=True)
             (tmp_path / level / category / "index.md").write_text(
-                f"# {category.capitalize()}\n"
+                f"# {CATEGORY_NAMES[category]}\n"
             )
         (tmp_path / level / "index.md").write_text(level_index(level, *GOOD_LEVEL))
     return tmp_path
@@ -72,7 +72,7 @@ def test_good_menu_passes(tmp_path):
 def test_a_level_may_leave_a_category_out(tmp_path):
     repo = menu_repository(tmp_path)
     (repo / "a2/index.md").write_text(
-        level_index("a2", "concepts/index", "grammar/index")
+        level_index("a2", "how-to/index", "grammar/index")
     )
     assert menu_errors(repo) == {}
 
@@ -248,10 +248,10 @@ CASES = {
     # 3. Each level lists only its four categories, in order.
     "categories out of order": (
         lambda r: write(
-            r, "a1/index.md", level_index("a1", "grammar/index", "concepts/index")
+            r, "a1/index.md", level_index("a1", "grammar/index", "how-to/index")
         ),
         "a1/index.md",
-        "'concepts/index' comes after 'grammar/index': list the categories in the order concepts, grammar, writing, vocabulary",
+        "'how-to/index' comes after 'grammar/index': list the categories in the order how-to, grammar, writing, vocabulary",
     ),
     "another category in a level": (
         lambda r: write(
@@ -268,7 +268,7 @@ CASES = {
     "another category directory": (
         lambda r: (r / "b2/situations").mkdir(),
         "b2/index.md",
-        "category directory b2/situations/ is not one of concepts, grammar, writing, vocabulary",
+        "category directory b2/situations/ is not one of how-to, grammar, writing, vocabulary",
     ),
     # 4. Nothing else in the menu.
     "external link in the root": (
@@ -296,7 +296,7 @@ CASES = {
     ),
     "second toctree in a level": (
         lambda r: write(
-            r, "a1/index.md", level_index("a1", *GOOD_LEVEL) + toctree("concepts/index")
+            r, "a1/index.md", level_index("a1", *GOOD_LEVEL) + toctree("how-to/index")
         ),
         "a1/index.md",
         "2 toctrees",
@@ -375,7 +375,7 @@ def test_an_article_outside_the_four_categories_is_told_where_to_go(tmp_path):
     errors = [msg for lvl, msg in validate_file(article, repo).items if lvl == "ERROR"]
     assert errors == [
         "b2/topics/ is not a category: move the article into one of "
-        "concepts/, grammar/, writing/, vocabulary/"
+        "how-to/, grammar/, writing/, vocabulary/"
     ]
 
 

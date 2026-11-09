@@ -184,7 +184,8 @@ types:
     min_audio_examples: 1
     ordered: false
 
-  concepts:
+  how-to:
+    # The H1 finishes "How to ...": a verb in its base form opens it.
     sections:
       - heading: When to use it
       - heading: Key phrases
@@ -201,7 +202,7 @@ types:
     require_summary_admonitions: true
     require_common_mistakes: false
     min_audio_examples: 1
-    ordered: true
+    ordered: false
     english_filename: true
 
   writing:

@@ -2,6 +2,18 @@
 
 ## [Unreleased]
 
+## [0.12.0] - 2026-11-09
+
+### Changed: the Concepts category is now How to
+
+The category directory `concepts/` is now `how-to/`, and its index's H1 and sidebar name is "How to". `ol validate`, `ol templates` and the menu checks use the new name everywhere: a level index lists `how-to/index` first, and the Introduction's Categories list starts with `[How to](a1/how-to/index.md)`. The article template is now `how-to-article.md`.
+
+A how-to title finishes the phrase "How to ...", so it opens on a verb in its base form, such as "Order food and drink" or "Introduce yourself". `ol validate` reports a title whose first word ends in -ing, such as "Ordering food and drink", or is a word that cannot be a verb, such as "The" or "Your". The five-word limit still applies.
+
+How-to articles are read in any order. The category is no longer marked as ordered, and the templates and the page standard no longer ask its index to describe a suggested sequence.
+
+This is a breaking change. A repository with a `concepts/` directory now fails `ol validate` until the directory is renamed `how-to/`, its index's H1 is "How to", its tracks are renamed to match and the level indexes and Introduction link the new paths.
+
 ### Added: the licence notice in every page's footer
 
 Every page of a coursebook built with the shared layout now ends with: "Text © Open Language, licensed under CC BY-SA 4.0. Audio recordings are not covered by this licence: all rights reserved, no use for AI training." CC BY-SA 4.0 links to the licence. A language repository gets it by keeping `ol/docs/_templates` on its `templates_path`, as the language repositories already do. A JSON build carries only each page's body, so a site serving one draws its own notice.
