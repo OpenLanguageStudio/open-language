@@ -2,6 +2,38 @@
 
 ## [Unreleased]
 
+### Added: the level role, drawn in the level's colour
+
+``{level}`B1` `` draws a level as a small badge in that level's colour, the colour of the level's album covers: A1 #eeb849 and B1 #79b3a8 with dark text, A2 #a4563a and B2 #496695 with light text. The colours are defined once, in `ol/levels.py` (`LEVEL_COLOURS`), and the role writes them on the badge, so the badge has its colour wherever the HTML is drawn. A level other than A1 to B2 is a build warning. `ol.authoring.menu.LEVELS` now comes from `ol.levels`.
+
+### Added: `marks.css`, the role styles on their own
+
+The grammar marks and the level badge moved out of `stylesheet.css` into `ol/docs/_static/marks.css`, which `stylesheet.css` imports. A site that draws a coursebook in its own theme links `marks.css` alone and gets the marks without the Sphinx theme's styles. Its dark colours apply under any `html[data-theme]` ending in `dark`. The unused `.ol-level-a1` to `.ol-level-b2` classes and their `--level-*` variables are gone.
+
+### Added: the components a page is built from
+
+`ol validate` now holds every page to [the components](docs/reference/components.md) and the Components section of the page standard:
+
+- Only the listed directives and roles. The roles are `stack`, `term`, `level`, `bdg-light` and the language repository's marking roles, read from `custom_roles` in its `conf.py`. How to use and Contributing may also use the interface roles, such as `kbd`, and are now checked too.
+- Card grids only on index pages and the Introduction, the button only on the Introduction, the glossary only on Terminology, tabs only in grammar and how-to articles, a block quote only in writing articles, and no toctree in an article.
+- No footnotes, struck-through text, highlighted spans, abbreviations or paragraphs of bold text alone, such as `**Examples:**`.
+- Notices: `note`, `tip`, `important` and `warning`, and an `admonition` only as Prerequisites (`note`), Common mistakes (`caution`) or Key points (`note`). An article holds at most 3 free notices, 1 per H2 section and 1 `important`. A free notice is 60 words or fewer, and no notice holds another.
+- No collapsible, an element that opens and closes on a click: no `dropdown` directive, no notice with `:class: dropdown` and no `<details>`, anywhere on a page. This replaces the check that only Hear it in practice was never collapsed.
+- A level badge follows a link to a page of another level and names that level. A register badge holds `informal`, `formal` or `colloquial`, in a Notes cell.
+- A tab set: one per article, 2 or 3 tabs with labels of 3 words or fewer, every tab holding a phrase table or every tab an example block, and nothing else.
+- A card grid is `::::{grid} 1 1 2 2` with `:gutter: 3`, and each card links a page with `:link-type: doc`, takes that page's title, has no header, footer or picture, and holds one sentence of 15 words or fewer.
+- Related articles and Prerequisites write each link with empty text, `- [](/a1/grammar/cases/akkusativ.md)`, followed by ``{level}`A1` `` when it goes to another level.
+
+### Changed: the Introduction, level pages and category indexes show cards
+
+- The Introduction has a primary button under its lead, "Start with A1", linking the first level's page. Its Levels and Categories sections are card grids: one card per level, its sentence 20 words or fewer, and four category cards, 25 words or fewer.
+- A level page hides its toctree, which `ol validate`'s menu check now requires, and adds `## Categories` before Additional reading: a card per category, linking the toctree's pages in its order.
+- A category index whose toctree lists subcategories hides it and shows a card per subcategory in the same order. A flat category index and a subcategory index show their toctree and have no cards.
+
+The templates from `ol templates` show the new shapes.
+
+This is a breaking change. Pages written to the old shapes, with named Related articles links, collapsibles or an unlisted directive or role, now fail `ol validate`. Run `ol validate --write-baseline` once on adopting this version to cover them until they are rewritten. The menu errors for a level toctree that is not hidden are not covered by the baseline.
+
 ## [0.12.0] - 2026-11-09
 
 ### Changed: the Concepts category is now How to

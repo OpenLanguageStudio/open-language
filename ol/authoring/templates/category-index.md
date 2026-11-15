@@ -7,6 +7,10 @@
      to work through them in sequence. Grammar toctrees use a LOGICAL order: noun system, verb system, sentence
      level, modifiers, other last.
      NO :numbered: on a toctree: the sidebar shows no section numbers.
+     SUBCATEGORIES: a category index whose toctree lists subcategories, such as
+     A1 Grammar, hides its toctree and shows a card per subcategory below it,
+     in the toctree's order. A flat category index, and a subcategory index,
+     shows its toctree as the list of its articles, and has no cards.
      NO References/Additional-reading section here: external links live in the
      LEVEL index (templates/level-index.md). Nothing agent-facing, ever. -->
 ---
@@ -27,3 +31,16 @@ myst:
 {{article-file-basename-no-extension}}
 {{next-article}}
 ```
+<!-- With subcategories, add :hidden: to the toctree and follow it with:
+
+::::{grid} 1 1 2 2
+:gutter: 3
+
+:::{grid-item-card} {{Subcategory title, as its index page's H1}}
+:link: {{subcategory}}/index
+:link-type: doc
+
+{{One sentence of 15 words or fewer.}}
+:::
+::::
+-->

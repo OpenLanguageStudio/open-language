@@ -301,6 +301,15 @@ CASES = {
         "a1/index.md",
         "2 toctrees",
     ),
+    "a level toctree shown": (
+        lambda r: write(
+            r,
+            "a1/index.md",
+            level_index("a1", *GOOD_LEVEL).replace(":hidden:\n", "", 1),
+        ),
+        "a1/index.md",
+        "the toctree of a level page is hidden",
+    ),
     "external link in a level": (
         lambda r: write(
             r, "a1/index.md", level_index("a1", *GOOD_LEVEL, "https://example.com")

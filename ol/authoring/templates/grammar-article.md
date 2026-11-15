@@ -32,7 +32,10 @@ are 180 words or fewer.}}
 :::{admonition} Prerequisites
 :class: note
 Before reading this article, make sure you are comfortable with:
-- [{{LEVEL}} > Grammar > {{PREREQ_TITLE}}]({{/level/grammar/subcat/file.md}})
+- []({{/level/grammar/subcat/file.md}})
+<!-- Leave the link text empty: the build writes the page's title. A link to a
+     page of another level is followed by that level as a badge:
+     - [](/b1/grammar/passiv.md) {level}`B1` -->
 :::
 <!-- CONDITIONAL: at most 3 links, true dependencies only. When in doubt, OMIT
      and use Related articles instead. -->
@@ -50,8 +53,6 @@ Before reading this article, make sure you are comfortable with:
 |---|---|---|---|---|
 | {{English row label}} | | | | |
 <!-- A table of forms has at most 5 columns. Any other table has at most 3. -->
-
-**Examples:**
 
 :::{div} ol-examples
 {{Native sentence, roles/bold marking ONLY the teaching focus, e.g. Ich sehe {akk}`den` Turm.}}
@@ -111,7 +112,10 @@ Before reading this article, make sure you are comfortable with:
 
 ## Related articles
 
-- [{{LEVEL}} > Grammar > {{RELATED}}]({{/path.md}})
+- []({{/path.md}})
+<!-- Leave the link text empty: the build writes the page's title. A link to a
+     page of another level is followed by that level as a badge:
+     - [](/b1/grammar/passiv.md) {level}`B1` -->
 <!-- Links only, none the reader would reach by the next-page link. In a
      subcategory such as a1/grammar/articles/, no other article of that
      subcategory: its index links them all. Leave the section out when it is

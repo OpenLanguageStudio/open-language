@@ -130,3 +130,54 @@ class TestGlossary:
     def test_a_term_with_no_entry_is_a_build_warning(self, build):
         site = build(GLOSSARY.replace("{term}`noun`", "{term}`verb`"))
         assert "term not in glossary: 'verb'" in site.warnings.getvalue()
+
+
+B1_BADGE = (
+    '<span class="ol-level ol-level--b1" style="background-color: #79b3a8; '
+    'color: #1e1a15">B1</span>'
+)
+
+
+class TestLevelRole:
+    def test_a_level_is_a_badge_in_the_level_colour(self, build):
+        done = build("# Index\n\n- [](other.md) {level}`B1`\n")
+        assert B1_BADGE in done.output()
+
+    def test_the_level_is_read_in_any_case(self, build):
+        assert B1_BADGE in build("# Index\n\n{level}`b1`\n").output()
+
+    def test_a_dark_level_carries_light_text(self, build):
+        done = build("# Index\n\n{level}`A2`\n")
+        assert "background-color: #a4563a; color: #fbf7f0" in done.output()
+
+    def test_the_json_builder_writes_the_badge_with_its_colour(self, build):
+        done = build("# Index\n\n{level}`B1`\n", "json")
+        assert B1_BADGE in json.loads(done.output("index.fjson"))["body"]
+
+    def test_an_unknown_level_is_a_build_warning_with_the_page_and_line(self, build):
+        done = build("# Index\n\nFirst line.\n\nSee {level}`C3` here.\n")
+        warnings = done.warnings.getvalue()
+        assert "index.md:5" in warnings
+        assert "'C3' is not a level" in warnings
+
+    def test_an_unknown_level_shows_its_text_without_a_badge(self, build):
+        done = build("# Index\n\nSee {level}`C3` here.\n")
+        assert "ol-level" not in done.output()
+        assert "See C3 here." in done.output()
+
+
+class TestStylesheet:
+    STATIC = Path(__file__).parent.parent / "docs" / "_static"
+
+    def test_the_site_stylesheet_imports_the_marks(self):
+        stylesheet = (self.STATIC / "stylesheet.css").read_text(encoding="utf-8")
+        assert '@import url("marks.css");' in stylesheet
+
+    def test_no_stylesheet_holds_a_level_colour(self):
+        # The level role writes the colour from ol/levels.py, its one source.
+        from ol.levels import LEVEL_COLOURS
+
+        for sheet in self.STATIC.glob("*.css"):
+            text = sheet.read_text(encoding="utf-8").lower()
+            for colour in LEVEL_COLOURS.values():
+                assert colour.background not in text, sheet.name

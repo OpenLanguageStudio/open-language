@@ -11,8 +11,9 @@ import re
 from itertools import pairwise
 from pathlib import Path
 
+from ol.authoring.components import cards, options
 from ol.authoring.glossary import check_terms, load_terms, prose
-from ol.authoring.menu import LEVELS, MENU_CATEGORIES
+from ol.authoring.menu import MENU_CATEGORIES
 from ol.authoring.page import (
     Block,
     Section,
@@ -25,6 +26,7 @@ from ol.authoring.page import (
     word_count,
 )
 from ol.authoring.specs_data import SPECS
+from ol.levels import LEVELS
 
 COMMON = SPECS["common"]
 SIDEBAR_KEY = "html_theme.sidebar_secondary.remove"
@@ -668,8 +670,43 @@ def check_index_sidebar(rep, fm):
         )
 
 
+def toctree(blocks: list[Block]) -> tuple[list[str], bool] | None:
+    """The entries of a page's first toctree and whether it is hidden.
+
+    Args:
+        blocks: The page's blocks.
+
+    Returns:
+        The entries as page names, and ``True`` when it is hidden, or None when
+        the page has no toctree.
+    """
+    tree = next((b for b in blocks if b.is_directive("toctree")), None)
+    if tree is None:
+        return None
+    entries = [
+        _page(line.strip())
+        for line in tree.text.splitlines()
+        if line.strip() and not line.strip().startswith(":")
+    ]
+    return entries, "hidden" in options(tree)
+
+
+def _check_cards_follow(rep, held, entries, where):
+    """The cards link the toctree's entries, in its order."""
+    linked = [_page(card.link) for card in cards(held)]
+    if linked != entries:
+        rep.error(
+            f"{where}: the cards link the pages of the toctree, in its order: "
+            f"{', '.join(entries)}"
+        )
+
+
 def check_category_index(rep, body, offset=0):
-    """A category index opens with one to three plain sentences."""
+    """A category index opens with one to three plain sentences.
+
+    A category index whose toctree lists subcategories hides it and shows a card
+    for each. A flat category index, and a subcategory index, shows its toctree.
+    """
     blocks = parse(body, offset)
     count = 0
     for block in blocks:
@@ -683,6 +720,28 @@ def check_category_index(rep, body, offset=0):
             f"the page opens with {count} sentences before its toctree (it has 1 "
             f"to {limit}): say what its articles have in common"
         )
+    found = toctree(blocks)
+    if found is None:
+        return
+    entries, hidden = found
+    if any(entry.endswith("/index") for entry in entries):
+        if not hidden:
+            rep.error(
+                "the toctree lists subcategories: hide it with :hidden: and show a "
+                "card for each subcategory"
+            )
+        _check_cards_follow(rep, blocks, entries, "the subcategories")
+    else:
+        if hidden:
+            rep.error(
+                "the toctree lists the articles: show it, without :hidden:, as the "
+                "page's list of articles"
+            )
+        if cards(blocks):
+            rep.error(
+                "cards on an index of articles: its toctree is the list, which is "
+                "shorter on a phone than a card for each article"
+            )
 
 
 def _bullets(rep, section, low, high, max_words):
@@ -753,7 +812,14 @@ def check_level_index(rep, body, level, offset=0):
             f"{limits['lead_max_words']})"
         )
     _expect_titles(
-        rep, found, ["What learners know", "What learners can do", "Additional reading"]
+        rep,
+        found,
+        [
+            "What learners know",
+            "What learners can do",
+            "Categories",
+            "Additional reading",
+        ],
     )
     know = _section(found, "What learners know")
     can_do = _section(found, "What learners can do")
@@ -778,6 +844,9 @@ def check_level_index(rep, body, level, offset=0):
             f"{limits['overview_max_words']})"
         )
     _check_toctree_place(rep, blocks, 2)
+    tree = toctree(blocks)
+    if (categories := _section(found, "Categories")) and tree:
+        _check_cards_follow(rep, categories.blocks, tree[0], f"line {categories.line}")
     reading = _section(found, "Additional reading")
     if reading:
         links = [
@@ -799,6 +868,35 @@ def check_level_index(rep, body, level, offset=0):
 
 def _page(target: str) -> str:
     return target.lstrip("./").removesuffix(".md")
+
+
+def _check_button(rep, opening, blocks, first_level):
+    """The Introduction's one button, under its lead, starts the first level."""
+    buttons = [block for block in walk(blocks) if block.is_directive("button-ref")]
+    for extra in buttons[1:]:
+        rep.error(f"line {extra.line}: the Introduction has one button")
+    if not first_level:
+        return
+    level = first_level[0]
+    label = f"Start with {level.upper()}"
+    button = opening[1] if len(opening) > 1 else None
+    if button is None or not button.is_directive("button-ref"):
+        rep.error(
+            f"the lead is followed by a button to the first level, "
+            f"'```{{button-ref}} {level}/index' labelled '{label}'"
+        )
+        return
+    where = f"line {button.line}"
+    found = options(button)
+    if found.get("color") != "primary" or found.get("ref-type") != "doc":
+        rep.error(f"{where}: the button takes ':ref-type: doc' and ':color: primary'")
+    if "outline" in found:
+        rep.error(f"{where}: the button is filled, never outlined")
+    if _page(button.arg) != f"{level}/index":
+        rep.error(f"{where}: the button links the first level's page, {level}/index")
+    text = " ".join(plain(b.text) for b in button.children if b.kind == "paragraph")
+    if text != label:
+        rep.error(f"{where}: the button is labelled '{label}' (found '{text}')")
 
 
 def check_introduction(rep, body, workspace: Path, offset=0):
@@ -827,34 +925,25 @@ def check_introduction(rep, body, workspace: Path, offset=0):
         )
 
     levels = [lvl for lvl in LEVELS if (workspace / lvl / "index.md").is_file()]
+    _check_button(rep, opening, blocks, levels[:1])
     if section := _section(found, "Levels"):
-        items = _bullets(
-            rep, section, len(levels), len(levels), limits["level_bullet_max_words"]
-        )
-        linked = [_page(target) for item in items for target in link_targets(item)[:1]]
+        linked = [_page(card.link) for card in cards(section.blocks)]
         if linked != [f"{level}/index" for level in levels]:
             rep.error(
-                f"line {section.line}: 'Levels' has one bullet per level that "
-                "exists, each linking to its level page"
+                f"line {section.line}: 'Levels' has a card for each level that "
+                "exists, in order, each linking to its level page"
             )
     if section := _section(found, "Categories"):
-        items = _bullets(
-            rep,
-            section,
-            len(MENU_CATEGORIES),
-            len(MENU_CATEGORIES),
-            limits["category_bullet_max_words"],
-        )
         expected = [
             f"{level}/{category}/index"
             for category in MENU_CATEGORIES
             for level in levels[:1]
         ]
-        linked = [_page(target) for item in items for target in link_targets(item)[:1]]
+        linked = [_page(card.link) for card in cards(section.blocks)]
         if linked != expected:
             rep.error(
-                f"line {section.line}: 'Categories' links, in order, to "
-                f"{', '.join(expected)}"
+                f"line {section.line}: 'Categories' has four cards, linking in order "
+                f"to {', '.join(expected)}"
             )
     if section := _section(found, "Where to start"):
         low, high = limits["start_bullets"]

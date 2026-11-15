@@ -6,6 +6,7 @@ from sphinx import addnodes
 from sphinx.util import logging
 
 from ol.language import Language
+from ol.levels import LEVEL_COLOURS
 
 logger = logging.getLogger(__name__)
 
@@ -74,6 +75,32 @@ def make_stack_role(code):
     return role
 
 
+# Signature and mutable defaults are fixed by the docutils role API.
+def level_role(name, rawtext, text, lineno, inliner, options={}, content=[]):  # noqa: B006
+    """Draw a level, written ``{level}`B1```, as a badge in the level's colour.
+
+    The colour is written on the badge itself, so the badge looks the same
+    wherever the page's HTML is drawn, with or without this package's
+    stylesheet. The stylesheet gives it its shape.
+    """
+    code = text.strip().lower()
+    colour = LEVEL_COLOURS.get(code)
+    if colour is None:
+        env = inliner.document.settings.env
+        logger.warning(
+            "level: %r is not a level, write one of %s",
+            text,
+            ", ".join(level.upper() for level in LEVEL_COLOURS),
+            location=(env.docname, lineno),
+        )
+        return [nodes.Text(text)], []
+    html = (
+        f'<span class="ol-level ol-level--{code}" style="background-color: '
+        f'{colour.background}; color: {colour.text}">{code.upper()}</span>'
+    )
+    return [nodes.raw("", html, format="html")], []
+
+
 def show_term_names(app, doctree):
     """Show a glossary entry's name in the language taught, in brackets after it.
 
@@ -105,6 +132,7 @@ def setup(app):
         "builder-inited",
         lambda app: app.add_role("stack", make_stack_role(language_code())),
     )
+    app.add_role("level", level_role)
 
     # app.add_css_file("custom.css")  # optional: for HTML
     # roles.register_local_role('noun', make_colored_role('noun', 'noundef'))

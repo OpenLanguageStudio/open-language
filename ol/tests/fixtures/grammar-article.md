@@ -24,8 +24,6 @@ Every noun has a fixed gender, and the gender is part of the word. Always learn 
 
 In the plural, all genders share the same article: **die**.
 
-**Examples:**
-
 :::{div} ol-examples
 {article}`Der` Hafen ist groß.
 : The harbour is big.
@@ -44,8 +42,6 @@ Gender is grammatical, not logical: *das Mädchen* (the girl) is neuter, *der Ti
 ## When to use *der*, *die*, *das*
 
 Use the definite article when the thing is specific or already known. It was mentioned before, there is only one, or everyone can see which one is meant.
-
-**Examples:**
 
 :::{div} ol-examples
 Das ist {article}`der` Hafen von Hamburg.
@@ -70,8 +66,6 @@ When the noun is the direct object of the sentence, only the masculine article c
 |---|---|---|---|---|
 | Nominative | der | die | das | die |
 | Accusative | **den** | die | das | die |
-
-**Examples:**
 
 :::{div} ol-examples
 Ich sehe {akk}`den` Turm.
@@ -179,6 +173,6 @@ Die Tür ist offen.
 
 ## Related articles
 
-- [A1 > Grammar > The Nominative Case](/a1/grammar/cases/nominativ.md)
-- [A1 > Grammar > The Accusative Case](/a1/grammar/cases/akkusativ.md)
-- [A1 > Grammar > Noun Gender and Plurals](/a1/grammar/other/nomen-genus-plural.md)
+- [](/a1/grammar/cases/nominativ.md)
+- [](/a1/grammar/cases/akkusativ.md)
+- [](/a1/grammar/other/nomen-genus-plural.md)

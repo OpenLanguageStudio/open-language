@@ -18,7 +18,9 @@
 #     in an article, NO Related articles link to another article of the same
 #     subcategory, or, in a flat category directory, to a toctree neighbour
 #   - Prerequisites lists at most `max_prerequisites` links
-#   - "Hear it in practice" is never collapsed in a dropdown
+#   - no collapsible: no dropdown directive, :class: dropdown notice or <details>
+#   - the components of docs/reference/components.md, each where it goes
+#     (ol/authoring/components.py), with the limits under `components` below
 #   - example block size, marking limits, audio example counts, model-text
 #     length and stock vocabulary, with the limits under `common` below
 #
@@ -143,6 +145,28 @@ common:
     - "in conclusion"
     - "rest assured"
 
+# The components a page is built from (docs/reference/components.md). The
+# directives and roles a page may use are listed in ol/authoring/components.py,
+# with the pages each is limited to.
+components:
+  # Free notices: note, tip, important and warning.
+  max_notices: 3
+  max_notices_per_section: 1
+  max_important: 1
+  notice_max_words: 60
+  # A tab set: one per article, 2 or 3 tabs, each label this short.
+  max_tab_sets: 1
+  tabs: [2, 3]
+  tab_label_max_words: 3
+  # A card's body is one sentence of this many words or fewer, unless the
+  # page's own section sets another limit.
+  card_max_words: 15
+  # The card grid every grid on a page is written as.
+  grid_columns: "1 1 2 2"
+  grid_gutter: "3"
+  # What a register badge may hold.
+  registers: [informal, formal, colloquial]
+
 # The render check in `ol check`: no page scrolls sideways at this width.
 render:
   viewport_width: 360
@@ -160,8 +184,9 @@ level_page:
 introduction_page:
   lead_max_words: 60
   how_max_words: 80
-  level_bullet_max_words: 20
-  category_bullet_max_words: 25
+  # A level card's and a category card's sentence.
+  level_card_max_words: 20
+  category_card_max_words: 25
   start_bullets: [2, 4]
   page_max_words: 350
 

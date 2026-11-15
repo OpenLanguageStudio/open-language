@@ -122,13 +122,13 @@ def context(
 def _article_files(workspace: Path) -> list[Path]:
     """Every page held to the page standard.
 
-    The Introduction and Terminology pages, then every Markdown file under the
-    CEFR level directories (<level>/...).
+    The standard top-level pages, then every Markdown file under the CEFR level
+    directories (<level>/...).
     """
     files = [
         page
-        for page in (workspace / "index.md", workspace / "terminology.md")
-        if page.is_file()
+        for name in ("index", "how_to_use", "terminology", "contributing")
+        if (page := workspace / f"{name}.md").is_file()
     ]
     for level_dir in sorted(p for p in workspace.iterdir() if p.is_dir()):
         if (
