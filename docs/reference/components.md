@@ -247,7 +247,7 @@ The [page standard](page-standard.md) gives every page's sections in order, and 
 
 ## Never used
 
-Everything else in the kitchen sink stays out of a Coursebook page. Most of it is software documentation. The rest fails a reader on a phone, or does a job another component already does.
+Everything else in the kitchen sink stays out of a Coursebook page. This page calls an element that opens and closes on a click a collapsible element, or a collapsible. sphinx-design names its directive `dropdown`; that is the only place the word appears, because a dropdown means a menu. Most of it is software documentation. The rest fails a reader on a phone, or does a job another component already does.
 
 | Element | Why not |
 |---|---|
@@ -265,7 +265,7 @@ Everything else in the kitchen sink stays out of a Coursebook page. Most of it i
 | `list-table`, `csv-table` | The checks read pipe tables only, so a table written another way escapes the column limits. |
 | `hlist` columns | A list of words is a phrase table, with room for notes. |
 | Pictures and figures | No artwork exists yet. When it does, a picture is a figure with alt text, and this page gains an entry. |
-| Dropdowns | They hide content. Anything worth writing on a page is worth showing: an aside is a notice, a detail is a sentence in the section, and a long digression is its own page. |
+| Collapsible elements (the `dropdown` directive) | They hide content. Anything worth writing on a page is worth showing: an aside is a notice, a detail is a sentence in the section, and a long digression is its own page. |
 | Cards with headers or footers, outline buttons, link buttons | One kind of card and one button keep every index page alike. |
 | `eval-rst` | Everything a page needs is in MyST. |
 | Substitutions | A value set once in `conf.py` is a value a reader of the source cannot see. |

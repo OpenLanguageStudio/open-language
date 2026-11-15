@@ -104,7 +104,7 @@ A notice is read as a break from the text. The fewer there are, the more each on
 
 ### Tabs and hidden content
 
-Nothing on a page is hidden behind a click, except the versions in a tab set. [V: no `dropdown`, no `:class: dropdown` notice, no `<details>`]
+Nothing on a page is hidden behind a click, except the versions in a tab set. A page has no collapsible element: no `dropdown` directive (sphinx-design's name for it), no notice with `:class: dropdown`, no `<details>`. [V]
 
 - A tab set shows one set of phrases in 2 or 3 versions along one line, such as informal and formal. Each tab label is 3 words or fewer, and every tab holds the same kind of thing: a phrase table or an example block. An article has at most 1 tab set, in grammar or how-to only. [V] When the learner has to compare the versions, one table holds them side by side instead. [R]
 - A tab never holds a heading, a notice, an audio block, Common mistakes or Key points. [V]
