@@ -40,7 +40,7 @@ An article is these parts, in this order. The four category sections below fill 
 | 6 | Body sections | The category's own sections (see below). | V |
 | 7 | Hear it in practice | `## Hear it in practice` with the audio block, after the body and before the summary. In grammar and how-to, several blocks may each sit under an H3 naming the track. | V |
 | 8 | Summary | `## Summary`, as the template for the category shows. | V |
-| 9 | Related articles | `## Related articles` at the very end, only links the reader would not reach by the next-page link. In a subcategory, a directory below a category such as `a1/grammar/articles/`, an article links no other article of that subcategory: the directory already relates them and the subcategory index links them all. Links outside the subcategory are fine. In a flat category directory, such as `b1/grammar/` or `a1/how-to/`, sharing the directory says nothing about two topics being related, so only the toctree neighbours are left out. Omitted when empty. Each link is a list item with empty link text, `- [](/a1/grammar/cases/akkusativ.md)`, so the build writes the target's title and a retitled page leaves no stale link. A link to a page of another level is followed by that level as a badge, ``{bdg-secondary-line}`A1` ``. | V |
+| 9 | Related articles | `## Related articles` at the very end, only links the reader would not reach by the next-page link. In a subcategory, a directory below a category such as `a1/grammar/articles/`, an article links no other article of that subcategory: the directory already relates them and the subcategory index links them all. Links outside the subcategory are fine. In a flat category directory, such as `b1/grammar/` or `a1/how-to/`, sharing the directory says nothing about two topics being related, so only the toctree neighbours are left out. Omitted when empty. Each link is a list item with empty link text, `- [](/a1/grammar/cases/akkusativ.md)`, so the build writes the target's title and a retitled page leaves no stale link. A link to a page of another level is followed by that level as a level badge, ``{level}`A1` ``. | V |
 
 Parts 3 and 4 together stay at 180 words or fewer, so the first screen on a phone shows what the page is and why it matters, then the first heading.
 
@@ -98,15 +98,16 @@ A notice is read as a break from the text. The fewer there are, the more each on
 
 ### Badges
 
-- A badge is `bdg-secondary-line`, holding a level after a link to another level, or `bdg-light`, holding a register in a Notes cell: `informal`, `formal` or `colloquial`. No other badge, and no badge elsewhere. [V]
+- A level badge, the `level` role, follows a link to a page of another level, and appears nowhere else. It holds the level of the linked page. [V] It is drawn in the level's colour, the colour of that level's album covers. [B]
+- A register badge, `bdg-light`, holds `informal`, `formal` or `colloquial` in a Notes cell, and appears nowhere else. [V]
+- No other badge is used. [V]
 
-### Dropdowns and tabs
+### Tabs and hidden content
 
-Both hide something until the reader asks for it, so neither ever holds what the page teaches.
+Nothing on a page is hidden behind a click, except the versions in a tab set. [V: no `dropdown`, no `:class: dropdown` notice, no `<details>`]
 
-- A dropdown holds optional depth: an exception, a regional variant, the history of a form. It starts closed, has a title of 8 words or fewer that says what is inside, and holds prose, an example block or a table only. An article has at most 2. [V] A reader who never opens one misses nothing the page's one idea needs. [R]
 - A tab set shows one set of phrases in 2 or 3 versions along one line, such as informal and formal. Each tab label is 3 words or fewer, and every tab holds the same kind of thing: a phrase table or an example block. An article has at most 1 tab set, in grammar or how-to only. [V] When the learner has to compare the versions, one table holds them side by side instead. [R]
-- Neither holds a heading, a notice, an audio block, Common mistakes or Key points. [V]
+- A tab never holds a heading, a notice, an audio block, Common mistakes or Key points. [V]
 
 ### Card grids and buttons
 

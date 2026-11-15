@@ -16,7 +16,8 @@ This page shows how to write each component. How many a page may hold, and where
 | Stacked phrase | ``{stack}`Guten Morgen \| Good morning` `` | A phrase with its translation beneath it, in a table cell or a list. |
 | Glossary term | ``{term}`accusative` `` | The first use of a listed technical term in an article's prose. |
 | Page link | `[](/a1/grammar/cases/akkusativ.md)` | A link to another page. Empty brackets: the build writes the page's title. |
-| Badge | ``{bdg-secondary-line}`A1` `` | A level after a link to another level, or a register in a Notes cell. |
+| Level badge | ``{level}`A1` `` | The level after a link to a page of another level, in that level's colour. |
+| Register badge | ``{bdg-light}`informal` `` | A register in a Notes cell. |
 | Example block | `:::{div} ol-examples` | Example sentences with their translations, beside the explanation. |
 | Audio block | `:::{audio-examples}` | The page's track, under Hear it in practice. |
 | Notice | `:::{tip}` and three others | A fact set apart from the text: a nuance, a memory aid, a trap. |
@@ -24,7 +25,6 @@ This page shows how to write each component. How many a page may hold, and where
 | Phrase table | Markdown pipe table | Phrases with notes, two columns. |
 | Forms table | Markdown pipe table | A paradigm: forms by gender, person or case. Grammar only. |
 | Block quote | `> ...` | The model text in a writing article. |
-| Dropdown | `:::{dropdown} Title` | Optional depth: an exception, a regional variant. |
 | Tabs | `::::{tab-set}` | One set of phrases in two or three versions: *du* and *Sie*, spoken and written. |
 | Card grid | `::::{grid} 1 1 2 2` | The way into the pages below an index page. Index pages and the Introduction only. |
 | Button | `` ```{button-ref} `` | The Introduction's one call to start. |
@@ -32,8 +32,8 @@ This page shows how to write each component. How many a page may hold, and where
 
 The full list, which `ol validate` holds a page to:
 
-- **Directives:** `div` (with the class `ol-examples` only), `audio-examples`, `note`, `tip`, `important`, `warning`, `admonition` (the three titles only), `dropdown`, `tab-set`, `tab-item`, `grid`, `grid-item-card`, `button-ref`, `toctree`, and `glossary` on the Terminology page.
-- **Roles:** the language repository's marking roles, `stack`, `term`, `bdg-secondary-line` and `bdg-light`; on How to use and Contributing also `kbd`, `guilabel`, `menuselection`, `file`, `command` and `samp`.
+- **Directives:** `div` (with the class `ol-examples` only), `audio-examples`, `note`, `tip`, `important`, `warning`, `admonition` (the three titles only), `tab-set`, `tab-item`, `grid`, `grid-item-card`, `button-ref`, `toctree`, and `glossary` on the Terminology page.
+- **Roles:** the language repository's marking roles, `stack`, `term`, `level` and `bdg-light`; on How to use and Contributing also `kbd`, `guilabel`, `menuselection`, `file`, `command` and `samp`.
 
 ## Inline
 
@@ -75,15 +75,15 @@ A link that needs words of its own inside a sentence keeps them: `the [accusativ
 
 ### Badges
 
-A badge is a small label. A Coursebook page uses two kinds, both neutral in colour:
+A badge is a small label. A Coursebook page uses two kinds:
 
 ```markdown
-- [](/a1/grammar/cases/akkusativ.md) {bdg-secondary-line}`A1`
+- [](/b1/grammar/relativsaetze.md) {level}`B1`
 
 | {stack}`Hallo! \| Hi!` | {bdg-light}`informal` |
 ```
 
-`bdg-secondary-line` holds a level, after a Related articles link to another level. `bdg-light` holds a register in a Notes cell: `informal`, `formal` or `colloquial`. A coloured badge (success, warning, danger) would read as right or wrong, and colour in an example belongs to the marking roles. [Rule](page-standard.md#badges)
+`level` names a level, after a Related articles or Prerequisites link to a page of another level. It is drawn in that level's colour, the same colour as the level's album covers, so a level looks the same on a page, on a cover and in the app. `bdg-light` holds a register in a Notes cell: `informal`, `formal` or `colloquial`, and is neutral. No other badge colour is used: a green or red badge would read as right or wrong. [Rule](page-standard.md#badges)
 
 ## Blocks
 
@@ -105,7 +105,7 @@ Wir nehmen {akk}`die` Straßenbahn.
 
 ### Audio block
 
-`audio-examples` writes or shows a track, under `## Hear it in practice`. The block's options are in the README of this package and in `ol/authoring/templates/audio-examples-block.md`. It never sits inside a dropdown, a tab or a notice.
+`audio-examples` writes or shows a track, under `## Hear it in practice`. The block's options are in the README of this package and in `ol/authoring/templates/audio-examples-block.md`. It never sits inside a tab or a notice.
 
 ### Notices
 
@@ -167,18 +167,6 @@ The [page standard](page-standard.md#tables) holds the column limits.
 
 A block quote holds the model text of a writing article, under its `## Example: ...` heading, with the text's own line breaks. It is used for nothing else.
 
-### Dropdown
-
-A dropdown holds depth a reader may skip: an exception, a regional variant, how a form came to be. It starts closed, and its title says what is inside it.
-
-```markdown
-:::{dropdown} Words that break the rule
-*Das Mädchen* and *das Fräulein* are neuter, because *-chen* and *-lein* make every noun neuter.
-:::
-```
-
-It holds prose, an example block or a table. It never holds a heading, a notice, an audio block, Common mistakes or Key points. [Rule](page-standard.md#dropdowns-and-tabs)
-
 ### Tabs
 
 Tabs show one set of phrases in two or three versions, of which a reader wants one: informal and formal, spoken and written, Germany, Austria and Switzerland. Each tab holds the same kind of thing, a phrase table or an example block. When a learner has to compare the versions, they go side by side in one table instead, because a tab hides the other side.
@@ -201,7 +189,7 @@ Tabs show one set of phrases in two or three versions, of which a reader wants o
 ::::
 ```
 
-[Rule](page-standard.md#dropdowns-and-tabs)
+[Rule](page-standard.md#tabs-and-hidden-content)
 
 ## Index pages
 
@@ -252,7 +240,7 @@ The [page standard](page-standard.md) gives every page's sections in order, and 
 | Level page | Lead, `## What learners know` and `## What learners can do` as lists, hidden toctree, `## Categories` as four cards, `## Additional reading` as a list of external links. |
 | Category index with subcategories | Lead, hidden toctree, a card per subcategory. |
 | Flat category index, subcategory index | Lead, visible toctree. |
-| Grammar article | Opening paragraphs, Prerequisites, form and use sections with forms tables, example blocks and a notice where one helps, an optional dropdown, Common mistakes, Hear it in practice, Summary with Key points, Related articles. |
+| Grammar article | Opening paragraphs, Prerequisites, form and use sections with forms tables, example blocks and a notice where one helps, Common mistakes, Hear it in practice, Summary with Key points, Related articles. |
 | How-to article | Opening paragraphs, Prerequisites, When to use it, Key phrases as phrase tables (or one tab set of them), Culture note, Hear it in practice, Summary, Related articles. |
 | Writing article | Opening paragraphs, Prerequisites, one or two Example sections each with a block quote and its own Hear it in practice, Building blocks as a phrase table, Summary, Related articles. |
 | Vocabulary article | Opening paragraphs, The words as one phrase table, Hear it in practice, Summary, Related articles. |
@@ -277,6 +265,7 @@ Everything else in the kitchen sink stays out of a Coursebook page. Most of it i
 | `list-table`, `csv-table` | The checks read pipe tables only, so a table written another way escapes the column limits. |
 | `hlist` columns | A list of words is a phrase table, with room for notes. |
 | Pictures and figures | No artwork exists yet. When it does, a picture is a figure with alt text, and this page gains an entry. |
+| Dropdowns | They hide content. Anything worth writing on a page is worth showing: an aside is a notice, a detail is a sentence in the section, and a long digression is its own page. |
 | Cards with headers or footers, outline buttons, link buttons | One kind of card and one button keep every index page alike. |
 | `eval-rst` | Everything a page needs is in MyST. |
 | Substitutions | A value set once in `conf.py` is a value a reader of the source cannot see. |
