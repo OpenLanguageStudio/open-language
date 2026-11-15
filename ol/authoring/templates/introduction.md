@@ -18,6 +18,15 @@ myst:
 {{Lead of 60 words or fewer: what this coursebook is, who it is for, and that it
 is free and open.}}
 
+```{button-ref} {{first_level}}/index
+:ref-type: doc
+:color: primary
+
+Start with {{FIRST_LEVEL}}
+```
+<!-- The page's one button: a primary button-ref to the first level's page,
+     labelled "Start with" and the level. -->
+
 ## How the course works
 
 {{80 words or fewer: that the pages are not a sequence, that any page can be
@@ -25,15 +34,52 @@ read first, and that each ends with sentences to listen to.}}
 
 ## Levels
 
-- [{{LEVEL}}]({{level}}/index.md): {{what it covers, 20 words or fewer}}
-<!-- One bullet per level that exists, each linking to its level page. -->
+::::{grid} 1 1 2 2
+:gutter: 3
+
+:::{grid-item-card} {{LEVEL}}
+:link: {{level}}/index
+:link-type: doc
+
+{{One sentence of 20 words or fewer: what the level covers.}}
+:::
+::::
+<!-- One card per level that exists, in order, each linking to its level page.
+     A card's title is the title of the page it opens. -->
 
 ## Categories
 
-- [How to]({{first_level}}/how-to/index.md): {{what to say in a situation, 25 words or fewer}}
-- [Grammar]({{first_level}}/grammar/index.md): {{how the language is built}}
-- [Writing]({{first_level}}/writing/index.md): {{model texts for everyday tasks}}
-- [Vocabulary]({{first_level}}/vocabulary/index.md): {{word packs on one theme}}
+::::{grid} 1 1 2 2
+:gutter: 3
+
+:::{grid-item-card} How to
+:link: {{first_level}}/how-to/index
+:link-type: doc
+
+{{One sentence of 25 words or fewer: what to say in a situation.}}
+:::
+
+:::{grid-item-card} Grammar
+:link: {{first_level}}/grammar/index
+:link-type: doc
+
+{{How the language is built.}}
+:::
+
+:::{grid-item-card} Writing
+:link: {{first_level}}/writing/index
+:link-type: doc
+
+{{Model texts for everyday tasks.}}
+:::
+
+:::{grid-item-card} Vocabulary
+:link: {{first_level}}/vocabulary/index
+:link-type: doc
+
+{{Word packs on one theme.}}
+:::
+::::
 
 ## Where to start
 

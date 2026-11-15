@@ -29,6 +29,7 @@ LINK_TARGETS = [
     "a1/grammar/cases/akkusativ.md",
     "a1/grammar/other/nomen-genus-plural.md",
 ]
+CONF = 'custom_roles = ["akk", "article"]\n'
 WORDS_30 = " ".join(["word"] * 30) + "."
 
 
@@ -40,6 +41,7 @@ def repository(root: Path) -> Path:
     (root / "open-language.yml").write_text(
         "language: German\nlanguage_code: de\n", encoding="utf-8"
     )
+    (root / "conf.py").write_text(CONF, encoding="utf-8")
     for target in LINK_TARGETS:
         page = root / target
         page.parent.mkdir(parents=True, exist_ok=True)
@@ -786,6 +788,26 @@ LEVEL_PAGE = {
         lambda s: s[: s.index("## Additional reading")],
         "in that order",
     ),
+    "no categories": (
+        lambda s: s[: s.index("## Categories")] + s[s.index("## Additional reading") :],
+        "in that order",
+    ),
+    "category cards out of order": (
+        lambda s: (
+            s.replace(":link: how-to/index", "TEMP", 1)
+            .replace(":link: grammar/index", ":link: how-to/index", 1)
+            .replace("TEMP", ":link: grammar/index", 1)
+        ),
+        "the cards link the pages of the toctree, in its order",
+    ),
+    "category card titled otherwise": (
+        lambda s: s.replace("{grid-item-card} How to", "{grid-item-card} Phrases", 1),
+        "titled as the page it opens, 'How to'",
+    ),
+    "long category sentence": (
+        lambda s: s.replace("What to say.", " ".join(["word"] * 16) + ".", 1),
+        "is 16 words (maximum 15)",
+    ),
     "internal link in the reading": (
         lambda s: s.replace("https://example.org/list", "a1/grammar/index.md", 1),
         "external links only",
@@ -814,31 +836,62 @@ INTRODUCTION_PAGE = {
     ),
     "a level that does not exist": (
         lambda s: s.replace(
-            "- [A1](a1/index.md): the first days.\n",
-            "- [A1](a1/index.md): the first days.\n- [A2](a2/index.md): next.\n",
+            "The first days.\n:::\n",
+            "The first days.\n:::\n\n:::{grid-item-card} A2\n:link: a2/index\n"
+            ":link-type: doc\n\nNext.\n:::\n",
             1,
         ),
-        "'Levels' has 2 bullets",
+        "'Levels' has a card for each level that exists",
     ),
     "a level link somewhere else": (
-        lambda s: s.replace(
-            "[A1](a1/index.md): the first", "[A1](a2/index.md): the", 1
-        ),
+        lambda s: s.replace(":link: a1/index\n", ":link: a2/index\n", 1),
         "each linking to its level page",
     ),
-    "long level bullet": (
-        lambda s: s.replace("the first days.", " ".join(["word"] * 20), 1),
-        "'Levels' is 21 words",
+    "long level card": (
+        lambda s: s.replace("The first days.", " ".join(["word"] * 21) + ".", 1),
+        "the card 'A1' is 21 words (maximum 20)",
+    ),
+    "long category card": (
+        lambda s: s.replace("What to say.", " ".join(["word"] * 26) + ".", 1),
+        "the card 'How to' is 26 words (maximum 25)",
     ),
     "categories out of order": (
-        lambda s: s.replace(
-            "[How to](a1/how-to/index.md)", "[X](a1/grammar/index.md)", 1
-        ),
-        "'Categories' links, in order",
+        lambda s: s.replace(":link: a1/how-to/index", ":link: a1/grammar/index", 1),
+        "'Categories' has four cards, linking in order",
     ),
     "three categories": (
-        lambda s: s.replace("- [Writing](a1/writing/index.md): model texts.\n", "", 1),
-        "'Categories' has 3 bullets",
+        lambda s: s.replace(
+            ":::{grid-item-card} Writing\n:link: a1/writing/index\n"
+            ":link-type: doc\n\nModel texts.\n:::\n",
+            "",
+            1,
+        ),
+        "'Categories' has four cards",
+    ),
+    "no button": (
+        lambda s: s[: s.index("```{button-ref}")] + s[s.index("## How the course") :],
+        "followed by a button to the first level",
+    ),
+    "button with another label": (
+        lambda s: s.replace("Start with A1", "Begin", 1),
+        "labelled 'Start with A1'",
+    ),
+    "outline button": (
+        lambda s: s.replace(":color: primary\n", ":color: primary\n:outline:\n", 1),
+        "never outlined",
+    ),
+    "button to another page": (
+        lambda s: s.replace("{button-ref} a1/index", "{button-ref} terminology", 1),
+        "links the first level's page",
+    ),
+    "second button": (
+        lambda s: s.replace(
+            "## Where to start\n",
+            "## Where to start\n\n```{button-ref} terminology\n:ref-type: doc\n"
+            ":color: primary\n\nTerms\n```\n",
+            1,
+        ),
+        "the Introduction has one button",
     ),
     "one place to start": (
         lambda s: s.replace("- New to the language: [A1](a1/index.md).\n", "", 1),

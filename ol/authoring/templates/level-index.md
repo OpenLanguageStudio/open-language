@@ -3,8 +3,10 @@
      The H1 is the bare level name: the one place the CEFR level appears in a title.
      The lead and the two lists total 150 words or fewer. The page makes no claim
      about an exam, and may cite the Council of Europe descriptors, which are public.
-     The toctree lists only these category indexes, in this order. Leave out a
-     category the level does not have; never add another entry.
+     The toctree lists only these category indexes, in this order, and is
+     hidden: the Categories cards show it, linking the same pages in the same
+     order. Leave out a category the level does not have, and its card; never
+     add another entry.
      "Additional reading" holds learner-facing external links only: no private
      files, no agent-facing wording. -->
 ---
@@ -25,12 +27,47 @@ html_theme.sidebar_secondary.remove:
 
 ```{toctree}
 :maxdepth: 2
+:hidden:
 
 {{how-to/index: when the category exists}}
 {{grammar/index: when the category exists}}
 {{writing/index: when the category exists}}
 {{vocabulary/index: when the category exists}}
 ```
+
+## Categories
+
+::::{grid} 1 1 2 2
+:gutter: 3
+
+:::{grid-item-card} How to
+:link: how-to/index
+:link-type: doc
+
+{{One sentence of 15 words or fewer on what the category's pages hold.}}
+:::
+
+:::{grid-item-card} Grammar
+:link: grammar/index
+:link-type: doc
+
+{{One sentence.}}
+:::
+
+:::{grid-item-card} Writing
+:link: writing/index
+:link-type: doc
+
+{{One sentence.}}
+:::
+
+:::{grid-item-card} Vocabulary
+:link: vocabulary/index
+:link-type: doc
+
+{{One sentence.}}
+:::
+::::
 
 ## Additional reading
 

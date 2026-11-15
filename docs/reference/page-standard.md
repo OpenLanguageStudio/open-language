@@ -2,7 +2,7 @@
 
 The shape of every page in a language repository, and how each rule is checked. It applies to every language. A page that follows it looks the same in German, French and Spanish, which is what makes the coursebooks one product.
 
-Read it with [authoring rules](authoring-rules.md), which holds the rules about wording, and the template for the page's type open (`ol templates`).
+Read it with [authoring rules](authoring-rules.md), which holds the rules about wording, [components](components.md), which shows how to write each part of a page, and the template for the page's type open (`ol templates`).
 
 ## Who the pages are for
 
@@ -36,11 +36,11 @@ An article is these parts, in this order. The four category sections below fill 
 | 2 | Title (H1) | One per page. English, sentence case, five words or fewer, no level, no category, no number. | V (count, prefix), R (case) |
 | 3 | Lead paragraph | The first paragraph under the title. One or two sentences (20 to 50 words). Says what the page covers in plain words, and uses the main learner phrasing at least once. | V |
 | 4 | Explanation paragraph | The second paragraph. States the one idea of the page in plain language (40 to 120 words). Every technical term in it is linked to the glossary, here or in the lead, so a term is not linked twice two paragraphs apart. | V |
-| 5 | Prerequisites | Optional admonition after the two opening paragraphs, before the first H2. At most 3 links, true dependencies only. | V |
+| 5 | Prerequisites | Optional admonition after the two opening paragraphs, before the first H2. At most 3 links, true dependencies only, each written as described under Related articles. | V |
 | 6 | Body sections | The category's own sections (see below). | V |
 | 7 | Hear it in practice | `## Hear it in practice` with the audio block, after the body and before the summary. In grammar and how-to, several blocks may each sit under an H3 naming the track. | V |
 | 8 | Summary | `## Summary`, as the template for the category shows. | V |
-| 9 | Related articles | `## Related articles` at the very end, only links the reader would not reach by the next-page link. In a subcategory, a directory below a category such as `a1/grammar/articles/`, an article links no other article of that subcategory: the directory already relates them and the subcategory index links them all. Links outside the subcategory are fine. In a flat category directory, such as `b1/grammar/` or `a1/how-to/`, sharing the directory says nothing about two topics being related, so only the toctree neighbours are left out. Omitted when empty. | V |
+| 9 | Related articles | `## Related articles` at the very end, only links the reader would not reach by the next-page link. In a subcategory, a directory below a category such as `a1/grammar/articles/`, an article links no other article of that subcategory: the directory already relates them and the subcategory index links them all. Links outside the subcategory are fine. In a flat category directory, such as `b1/grammar/` or `a1/how-to/`, sharing the directory says nothing about two topics being related, so only the toctree neighbours are left out. Omitted when empty. Each link is a list item with empty link text, `- [](/a1/grammar/cases/akkusativ.md)`, so the build writes the target's title and a retitled page leaves no stale link. A link to a page of another level is followed by that level as a level badge, ``{level}`A1` ``. | V |
 
 Parts 3 and 4 together stay at 180 words or fewer, so the first screen on a phone shows what the page is and why it matters, then the first heading.
 
@@ -75,6 +75,46 @@ The stacked cell is written with the `stack` role: ``{stack}`Guten Morgen | Good
 - No page sends the reader off the site to learn what a term means. [R]
 
 Terms that are only a German word being taught, such as *der* or *Konjunktiv II* as the topic of its own article, are the subject of the page and are exempt on that page.
+
+## Components
+
+A page is built from the components in [components](components.md), which shows how to write each one. The kit is small on purpose: a reader who has seen one page knows what every box, table and card on the next one means.
+
+- A page uses no directive and no role that the components page does not list. [V: an unlisted directive or role is an error]
+- A component that the components page limits to some pages appears on those pages only: card grids on index pages and the Introduction, the button on the Introduction, the block quote in writing, forms tables in grammar, interface roles on How to use and Contributing. [V]
+- Inline, a page has no footnotes, no strikethrough, no highlighted span and no abbreviation role. [V]
+- A paragraph is never made of bold text alone, such as `**Examples:**`. A label that is needed is an H3, where the category's template names one; otherwise the block speaks for itself. [V]
+
+### Notices
+
+A notice is read as a break from the text. The fewer there are, the more each one is read.
+
+- The free notices are `note`, `tip`, `important` and `warning`, each with its one meaning: `note` explains, `tip` helps a form stick, `important` is the rule a learner must not miss, `warning` names a trap. [V: kind] [R: meaning]
+- A titled notice is one of three, each with its class: Prerequisites (`note`), Common mistakes (`caution`) and Key points (`note`). No other title. [V]
+- An article has at most 3 free notices, at most 1 in each H2 section, and at most 1 `important`. [V]
+- A free notice holds 60 words or fewer. [V]
+- No notice holds another. [V]
+- A reader who skips every notice still learns the page's one idea. A notice never holds the core rule of the page; the rule is in the text and the notice adds to it. [R]
+
+### Badges
+
+- A level badge, the `level` role, follows a link to a page of another level, and appears nowhere else. It holds the level of the linked page. [V] It is drawn in the level's colour, the colour of that level's album covers. [B]
+- A register badge, `bdg-light`, holds `informal`, `formal` or `colloquial` in a Notes cell, and appears nowhere else. [V]
+- No other badge is used. [V]
+
+### Tabs and hidden content
+
+Nothing on a page is hidden behind a click, except the versions in a tab set. A page has no collapsible element: no `dropdown` directive (sphinx-design's name for it), no notice with `:class: dropdown`, no `<details>`. [V]
+
+- A tab set shows one set of phrases in 2 or 3 versions along one line, such as informal and formal. Each tab label is 3 words or fewer, and every tab holds the same kind of thing: a phrase table or an example block. An article has at most 1 tab set, in grammar or how-to only. [V] When the learner has to compare the versions, one table holds them side by side instead. [R]
+- A tab never holds a heading, a notice, an audio block, Common mistakes or Key points. [V]
+
+### Card grids and buttons
+
+- A card grid is `::::{grid} 1 1 2 2` with `:gutter: 3`. Each card is a `grid-item-card` with `:link:` and `:link-type: doc`, no header, no footer and no picture. [V]
+- A card's title is the title of the page it links to, and its body is one sentence of 15 words or fewer, unless the page's section sets another limit. [V]
+- A page that shows cards for its toctree's entries hides the toctree with `:hidden:`, and its cards link the same pages in the same order. [V]
+- The only button is the Introduction's, a primary `button-ref`. [V]
 
 ## The four categories
 
@@ -132,6 +172,10 @@ An index page is not an article. It has no Hear it in practice and no summary.
 
 H1 is the bare category name: **How to**, **Grammar**, **Writing**, **Vocabulary**. [M] The page opens with one to three plain sentences on what its articles have in common. [V] The toctree lists the articles, hidden numbering off. A how-to index never says to work through its articles in order: they are read in any order. [R]
 
+A category index whose toctree lists subcategories, such as A1 Grammar, hides its toctree and shows a card for each subcategory in a card grid, in the toctree's order. A flat category index, and every subcategory index, shows its toctree: a list of twenty articles is shorter on a phone than twenty cards. [V]
+
+Every index page's H1 is in sentence case, as an article's is: **Grammatical cases**, not **Grammatical Cases**. [R]
+
 ### Level overview page
 
 H1 is the bare level name. The one place the CEFR level appears in a title. The page is, in order: [V]
@@ -139,8 +183,9 @@ H1 is the bare level name. The one place the CEFR level appears in a title. The 
 1. A lead paragraph of 40 words or fewer: where the level sits in the CEFR and where it starts.
 2. `## What learners know`: 3 to 5 bullets of 15 words or fewer. What the course has taught by the end of the level, in plain words.
 3. `## What learners can do`: 4 to 6 bullets of 15 words or fewer. Each starts with a verb in its base form, and each is something a learner could be asked to do and a listener could judge.
-4. The toctree of the level's categories, in the order how-to, grammar, writing, vocabulary. [M]
-5. `## Additional reading`, as external links only.
+4. The toctree of the level's categories, in the order how-to, grammar, writing, vocabulary, hidden. [M]
+5. `## Categories`: a card grid of four cards, one per category, in the toctree's order, each linking to the category index with one sentence of 15 words or fewer on what its pages hold.
+6. `## Additional reading`, as external links only.
 
 Parts 1 to 3 total 150 words or fewer. Levels stop at B2 for now. A level page makes no claim about an exam. It may cite the Council of Europe descriptors, which are public. [R]
 
@@ -149,11 +194,12 @@ Parts 1 to 3 total 150 words or fewer. Levels stop at B2 for now. A level page m
 The top-level `index.md`. H1 is exactly **Introduction**. [M] The sections are, in order, and no others: [V]
 
 1. A lead of 60 words or fewer: what the coursebook is, who it is for, that it is free and open.
-2. `## How the course works`: that the pages are not a sequence, that any page can be read first, and that each ends with sentences to listen to. 80 words or fewer.
-3. `## Levels`: one bullet per level that exists, each linking to its level page, 20 words or fewer. A level that exists has a bullet, and a bullet names a level that exists.
-4. `## Categories`: exactly four bullets, in the order how-to, grammar, writing, vocabulary, each linking to the first level's category index, 25 words or fewer.
-5. `## Where to start`: two to four bullets, each pairing a situation with a link: new to the language, a single problem, an unfamiliar term. The last always links to the glossary.
-6. The hidden toctree: `how_to_use`, `terminology`, `contributing`, then each level. [M]
+2. A primary button linking to the first level's page, labelled "Start with" and the level: **Start with A1**.
+3. `## How the course works`: that the pages are not a sequence, that any page can be read first, and that each ends with sentences to listen to. 80 words or fewer.
+4. `## Levels`: a card grid with one card per level that exists, each linking to its level page, its sentence 20 words or fewer. A level that exists has a card, and a card names a level that exists.
+5. `## Categories`: a card grid of exactly four cards, in the order how-to, grammar, writing, vocabulary, each linking to the first level's category index, its sentence 25 words or fewer.
+6. `## Where to start`: two to four bullets, each pairing a situation with a link: new to the language, a single problem, an unfamiliar term. The last always links to the glossary.
+7. The hidden toctree: `how_to_use`, `terminology`, `contributing`, then each level. [M]
 
 The page is 350 words or fewer. [V]
 

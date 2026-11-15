@@ -8,6 +8,7 @@ The rules an article in a language repository follows that neither `ol validate`
 |---|---|
 | `ol validate`, run by `ol check` | Every rule a script can measure. An article that fails it is not done. The limits are in `ol/authoring/specs.yml`. |
 | [The page standard](page-standard.md) | The shape of every page, each rule with its check. |
+| [Components](components.md) | How to write each part a page is built from: inline roles, notices, tables, tabs, cards. The kitchen-sink elements a page never uses, and why. |
 | The templates, listed by `ol templates` | That shape as a starting point for each page type. Bend a template where the article needs it, such as tables with a little prose for adjective endings. The checks still apply. |
 | `ol/authoring/review-rubric.yml` | The questions that need a reader: level, correctness, teaching value and plain language. |
 | This page | Everything else. |

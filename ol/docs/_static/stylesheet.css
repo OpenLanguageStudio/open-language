@@ -16,6 +16,10 @@
    equal specificity resolves in our favour.
    ============================================================================ */
 
+/* The grammar marks and the level badge, which an app drawing the pages in
+   its own theme links on their own. */
+@import url("marks.css");
+
 /* ── Fonts ─────────────────────────────────────────────────────────────────
    Latin, Latin Ext A/B, combining diacritics, punctuation. The italic is
    load-bearing: German phrases in prose are set in italic, so it is what
@@ -78,28 +82,6 @@
   --warn:         #a2461b;   /* correction register. Deliberately not red. */
   --warn-surface: #f8e0d3;
 
-  /* Grammar accents. marking-scheme.md assigns the meanings.
-     -surface carries --text on top, never the accent itself. */
-  --accent-1: #1a5aa6;  --accent-1-surface: #dce8f7;  /* blue   */
-  --accent-2: #6b3d99;  --accent-2-surface: #e7dcf5;  /* violet */
-  --accent-3: #a62f57;  --accent-3-surface: #f8dbe4;  /* rose   */
-  --accent-4: #10635e;  --accent-4-surface: #d6ecea;  /* teal   */
-  --accent-5: #4d6612;  --accent-5-surface: #e5eecd;  /* moss   */
-  --accent-6: #a2461b;  --accent-6-surface: #f8e0d3;  /* rust   */
-
-  /* Level. Categorical, not a ramp. Identical in every language and mode. */
-  --level-a1: #eeb849;
-  --level-a2: #a4563a;
-  --level-b1: #79b3a8;
-  --level-b2: #496695;
-
-  --ink-fixed:   #1e1a15;
-  --paper-fixed: #fbf7f0;
-  --on-level-a1: var(--ink-fixed);
-  --on-level-a2: var(--paper-fixed);
-  --on-level-b1: var(--ink-fixed);
-  --on-level-b2: var(--paper-fixed);
-
   --font-display: "Bricolage Grotesque", "Helvetica Neue", Arial, sans-serif;
   --font-body:    "Literata", Georgia, serif;
   --font-mono:    "JetBrains Mono", ui-monospace, Menlo, monospace;
@@ -149,13 +131,6 @@ html[data-theme="dark"] {
 
   --warn:         #f0a279;
   --warn-surface: #2b1a12;
-
-  --accent-1: #8fbaf0;  --accent-1-surface: #16202e;
-  --accent-2: #c4a6ee;  --accent-2-surface: #221a2e;
-  --accent-3: #f093ab;  --accent-3-surface: #2c161e;
-  --accent-4: #6ac6bd;  --accent-4-surface: #12241f;
-  --accent-5: #b0cc7d;  --accent-5-surface: #1d2313;
-  --accent-6: #f0a279;  --accent-6-surface: #2b1a12;
 }
 
 /* ── Theme bridge ──────────────────────────────────────────────────────────
@@ -275,112 +250,6 @@ summary:focus-visible,
   border-radius: var(--radius-sm);
 }
 
-/* ============================================================================
-   Grammar marking
-
-   Two treatments, per marking-scheme.md §1. Colour is never the only carrier
-   (WCAG 1.4.1): a word mark also takes a dotted underline, a phrase mark also
-   takes a solid rule along its baseline.
-
-     Word mark ..... one word, accent-coloured text + dotted underline
-     Phrase mark ... a whole constituent, accent highlight behind the span
-
-   Accent assignments are unique per marked passage, not per page, and that
-   only holds because every marked passage ships a key.
-
-   Every role carries both the namespaced class emitted by ol.docs.roles and
-   the bare role name, so a role registered by any other path still renders,
-   and content using the old 15-role set keeps rendering while it is
-   migrated, rather than having to change in lockstep with this file.
-   ============================================================================ */
-
-/* ── Word marks ─────────────────────────────────────────────────────────── */
-
-.ol-mark--verb, .ol-mark--noun, .ol-mark--det, .ol-mark--mod,
-.ol-mark--conj, .ol-mark--prep,
-.ol-mark--adj, .ol-mark--adv, .ol-mark--article, .ol-mark--pronoun,
-.verb, .noun, .det, .mod, .conj, .prep,
-.adj, .adv, .article, .pronoun {
-  border-bottom: 2px dotted currentColor;
-  padding-bottom: 1px;
-  font-weight: var(--weight-medium);
-}
-
-/* 1 · verb — finite verb, participle, separable prefix, infinitive */
-.ol-mark--verb, .verb { color: var(--accent-1); }
-
-/* 2 · noun */
-.ol-mark--noun, .noun { color: var(--accent-2); }
-
-/* 3 · det — determiner or pronoun (der/die/das, kein, mein, ihn, sich).
-       article and pronoun are the pre-migration names for this mark. */
-.ol-mark--det, .ol-mark--article, .ol-mark--pronoun,
-.det, .article, .pronoun { color: var(--accent-3); }
-
-/* 4 · mod — adjective or adverb, including nicht.
-       adj and adv are the pre-migration names for this mark. */
-.ol-mark--mod, .ol-mark--adj, .ol-mark--adv,
-.mod, .adj, .adv { color: var(--accent-4); }
-
-/* 5 · conj — coordinating and subordinating connector */
-.ol-mark--conj, .conj { color: var(--accent-5); }
-
-/* 6 · prep */
-.ol-mark--prep, .prep { color: var(--accent-6); }
-
-/* ── Phrase marks ───────────────────────────────────────────────────────── */
-
-.ol-mark--nom, .ol-mark--akk, .ol-mark--dativ, .ol-mark--gen,
-.ol-mark--te, .ol-mark--ka, .ol-mark--mo, .ol-mark--lo,
-.ol-mark--subj,
-.nom, .akk, .dativ, .gen, .te, .ka, .mo, .lo, .subj {
-  color: var(--text);
-  border-radius: var(--radius-sm);
-  padding: 1px 5px;
-  box-decoration-break: clone;
-  -webkit-box-decoration-break: clone;
-}
-
-/* Case. 1 nom · 2 akk · 3 dativ · 4 gen.
-   subj is the pre-migration name for nom: a subject is always nominative. */
-.ol-mark--nom, .ol-mark--subj, .nom, .subj {
-  background: var(--accent-1-surface);
-  box-shadow: inset 0 -2px 0 var(--accent-1);
-}
-.ol-mark--akk, .akk {
-  background: var(--accent-2-surface);
-  box-shadow: inset 0 -2px 0 var(--accent-2);
-}
-.ol-mark--dativ, .dativ {
-  background: var(--accent-3-surface);
-  box-shadow: inset 0 -2px 0 var(--accent-3);
-}
-.ol-mark--gen, .gen {
-  background: var(--accent-4-surface);
-  box-shadow: inset 0 -2px 0 var(--accent-4);
-}
-
-/* TeKaMoLo. Contiguous and in Te-Ka-Mo-Lo order so the key reads left to
-   right; the mnemonic is the content. Accents 3 and 4 are shared with dativ
-   and gen, which meet them on one page, in separate sections, under
-   separate keys. */
-.ol-mark--te, .te {
-  background: var(--accent-3-surface);
-  box-shadow: inset 0 -2px 0 var(--accent-3);
-}
-.ol-mark--ka, .ka {
-  background: var(--accent-4-surface);
-  box-shadow: inset 0 -2px 0 var(--accent-4);
-}
-.ol-mark--mo, .mo {
-  background: var(--accent-5-surface);
-  box-shadow: inset 0 -2px 0 var(--accent-5);
-}
-.ol-mark--lo, .lo {
-  background: var(--accent-6-surface);
-  box-shadow: inset 0 -2px 0 var(--accent-6);
-}
-
 /* ── Marking key ──────────────────────────────────────────────────────────
    Sits next to a marked passage and names what each accent means there.
    Hand-authored for now; generation is a follow-up. */
@@ -400,15 +269,6 @@ summary:focus-visible,
 }
 
 .ol-key > * { white-space: nowrap; }
-
-/* ── Level ─────────────────────────────────────────────────────────────────
-   Artwork colours never follow the theme: a cover is a file and it does not
-   know what mode the reader is in. */
-
-.ol-level-a1 { background: var(--level-a1); color: var(--on-level-a1); }
-.ol-level-a2 { background: var(--level-a2); color: var(--on-level-a2); }
-.ol-level-b1 { background: var(--level-b1); color: var(--on-level-b1); }
-.ol-level-b2 { background: var(--level-b2); color: var(--on-level-b2); }
 
 /* ============================================================================
    Audio Examples component (.ae-*)

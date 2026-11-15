@@ -24,7 +24,10 @@ written in. Write every technical term in it as {term}`term`.}}
 :::{admonition} Prerequisites
 :class: note
 Before reading this article, make sure you are comfortable with:
-- [{{Grammar this task truly depends on}}]({{/path.md}})
+- []({{/path.md}})
+<!-- Leave the link text empty: the build writes the page's title. A link to a
+     page of another level is followed by that level as a badge:
+     - [](/b1/grammar/passiv.md) {level}`B1` -->
 :::
 <!-- CONDITIONAL: at most 3 links, omit unless genuinely required. -->
 
@@ -78,5 +81,8 @@ Before reading this article, make sure you are comfortable with:
 
 ## Related articles
 
-- [{{Related pages}}]({{/path.md}})
+- []({{/path.md}})
+<!-- Leave the link text empty: the build writes the page's title. A link to a
+     page of another level is followed by that level as a badge:
+     - [](/b1/grammar/passiv.md) {level}`B1` -->
 <!-- Links only. Leave the section out when it is empty. -->

@@ -21,12 +21,15 @@ Usage:
   ai_vocabulary). Example blocks, tables and code are not prose.
 - Article structure: no CEFR level or category prefix in the title, no
   hand-numbered headings, no external-reading or "See also" section, at most
-  `max_prerequisites` Prerequisites links, an open "Hear it in practice"
-  section, no Related articles link to another article of the same
+  `max_prerequisites` Prerequisites links, no Related articles link to another article of the same
   subcategory (its index links them all), and, in a flat category directory,
   none to the article's toctree neighbour (the build links neighbours).
   Vocabulary packs hold `min_pack_words` to `max_pack_words` words in their
   word list, and writing and vocabulary file names end in a running number.
+- The components (docs/reference/components.md): only the listed directives
+  and roles, each on the pages it belongs to, the limits on notices, badges,
+  tabs and card grids, and no collapsible. See
+  ol/authoring/components.py.
 - The page standard (docs/reference/page-standard.md): the opening, headings,
   tables, plain language, the sections of each category, the level and
   Introduction pages, and the glossary. See ol/authoring/standard.py and
@@ -46,6 +49,7 @@ from pathlib import Path
 import yaml
 
 from ol.authoring import standard
+from ol.authoring.components import Page, check_components
 from ol.authoring.glossary import check_terminology
 from ol.authoring.specs_data import SPECS
 from ol.blocks import Block, BlockFormatError, BlockReader, Refusal
@@ -372,25 +376,6 @@ def check_prerequisites(rep: Report, body: str):
             )
 
 
-def check_audio_section_open(rep: Report, body: str):
-    """A "Hear it in practice" section is never collapsed into a dropdown."""
-    lines = body.splitlines()
-    for i, line in enumerate(lines):
-        m = AUDIO_SECTION.match(line)
-        if not m:
-            continue
-        for later in lines[i + 1 :]:
-            heading = re.match(r"(#+) ", later)
-            if heading and len(heading.group(1)) <= len(m.group(1)):
-                break
-            if "{dropdown}" in later or re.match(r":class:.*\bdropdown\b", later):
-                rep.error(
-                    f"'Hear it in practice' on line {i + 1} is collapsed in a "
-                    "dropdown: the section stays open"
-                )
-                return
-
-
 def toctree_entries(body: str) -> list[str] | None:
     """The entries of the first toctree in ``body``, or None without one."""
     m = re.search(r"```\{toctree\}\s*\n(.*?)```", body, re.S)
@@ -643,6 +628,8 @@ def validate_article(path: Path, ctype: str, workspace: Path | None) -> Report:
             rep.error("html_meta.keywords missing/empty")
 
     check_common(rep, body)
+    offset = text.count("\n", 0, len(text) - len(body))
+    check_components(rep, body, Page("article", path, workspace, ctype), offset)
 
     # H1: exactly one, no blockquote subtitle beneath it, must be followed by prose
     h1s = headings(body, 1)
@@ -661,7 +648,6 @@ def validate_article(path: Path, ctype: str, workspace: Path | None) -> Report:
 
     check_article_headings(rep, body)
     check_prerequisites(rep, body)
-    check_audio_section_open(rep, body)
     check_related_neighbours(rep, body, path, workspace)
     check_related_subcategory(rep, body, path, workspace)
     check_direct_address(rep, body)
@@ -681,7 +667,7 @@ def validate_article(path: Path, ctype: str, workspace: Path | None) -> Report:
             "translation_headers": config.get("translation_headers") or [],
             "level": parts[0] if parts else None,
             "workspace": workspace,
-            "offset": text.count("\n", 0, len(text) - len(body)),
+            "offset": offset,
         },
     )
 
@@ -745,6 +731,7 @@ def validate_index(path: Path, ctype: str | None, workspace: Path | None) -> Rep
     fm, body = split_frontmatter(text)
     offset = text.count("\n", 0, len(text) - len(body))
     check_common(rep, body)
+    check_components(rep, body, Page("index", path, workspace), offset)
     standard.check_index_sidebar(rep, fm)
 
     # title rules: no CEFR level in category/subcategory index titles
@@ -809,6 +796,17 @@ def validate_introduction(path: Path, workspace: Path) -> Report:
     check_common(rep, body)
     standard.check_index_sidebar(rep, fm)
     offset = text.count("\n", 0, len(text) - len(body))
+    limits = SPECS["introduction_page"]
+    check_components(
+        rep,
+        body,
+        Page("introduction", path, workspace),
+        offset,
+        {
+            "Levels": limits["level_card_max_words"],
+            "Categories": limits["category_card_max_words"],
+        },
+    )
     standard.check_introduction(rep, body, workspace, offset)
     return rep
 
@@ -820,7 +818,18 @@ def validate_terminology(path: Path, workspace: Path) -> Report:
     _fm, body = split_frontmatter(text)
     check_common(rep, body)
     offset = text.count("\n", 0, len(text) - len(body))
+    check_components(rep, body, Page("terminology", path, workspace), offset)
     check_terminology(rep, body, workspace, offset)
+    return rep
+
+
+def validate_standard_page(path: Path, workspace: Path, kind: str) -> Report:
+    """Hold the How to use and Contributing pages to the components they may use."""
+    rep = Report(path)
+    text = path.read_text(encoding="utf-8")
+    _fm, body = split_frontmatter(text)
+    offset = text.count("\n", 0, len(text) - len(body))
+    check_components(rep, body, Page(kind, path, workspace), offset)
     return rep
 
 
@@ -835,6 +844,8 @@ def validate_file(
         return validate_introduction(path, ws)
     if parts == ("terminology",):
         return validate_terminology(path, ws)
+    if parts in (("how_to_use",), ("contributing",)):
+        return validate_standard_page(path, ws, parts[0])
     if path.name == "index.md":
         return validate_index(path, ctype, ws)
     if ctype is None:

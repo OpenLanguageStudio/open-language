@@ -25,6 +25,7 @@ LINK_TARGETS = [
 ]
 H1 = "# Definite Articles\n"
 TRACK = ":track: a1/grammar/bestimmter-artikel\n"
+CONF = 'custom_roles = ["akk", "article"]\n'
 
 
 def errors(tmp_path: Path, text: str, name: str = ARTICLE) -> list[str]:
@@ -37,6 +38,7 @@ def errors(tmp_path: Path, text: str, name: str = ARTICLE) -> list[str]:
     (tmp_path / "open-language.yml").write_text(
         "language: German\nlanguage_code: de\n", encoding="utf-8"
     )
+    (tmp_path / "conf.py").write_text(CONF, encoding="utf-8")
     return [
         msg for lvl, msg in validate_file(article, tmp_path).items if lvl == "ERROR"
     ]
@@ -212,7 +214,7 @@ BROKEN_ARTICLES = {
             "## Hear it in practice\n\n:::{dropdown} Listen\nx\n:::\n",
             1,
         ),
-        "collapsed",
+        "the dropdown directive is a collapsible",
     ),
     "markup in audio example": (_break_first_audio_line, "plain text"),
     "retired album option": (
@@ -257,8 +259,13 @@ def test_stock_phrase_in_an_example_is_not_prose(tmp_path, source):
 
 
 def related(source: str, link: str) -> str:
-    """The article with one more link under Related articles."""
-    return source.rstrip() + f"\n- [Another page]({link})\n"
+    """The article with one more link under Related articles.
+
+    A link to a page of another level than A1 is followed by its level.
+    """
+    level = link.lstrip("/").split("/")[0]
+    badge = f" {{level}}`{level.upper()}`" if level in ("a2", "b1", "b2") else ""
+    return source.rstrip() + f"\n- []({link}){badge}\n"
 
 
 def write_index(tmp_path: Path, directory: str, *entries: str) -> None:

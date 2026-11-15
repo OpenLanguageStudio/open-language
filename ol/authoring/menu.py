@@ -18,9 +18,9 @@ from __future__ import annotations
 import re
 from pathlib import Path
 
+from ol.levels import LEVELS
 from ol.workspace import ROOT_EXCLUDES
 
-LEVELS = ("a1", "a2", "b1", "b2")
 CATEGORY_NAMES = {
     "how-to": "How to",
     "grammar": "Grammar",
@@ -276,6 +276,11 @@ def _check_level(problems: dict[str, list[str]], workspace: Path, level: str):
     entries = _single_toctree(problems, rel, body)
     if entries is None:
         return
+    if ":hidden:" not in _options(body)[0]:
+        errors.append(
+            "menu: the toctree of a level page is hidden: add :hidden:, the "
+            "Categories cards show it"
+        )
     for target, title in _titles(body).items():
         name = target.removesuffix("/index")
         if name in MENU_CATEGORIES and title != CATEGORY_NAMES[name]:

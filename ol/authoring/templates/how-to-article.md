@@ -40,7 +40,10 @@ are 180 words or fewer.}}
 :::{admonition} Prerequisites
 :class: note
 Before reading this article, make sure you are comfortable with:
-- [{{LEVEL}} > Grammar > {{PREREQ}}]({{/level/grammar/subcat/file.md}})
+- []({{/level/grammar/subcat/file.md}})
+<!-- Leave the link text empty: the build writes the page's title. A link to a
+     page of another level is followed by that level as a badge:
+     - [](/b1/grammar/passiv.md) {level}`B1` -->
 :::
 <!-- CONDITIONAL: at most 3 links, and only when the goal truly cannot be
      used without that grammar (e.g. Polite Requests needs Konjunktiv II).
@@ -72,8 +75,6 @@ Before reading this article, make sure you are comfortable with:
 ## {{OTHER_SECTION_HEADING_ENGLISH: e.g. "Formal or casual"}}
 
 {{Short explanation}}
-
-**Examples:**
 
 :::{div} ol-examples
 {{Native sentence}}
@@ -122,7 +123,10 @@ Before reading this article, make sure you are comfortable with:
 
 ## Related articles
 
-- [{{LEVEL}} > Grammar > {{SUPPORTING_GRAMMAR}}]({{/path.md}})
+- []({{/path.md}})
+<!-- Leave the link text empty: the build writes the page's title. A link to a
+     page of another level is followed by that level as a badge:
+     - [](/b1/grammar/passiv.md) {level}`B1` -->
 <!-- Links only. NEVER link the previous/next article: Sphinx generates that
      navigation from the toctree and the theme renders it in the page footer.
      Related articles is for NON-adjacent links only: supporting grammar, another

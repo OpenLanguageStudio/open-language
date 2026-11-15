@@ -15,6 +15,7 @@ Each language lives in its own workspace repository, which installs this package
 - **`ol.blocks`** reads `audio-examples` blocks and says why a block is refused. The checks, the Sphinx extension and the Open Language app all read blocks through it. See [The audio-examples block](#the-audio-examples-block).
 - **`ol/authoring/review-rubric.yml`** is the checklist for the part a script cannot judge: level, correctness, teaching value and plain language. Each item is answered pass, concern or fail.
 - **[Authoring rules](docs/reference/authoring-rules.md)** holds the rules neither the checks nor the rubric cover. A language repository's `AGENTS.md` links it instead of restating it.
+- **[Components](docs/reference/components.md)** shows how to write each part of a page, from roles and notices to card grids, and lists the Sphinx and sphinx-design elements a page never uses.
 - **`ol templates`** lists the article templates, or prints one to start a new article from.
 - **`ol docs`** builds the coursebook, with `--live` for a local preview that rebuilds on save.
 - **`ol outline`** prints the heading structure of the CEFR-level docs.
@@ -115,6 +116,26 @@ The role writes this HTML, with both texts escaped. `lang` is the `language_code
 ```
 
 The shared stylesheet shows the phrase in normal weight with the translation beneath it, smaller and muted. A text with no separator shows unstacked and warns with the page and line.
+
+## The level role
+
+`ol.docs.roles` also adds the `level` role, a level badge drawn in that level's colour. It follows a link to a page of another level:
+
+```markdown
+- [](/b1/grammar/relativsaetze.md) {level}`B1`
+```
+
+The colours are in `ol/levels.py`, `LEVEL_COLOURS`, the one place they are defined: album covers read the same table, so a level looks the same on a page and on a cover. The role writes the colour on the badge itself:
+
+```html
+<span class="ol-level ol-level--b1" style="background-color: #79b3a8; color: #1e1a15">B1</span>
+```
+
+A level other than A1, A2, B1 or B2 is a build warning with the page and line, and shows as plain text.
+
+## Styling pages drawn outside the Sphinx site
+
+`ol/docs/_static/marks.css` styles the marking roles and the level badge and nothing else, so a site that draws a coursebook's built HTML in its own theme links it on its own. The shared `stylesheet.css` imports it. Its dark colours apply under an `html` element whose `data-theme` ends in `dark`.
 
 ## The glossary
 

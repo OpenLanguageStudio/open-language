@@ -10,16 +10,32 @@ from ol.authoring.menu import CATEGORY_NAMES
 
 CATEGORIES = ("how-to", "grammar", "writing", "vocabulary")
 SIDEBAR = "---\nhtml_theme.sidebar_secondary.remove:\n---\n"
+
+
+def grid(*cards: tuple[str, str, str]) -> str:
+    """A card grid of (title, link, sentence) cards."""
+    body = "".join(
+        f":::{{grid-item-card}} {title}\n:link: {link}\n:link-type: doc\n\n"
+        f"{sentence}\n:::\n\n"
+        for title, link, sentence in cards
+    )
+    return f"::::{{grid}} 1 1 2 2\n:gutter: 3\n\n{body}::::\n"
+
+
 INTRODUCTION = (
     f"{SIDEBAR}# Introduction\n\nA free, open coursebook.\n\n"
+    "```{button-ref} a1/index\n:ref-type: doc\n:color: primary\n\n"
+    "Start with A1\n```\n\n"
     "## How the course works\n\nAny page can be read first.\n\n"
-    "## Levels\n\n- [A1](a1/index.md): the first days.\n\n"
+    "## Levels\n\n" + grid(("A1", "a1/index", "The first days.")) + "\n"
     "## Categories\n\n"
-    "- [How to](a1/how-to/index.md): what to say.\n"
-    "- [Grammar](a1/grammar/index.md): how it is built.\n"
-    "- [Writing](a1/writing/index.md): model texts.\n"
-    "- [Vocabulary](a1/vocabulary/index.md): word packs.\n\n"
-    "## Where to start\n\n"
+    + grid(
+        ("How to", "a1/how-to/index", "What to say."),
+        ("Grammar", "a1/grammar/index", "How it is built."),
+        ("Writing", "a1/writing/index", "Model texts."),
+        ("Vocabulary", "a1/vocabulary/index", "Word packs."),
+    )
+    + "\n## Where to start\n\n"
     "- New to the language: [A1](a1/index.md).\n"
     "- An unfamiliar term: [the glossary](terminology.md).\n\n"
     "```{toctree}\n:hidden:\n\nhow_to_use\nterminology\ncontributing\na1/index\n```\n"
@@ -30,9 +46,16 @@ LEVEL = (
     "- Word order.\n\n"
     "## What learners can do\n\n- Greet someone.\n- Order food.\n"
     "- Ask the way.\n- Spell a name.\n\n"
-    "```{toctree}\n:maxdepth: 2\n\nhow-to/index\ngrammar/index\n"
+    "```{toctree}\n:maxdepth: 2\n:hidden:\n\nhow-to/index\ngrammar/index\n"
     "writing/index\nvocabulary/index\n```\n\n"
-    "## Additional reading\n\n- [A list](https://example.org/list): the words.\n"
+    "## Categories\n\n"
+    + grid(
+        ("How to", "how-to/index", "What to say."),
+        ("Grammar", "grammar/index", "How it is built."),
+        ("Writing", "writing/index", "Model texts."),
+        ("Vocabulary", "vocabulary/index", "Word packs."),
+    )
+    + "\n## Additional reading\n\n- [A list](https://example.org/list): the words.\n"
 )
 MENU_PAGES = {
     "index.md": INTRODUCTION,
