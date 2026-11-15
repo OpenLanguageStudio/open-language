@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [0.13.0] - 2026-11-15
+
 ### Added: the level role, drawn in the level's colour
 
 ``{level}`B1` `` draws a level as a small badge in that level's colour, the colour of the level's album covers: A1 #eeb849 and B1 #79b3a8 with dark text, A2 #a4563a and B2 #496695 with light text. The colours are defined once, in `ol/levels.py` (`LEVEL_COLOURS`), and the role writes them on the badge, so the badge has its colour wherever the HTML is drawn. A level other than A1 to B2 is a build warning. `ol.authoring.menu.LEVELS` now comes from `ol.levels`.
