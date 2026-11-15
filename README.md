@@ -15,6 +15,7 @@ Each language lives in its own workspace repository, which installs this package
 - **`ol.blocks`** reads `audio-examples` blocks and says why a block is refused. The checks, the Sphinx extension and the Open Language app all read blocks through it. See [The audio-examples block](#the-audio-examples-block).
 - **`ol/authoring/review-rubric.yml`** is the checklist for the part a script cannot judge: level, correctness, teaching value and plain language. Each item is answered pass, concern or fail.
 - **[Authoring rules](docs/reference/authoring-rules.md)** holds the rules neither the checks nor the rubric cover. A language repository's `AGENTS.md` links it instead of restating it.
+- **[Components](docs/reference/components.md)** shows how to write each part of a page, from roles and notices to card grids, and lists the Sphinx and sphinx-design elements a page never uses.
 - **`ol templates`** lists the article templates, or prints one to start a new article from.
 - **`ol docs`** builds the coursebook, with `--live` for a local preview that rebuilds on save.
 - **`ol outline`** prints the heading structure of the CEFR-level docs.
