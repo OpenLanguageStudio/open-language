@@ -118,6 +118,9 @@ class PageExamples:
 def setup(app):
     """Register the ``ol-examples`` directive.
 
+    Args:
+        app: The Sphinx application.
+
     Returns:
         The extension's metadata.
     """

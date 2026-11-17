@@ -92,7 +92,7 @@ An `ol-examples` box shows sentences beside the explanation they illustrate, eac
 :::
 ```
 
-The box is the `ol-examples` directive from `ol.docs.page_examples`, which `ol.docs.audio_examples` loads, and it is drawn as a `div` of class `ol-examples`. What is spoken is the sentence as the reader sees it, with its roles and emphasis gone. `ol validate` fails a box with no `:presenters:`, one that names more than one presenter or a value that is not a slug, and a box that gives one sentence twice. It cannot know who the presenters are, since that is not part of a language workspace. Whoever serves the pages decides what a name means.
+The box is the `ol-examples` directive, `ol.docs.page_examples.ExamplesBox`. The module's `setup` registers it and `ol.docs.audio_examples` loads the module, so a language repository's `extensions` stay as they are. It is drawn as a `div` of class `ol-examples`. What is spoken is the sentence as the reader sees it, with its roles and emphasis gone. `ol validate` fails a box with no `:presenters:`, one that names more than one presenter or a value that is not a slug, and a box that gives one sentence twice. It cannot know who the presenters are, since that is not part of a language workspace. Whoever serves the pages decides what a name means.
 
 `ol.docs.page_examples.PageExamples.read(doctree)` reads a built page's boxes into `ol.blocks.Example` values, in page order, each with its box's presenter as `presenter`, skipping a box that holds anything but sentences and translations. `ol.blocks.BlockReader.spoken(text)` gives the same sentence from a page's Markdown.
 
