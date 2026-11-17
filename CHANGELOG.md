@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [0.14.0] - 2026-11-17
+
 ### Changed: every block names its presenters, and has a mode (breaking)
 
 Content that passed 0.13.0 fails this version until it is moved. Before a language repository pins it:
