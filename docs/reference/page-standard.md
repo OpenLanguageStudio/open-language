@@ -131,7 +131,7 @@ Where a page genuinely differs, add up to the limit shown for "other sections" b
 | 5 | Common mistakes | An admonition in the last body section, at least one. |
 | 6 | Closing | Hear it in practice, Summary, Related articles. |
 
-Form, use and contrast sections together do not exceed 5 H2s. Inline examples sit in `:::{div} ol-examples`, at most 3 pairs per section.
+Form, use and contrast sections together do not exceed 5 H2s. Inline examples sit in `:::{ol-examples}`, which names its one presenter with `:presenters:`, at most 3 pairs per section.
 
 ### How to
 

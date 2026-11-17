@@ -85,7 +85,8 @@ extensions = [
 An `ol-examples` block shows sentences beside the explanation they illustrate, each with its translation under it. It is a `div` holding a definition list, and a sentence may be marked up with roles and bold:
 
 ```markdown
-:::{div} ol-examples
+:::{ol-examples}
+:presenters: emilia
 {article}`Der` Hafen ist groß.
 : The harbour is big.
 :::

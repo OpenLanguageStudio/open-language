@@ -192,6 +192,7 @@ def setup(app):
         The extension's metadata. ``env_version`` makes Sphinx discard a build
         environment saved by a version that did not record blocks.
     """
+    app.setup_extension("ol.docs.page_examples")
     app.add_node(DuplicateTrack)
     app.add_directive("audio-examples", AudioExamplesDirective)
     app.add_js_file("audio-examples.js")

@@ -464,12 +464,14 @@ def check_related_subcategory(
             )
 
 
-_EXAMPLES_DIV = re.compile(r"^:::\{div\}\s+ol-examples\s*$")
+_EXAMPLES_DIV = re.compile(r"^:::\{ol-examples\}\s*$")
+_OLD_EXAMPLES_DIV = re.compile(r"^:::\{div\}\s+ol-examples\s*$", re.M)
+_PRESENTERS = re.compile(r"^:presenters:(.*)$")
 _ROLE = re.compile(r"\{([a-z-]+)\}`[^`]+`")
 
 
 def find_example_blocks(body: str):
-    """Yield (line number, [lines]) per ``:::{div} ol-examples`` block."""
+    """Yield (line number, [lines]) per ``:::{ol-examples}`` box."""
     lines = body.splitlines()
     i = 0
     while i < len(lines):
@@ -493,8 +495,25 @@ def check_example_blocks(rep: Report, body: str):
     marked role in it at once, so the limits count distinct roles, not marks.
     """
     limits = SPECS["common"]
+    for match in _OLD_EXAMPLES_DIV.finditer(body):
+        line_no = body.count("\n", 0, match.start()) + 1
+        rep.error(
+            f"examples block (line {line_no}): write it as ':::{{ol-examples}}' "
+            "with ':presenters: <slug>' on the next line"
+        )
     for line_no, block in find_example_blocks(body):
         where = f"examples block (line {line_no})"
+        named = [m.group(1).strip() for ln in block if (m := _PRESENTERS.match(ln))]
+        if not named:
+            rep.error(
+                f"{where}: no :presenters:. Name the one presenter who says it, "
+                "as ':presenters: <slug>' on the line under ':::{ol-examples}'"
+            )
+        elif len(named) > 1 or not BlockReader.SLUG.fullmatch(named[0]):
+            rep.error(
+                f"{where}: :presenters: names one presenter, by slug: "
+                f"{', '.join(named)!r}"
+            )
         pairs = sum(1 for ln in block if ln.startswith(": "))
         if pairs > limits["max_examples_per_block"]:
             rep.error(
@@ -610,7 +629,8 @@ def validate_article(path: Path, ctype: str, workspace: Path | None) -> Report:
         if "presenter" in fm:
             rep.error(
                 "presenter: is withdrawn: a page never names a presenter. Name "
-                "them on each block that writes a track, with :presenters:"
+                "them on each block that writes a track and on each examples box, "
+                "with :presenters:"
             )
         hm = (fm.get("myst") or {}).get("html_meta") or fm.get("html_meta") or {}
         desc = hm.get("description", "")
@@ -669,10 +689,10 @@ def validate_article(path: Path, ctype: str, workspace: Path | None) -> Report:
     )
 
     # standardized example format
-    n_divs = len(re.findall(r":::\{div\}\s+ol-examples", body))
+    n_divs = len(re.findall(r"^:::\{ol-examples\}", body, re.M))
     if spec.get("require_examples_div") and n_divs == 0:
         rep.error(
-            "no ':::{div} ol-examples' block: example pairs must use the "
+            "no ':::{ol-examples}' box: example pairs must use the "
             "standardized definition-list format"
         )
     # legacy bullet example pairs (native line + italic translation line)

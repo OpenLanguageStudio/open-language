@@ -36,7 +36,7 @@ TITLED_NOTICES = {
 }
 """The only titles an ``admonition`` takes, each with its class."""
 DIRECTIVES = {
-    "div",
+    "ol-examples",
     "audio-examples",
     *FREE_NOTICES,
     "admonition",
@@ -327,15 +327,15 @@ def check_directives(rep, blocks: list[Block], page: Page):
         if block.kind != "directive" or block.name == "dropdown":
             continue
         where = f"line {block.line}"
+        if block.name == "div" and block.arg == "ol-examples":
+            # The old way to write an examples box: the examples check says how
+            # to write it now.
+            continue
         if block.name not in DIRECTIVES:
             why = _NOT_A_NOTICE.get(
                 block.name, "see docs/reference/components.md for the directives"
             )
             rep.error(f"{where}: the {block.name} directive is not a component: {why}")
-        elif block.name == "div" and block.arg != "ol-examples":
-            rep.error(
-                f"{where}: a div is an example block, written ':::{{div}} ol-examples'"
-            )
         elif block.name == "admonition":
             wanted = TITLED_NOTICES.get(block.arg)
             if wanted is None:
