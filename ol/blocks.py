@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import re
 import unicodedata
+from collections import Counter
 from collections.abc import Iterable, Mapping, Sequence
 from dataclasses import dataclass, replace
 from importlib.resources import files
@@ -20,10 +21,35 @@ class BlockFormatError(ValueError):
 
 
 class Example(NamedTuple):
-    """One sentence in the language being taught and its English translation."""
+    """One sentence in the language being taught, its translation and who says it.
+
+    Args:
+        sentence: The sentence, as the page gives it.
+        translation: The English translation.
+        presenter: The slug of the presenter who says it, worked out from the
+            block's mode and ``:presenters:``. Empty when nothing names one,
+            such as in a block refused as ``missing_presenters``.
+        group: The pair, exchange or message thread the example belongs to,
+            counted from 1. In ``examples`` and ``passage`` each example is its
+            own group. ``0`` for an example that is not read from a block.
+    """
 
     sentence: str
     translation: str
+    presenter: str = ""
+    group: int = 0
+
+
+#: How many presenters each mode takes: the fewest, and the most or ``None``.
+MODES: dict[str, tuple[int, int | None]] = {
+    "examples": (1, 1),
+    "pairs": (1, 2),
+    "dialogue": (2, None),
+    "passage": (1, 1),
+    "correspondence": (2, None),
+}
+#: The modes in which the body names who says each example.
+NAMED_MODES: frozenset[str] = frozenset({"dialogue", "correspondence"})
 
 
 @dataclass(frozen=True)
@@ -38,8 +64,12 @@ class Block:
         title: The ``:title:``, or ``None`` when the block gives none.
         title_en: The ``:title-en:``, or ``None`` when the block gives none.
         tags: The ``:tags:``, as written.
-        examples: The examples, in the order the page gives them.
-        multiline: Whether the block carries ``:multiline:``.
+        examples: The examples, in the order the page gives them, each with
+            its presenter and group.
+        mode: The ``:mode:``, one of ``MODES`` unless the block is refused as
+            ``unknown_mode``. ``examples`` when the block gives none.
+        presenters: The ``:presenters:`` slugs, in the order the block lists
+            them. The first speaks the track's spoken title.
         duplicate: Whether the block carries ``:duplicate:``.
         refusals: The codes of the refusals the block earns on its own.
     """
@@ -51,7 +81,8 @@ class Block:
     title_en: str | None
     tags: tuple[str, ...]
     examples: tuple[Example, ...]
-    multiline: bool
+    mode: str
+    presenters: tuple[str, ...]
     duplicate: bool
     refusals: tuple[str, ...]
 
@@ -94,11 +125,15 @@ class Refusal:
     DETAILS: ClassVar[dict[str, str]] = {
         "unknown_option": (
             "The block has an option it does not take. A block takes :track:, "
-            ":title:, :title-en:, :tags:, :multiline: and :duplicate:."
+            ":title:, :title-en:, :tags:, :mode:, :presenters: and :duplicate:."
         ),
         "bad_address": (
             "The block has no :track:, or its value is not a level, a category "
             "and a name separated by /, in lower case."
+        ),
+        "unknown_mode": (
+            "The block's :mode: is not examples, pairs, dialogue, passage or "
+            "correspondence."
         ),
         "missing_examples": (
             "The block gives no examples and is not a :duplicate:. Add the "
@@ -106,7 +141,27 @@ class Refusal:
         ),
         "duplicate_writes": (
             "A :duplicate: block writes nothing, so it cannot give examples, a "
-            "title or an English title."
+            "title, an English title, a mode or presenters."
+        ),
+        "missing_presenters": (
+            "The block writes its track but has no :presenters:. Name the "
+            "presenter who says it, or the presenters, separated by commas."
+        ),
+        "bad_presenters": (
+            "A :presenters: value is not a slug, a presenter is named twice, or "
+            "the number of presenters is wrong for the mode: one for examples "
+            "and passage, one or two for pairs, two or more for dialogue and "
+            "correspondence."
+        ),
+        "bad_pair": (
+            "A pairs block is groups of exactly two examples, separated by a "
+            "blank line. One of its groups is not."
+        ),
+        "presenter_not_listed": (
+            "An example names a presenter the block's :presenters: does not list."
+        ),
+        "presenter_silent": (
+            "A presenter the block's :presenters: lists says nothing in it."
         ),
         "sentence_twice": (
             "The block gives the same sentence more than once, once spacing and "
@@ -120,8 +175,13 @@ class Refusal:
             "This :duplicate: block names a track no block writes. Write the "
             "track on one page."
         ),
+        "unknown_presenter": (
+            "The block names a presenter this language does not have."
+        ),
     }
     CODES: ClassVar[frozenset[str]] = frozenset(DETAILS)
+    #: The codes only the app reports, because only it knows the presenters.
+    APP_ONLY: ClassVar[frozenset[str]] = frozenset({"unknown_presenter"})
     CROSS_PAGE: ClassVar[frozenset[str]] = frozenset(
         {"written_twice", "orphan_duplicate"}
     )
@@ -140,9 +200,14 @@ class BlockReader:
 
     DIRECTIVE: ClassVar[str] = "audio-examples"
     OPTIONS: ClassVar[frozenset[str]] = frozenset(
-        {"track", "title", "title-en", "tags", "multiline", "duplicate"}
+        {"track", "title", "title-en", "tags", "mode", "presenters", "duplicate"}
     )
     SLUG: ClassVar[re.Pattern] = re.compile(r"[-a-z0-9_]+")
+    #: A body line that names a presenter: a slug and a colon, then the sentence
+    #: in ``dialogue`` or nothing in ``correspondence``. A translation line
+    #: starts with a colon, and a sentence in the language taught does not
+    #: start with a lower-case word run into a colon.
+    NAMED_LINE: ClassVar[re.Pattern] = re.compile(r"([-a-z0-9_]+):(?:\s+(.*))?")
     # Example text reaches speech verbatim, so role markup and code are refused.
     BANNED: ClassVar[tuple[str, ...]] = ("`", "{", "}")
     ROLE: ClassVar[re.Pattern] = re.compile(r"\{[a-z-]+\}`([^`]*)`")
@@ -170,8 +235,9 @@ class BlockReader:
         Raises:
             BlockFormatError: When the body cannot be read as examples.
         """
-        multiline = "multiline" in options
         tags = (tag.strip() for tag in (options.get("tags") or "").split(","))
+        listed = (slug.strip() for slug in (options.get("presenters") or "").split(","))
+        mode = (options.get("mode") or "").strip() or "examples"
         block = Block(
             page=page,
             line=line,
@@ -179,11 +245,15 @@ class BlockReader:
             title=(options.get("title") or "").strip() or None,
             title_en=(options.get("title-en") or "").strip() or None,
             tags=tuple(tag for tag in tags if tag),
-            examples=tuple(self.examples(body, multiline, f"{page}:{line}")),
-            multiline=multiline,
+            examples=(),
+            mode=mode,
+            presenters=tuple(slug for slug in listed if slug),
             duplicate="duplicate" in options,
             refusals=(),
         )
+        if mode in MODES:
+            examples = self.examples(body, mode, f"{page}:{line}")
+            block = replace(block, examples=tuple(self.assign(block, examples)))
         return replace(block, refusals=tuple(self.refusals(block, options)))
 
     def address(self, value: str) -> str | None:
@@ -208,7 +278,8 @@ class BlockReader:
         """List the refusals a block earns on its own, in the order they are checked.
 
         A block with a bad address earns nothing more, because it names no
-        track to check against.
+        track to check against, and nor does a block with an unknown mode,
+        because its body is not read.
 
         Args:
             block: The block as read, with no refusals yet.
@@ -222,16 +293,104 @@ class BlockReader:
             found.append("unknown_option")
         if block.address is None:
             found.append("bad_address")
+        elif block.mode not in MODES:
+            found.append("unknown_mode")
         elif block.duplicate:
-            if block.examples or block.title or block.title_en:
+            gives = block.examples or block.title or block.title_en
+            if gives or "mode" in options or "presenters" in options:
                 found.append("duplicate_writes")
         elif not block.examples:
             found.append("missing_examples")
         else:
-            keys = [self.sentence_key(example.sentence) for example in block.examples]
-            if len(set(keys)) < len(keys):
+            found += self.presenter_refusals(block)
+            if block.mode == "pairs" and self.bad_pairs(block):
+                found.append("bad_pair")
+            if block.mode == "examples" and self.sentence_given_twice(block):
                 found.append("sentence_twice")
         return found
+
+    def presenter_refusals(self, block: Block) -> list[str]:
+        """List the refusals a block that writes earns for its presenters.
+
+        Args:
+            block: The block as read.
+
+        Returns:
+            The refusal codes, in the order they are checked.
+        """
+        listed = block.presenters
+        if not listed:
+            return ["missing_presenters"]
+        found = []
+        fewest, most = MODES[block.mode]
+        if (
+            not all(self.SLUG.fullmatch(slug) for slug in listed)
+            or len(set(listed)) < len(listed)
+            or len(listed) < fewest
+            or (most is not None and len(listed) > most)
+        ):
+            found.append("bad_presenters")
+        if block.mode in NAMED_MODES:
+            named = {example.presenter for example in block.examples}
+            if named - set(listed):
+                found.append("presenter_not_listed")
+            if set(listed) - named:
+                found.append("presenter_silent")
+        return found
+
+    @staticmethod
+    def bad_pairs(block: Block) -> bool:
+        """Whether a ``pairs`` block has a group that is not two examples.
+
+        Args:
+            block: The block as read.
+
+        Returns:
+            ``True`` when any group holds one example, or more than two.
+        """
+        sizes = Counter(example.group for example in block.examples)
+        return any(size != 2 for size in sizes.values())
+
+    def sentence_given_twice(self, block: Block) -> bool:
+        """Whether a block gives one sentence twice, once it is tidied.
+
+        Args:
+            block: The block as read.
+
+        Returns:
+            ``True`` when two of its sentences have one ``sentence_key``.
+        """
+        keys = [self.sentence_key(example.sentence) for example in block.examples]
+        return len(set(keys)) < len(keys)
+
+    @staticmethod
+    def assign(block: Block, examples: Sequence[Example]) -> list[Example]:
+        """Give each example the presenter who says it.
+
+        In ``examples`` and ``passage`` the one presenter says every example.
+        In ``pairs`` the first presenter says the first example of every pair
+        and the second presenter the second, or the one presenter both. In
+        ``dialogue`` and ``correspondence`` the body names the presenter, so
+        the example keeps it.
+
+        Args:
+            block: The block as read, with its mode and presenters.
+            examples: The examples as the body gives them, each with its group.
+
+        Returns:
+            The examples, each with its presenter.
+        """
+        if block.mode in NAMED_MODES:
+            return list(examples)
+        listed = block.presenters or ("",)
+        assigned = []
+        place: Counter[int] = Counter()
+        for example in examples:
+            index = place[example.group] if block.mode == "pairs" else 0
+            place[example.group] += 1
+            presenter = listed[min(index, len(listed) - 1)]
+            assigned.append(example._replace(presenter=presenter))
+        return assigned
 
     @staticmethod
     def sentence_key(text: str) -> str:
@@ -267,29 +426,31 @@ class BlockReader:
         """
         return cls.sentence_key(cls.ROLE.sub(r"\1", text))
 
-    def examples(
-        self, body: Sequence[str], multiline: bool, where: str
-    ) -> list[Example]:
-        """Read a block's body as examples.
+    def examples(self, body: Sequence[str], mode: str, where: str) -> list[Example]:
+        """Read a block's body as examples, the way its mode writes them.
 
-        A sentence is followed by its translation on the next line after ``: ``,
-        and examples may be separated by blank lines. In a ``:multiline:`` block
-        each example is a group of sentence lines then translation lines,
-        separated from the next by a blank line, and keeps its line breaks. A
-        blank line inside its sentence lines or its translation lines is a
-        paragraph break.
+        In ``examples``, ``pairs`` and ``dialogue`` a sentence is followed by
+        its translation on the next line after ``: ``. A blank line ends a pair
+        or an exchange, and in ``examples`` it only separates. In ``dialogue``
+        each sentence opens with its presenter's slug and a colon. In
+        ``passage`` each example is sentence lines then translation lines,
+        separated from the next by a blank line, and keeps its line breaks. In
+        ``correspondence`` each message opens with a line holding only its
+        presenter's slug and a colon.
 
         Args:
             body: The lines after the options.
-            multiline: Whether the block carries ``:multiline:``.
+            mode: The block's mode, one of ``MODES``.
             where: The page and line, for the error message.
 
         Returns:
-            The examples, in order.
+            The examples, in order, each with its group, and with its presenter
+            where the body names one.
 
         Raises:
             BlockFormatError: When a sentence has no translation, a translation
-                has no sentence, or a line holds markup.
+                has no sentence, a line holds markup, or a line that should
+                name a presenter does not.
         """
         lines = [raw.strip() for raw in body]
         for offset, line in enumerate(lines, start=1):
@@ -299,26 +460,41 @@ class BlockReader:
                     f"with no markup: {line!r}"
                 )
                 raise BlockFormatError(msg)
-        if multiline:
-            return self.multiline_examples(lines, where)
-        return self.single_line_examples(lines, where)
+        if mode == "passage":
+            return self.passage_examples(lines, where)
+        if mode == "correspondence":
+            return self.correspondence_examples(lines, where)
+        examples = self.single_line_examples(lines, where, mode == "dialogue")
+        if mode == "examples":
+            return [
+                example._replace(group=number)
+                for number, example in enumerate(examples, start=1)
+            ]
+        return examples
 
-    def single_line_examples(self, lines: list[str], where: str) -> list[Example]:
+    def single_line_examples(
+        self, lines: list[str], where: str, named: bool = False
+    ) -> list[Example]:
         """Read examples of one sentence line and one translation line each.
 
         Args:
             lines: The body's lines, stripped.
             where: The page and line, for the error message.
+            named: Whether each sentence opens with its presenter's slug and a
+                colon, as in ``dialogue``.
 
         Returns:
-            The examples, in order.
+            The examples, in order, each numbered with the group of examples
+            between blank lines it is in.
 
         Raises:
-            BlockFormatError: When a sentence has no translation or a
-                translation has no sentence.
+            BlockFormatError: When a sentence has no translation, a translation
+                has no sentence, or a sentence names no presenter where it must.
         """
         examples = []
         sentence = None
+        presenter = ""
+        group = 1
         for offset, line in enumerate(lines, start=1):
             at = f"{where} (body line {offset})"
             if line.startswith(":"):
@@ -326,19 +502,31 @@ class BlockReader:
                 if sentence is None or not translation:
                     msg = f"{at}: a translation needs a sentence on the line above"
                     raise BlockFormatError(msg)
-                examples.append(Example(sentence, translation))
+                examples.append(Example(sentence, translation, presenter, group))
                 sentence = None
             elif sentence is not None:
                 msg = f"{at}: the sentence {sentence!r} has no ': translation' line"
                 raise BlockFormatError(msg)
-            elif line:
+            elif not line:
+                if examples and examples[-1].group == group:
+                    group += 1
+            elif named:
+                match = self.NAMED_LINE.fullmatch(line)
+                if match is None or not match.group(2):
+                    msg = (
+                        f"{at}: a dialogue sentence opens with its presenter's "
+                        f"slug and a colon, such as 'lina: Hallo!': {line!r}"
+                    )
+                    raise BlockFormatError(msg)
+                presenter, sentence = match.group(1), match.group(2).strip()
+            else:
                 sentence = line
         if sentence is not None:
             msg = f"{where}: the sentence {sentence!r} has no ': translation' line"
             raise BlockFormatError(msg)
         return examples
 
-    def multiline_examples(self, lines: list[str], where: str) -> list[Example]:
+    def passage_examples(self, lines: list[str], where: str) -> list[Example]:
         """Read examples of several sentence lines then several translation lines.
 
         A blank line ends an example only where the next line is a sentence and
@@ -351,7 +539,8 @@ class BlockReader:
             where: The page and line, for the error message.
 
         Returns:
-            The examples, in order, each keeping its line breaks and paragraphs.
+            The examples, in order, each keeping its line breaks and paragraphs
+            and each its own group.
 
         Raises:
             BlockFormatError: When a group is not sentence lines followed by
@@ -361,7 +550,7 @@ class BlockReader:
             "{where} (body line {offset}): an example is sentence lines, then "
             "': translation' lines, then a blank line"
         )
-        examples = []
+        texts = []
         sentences: list[str] = []
         translations: list[str] = []
         blank = False
@@ -375,7 +564,7 @@ class BlockReader:
             if not text or (is_translation and not sentences) or (ended and not blank):
                 raise BlockFormatError(refused.format(where=where, offset=offset))
             if ended:
-                examples.append(Example("\n".join(sentences), "\n".join(translations)))
+                texts.append(("\n".join(sentences), "\n".join(translations)))
                 sentences, translations = [], []
                 blank = False
             part = translations if is_translation else sentences
@@ -384,7 +573,58 @@ class BlockReader:
         if sentences and not translations:
             raise BlockFormatError(refused.format(where=where, offset=len(lines)))
         if sentences:
-            examples.append(Example("\n".join(sentences), "\n".join(translations)))
+            texts.append(("\n".join(sentences), "\n".join(translations)))
+        return [
+            Example(sentence, translation, group=number)
+            for number, (sentence, translation) in enumerate(texts, start=1)
+        ]
+
+    def correspondence_examples(self, lines: list[str], where: str) -> list[Example]:
+        """Read messages, each opened by a line holding only its writer's slug.
+
+        A line such as ``lina:`` starts a message and the next such line starts
+        the next. Between them come the message's sentence lines and then its
+        translation lines, read as one ``passage`` example. The messages are one
+        thread, so all are in group 1.
+
+        Args:
+            lines: The body's lines, stripped.
+            where: The page and line, for the error message.
+
+        Returns:
+            The messages, in order, each with its writer as its presenter.
+
+        Raises:
+            BlockFormatError: When the body does not open with a slug line, or a
+                message is not sentence lines followed by translation lines.
+        """
+        messages: list[tuple[str, int, list[str]]] = []
+        for offset, line in enumerate(lines, start=1):
+            match = self.NAMED_LINE.fullmatch(line)
+            if match is not None and match.group(2) is None:
+                messages.append((match.group(1), offset, []))
+            elif messages:
+                messages[-1][2].append(line)
+            elif line:
+                msg = (
+                    f"{where} (body line {offset}): a message opens with a line "
+                    f"holding only its writer's slug and a colon, such as "
+                    f"'lina:': {line!r}"
+                )
+                raise BlockFormatError(msg)
+        examples = []
+        for presenter, offset, text in messages:
+            read = self.passage_examples(
+                text, f"{where} (message at body line {offset})"
+            )
+            if len(read) != 1:
+                msg = (
+                    f"{where} (body line {offset}): a message is sentence lines, "
+                    "then ': translation' lines, and the next message opens with "
+                    "its writer's slug"
+                )
+                raise BlockFormatError(msg)
+            examples.append(read[0]._replace(presenter=presenter, group=1))
         return examples
 
     def find(self, page: str, text: str) -> list[Block]:

@@ -36,7 +36,7 @@ TITLED_NOTICES = {
 }
 """The only titles an ``admonition`` takes, each with its class."""
 DIRECTIVES = {
-    "div",
+    "ol-examples",
     "audio-examples",
     *FREE_NOTICES,
     "admonition",
@@ -62,6 +62,7 @@ _NOT_A_NOTICE = {
     "danger": "nothing in a language course cannot be undone: write a warning",
     "error": "nothing in a language course cannot be undone: write a warning",
     "seealso": "links go under Prerequisites or Related articles",
+    "div": "an examples box is written ':::{ol-examples}' with ':presenters: <slug>'",
 }
 _ROLE = re.compile(r"\{([a-z][a-z0-9-]*)\}`([^`]*)`")
 _FENCE = re.compile(r"^(\s*)(`{3,}|~{3,})(.*)$")
@@ -332,10 +333,6 @@ def check_directives(rep, blocks: list[Block], page: Page):
                 block.name, "see docs/reference/components.md for the directives"
             )
             rep.error(f"{where}: the {block.name} directive is not a component: {why}")
-        elif block.name == "div" and block.arg != "ol-examples":
-            rep.error(
-                f"{where}: a div is an example block, written ':::{{div}} ol-examples'"
-            )
         elif block.name == "admonition":
             wanted = TITLED_NOTICES.get(block.arg)
             if wanted is None:

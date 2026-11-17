@@ -31,7 +31,7 @@
 #   sections: the article's H2s in order. An item names a `heading`, or a `match`
 #     regex with a `label`, or stands for the sections with names of their own
 #     (`other: true`). `count: [low, high]` is how many it may have; default one.
-#   require_examples_div: at least one ":::{div} ol-examples" block
+#   require_examples_div: at least one ":::{ol-examples}" box
 #   require_summary_admonitions / require_common_mistakes
 #   min_audio_examples: minimum count of :::{audio-examples} blocks
 #   ordered: toctree order in the category index is the learning sequence

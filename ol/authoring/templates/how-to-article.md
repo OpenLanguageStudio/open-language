@@ -76,7 +76,8 @@ Before reading this article, make sure you are comfortable with:
 
 {{Short explanation}}
 
-:::{div} ol-examples
+:::{ol-examples}
+:presenters: {{presenter slug}}
 {{Native sentence}}
 : {{English translation}}
 

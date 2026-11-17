@@ -33,6 +33,7 @@ A day at the sea needs few words, and most of them are nouns learned with their 
 
 :::{audio-examples}
 :track: a1/vocabulary/at-the-beach-1
+:presenters: emilia
 :title: Am Strand 1
 :title-en: At the beach 1
 

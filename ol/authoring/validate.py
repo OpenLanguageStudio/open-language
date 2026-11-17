@@ -198,7 +198,7 @@ def check_audio_block(rep: Report, block: Block, ctype: str | None):
             "titles use no dashes"
         )
 
-    if block.multiline:
+    if block.mode in ("passage", "correspondence"):
         if ctype == "writing":
             words = sum(len(example.sentence.split()) for example in block.examples)
             if words < limits["min_model_text_words"]:
@@ -464,12 +464,12 @@ def check_related_subcategory(
             )
 
 
-_EXAMPLES_DIV = re.compile(r"^:::\{div\}\s+ol-examples\s*$")
+_EXAMPLES_DIV = re.compile(r"^:::\{ol-examples\}\s*$")
 _ROLE = re.compile(r"\{([a-z-]+)\}`[^`]+`")
 
 
 def find_example_blocks(body: str):
-    """Yield (line number, [lines]) per ``:::{div} ol-examples`` block."""
+    """Yield (line number, [lines]) per ``:::{ol-examples}`` box."""
     lines = body.splitlines()
     i = 0
     while i < len(lines):
@@ -495,6 +495,7 @@ def check_example_blocks(rep: Report, body: str):
     limits = SPECS["common"]
     for line_no, block in find_example_blocks(body):
         where = f"examples block (line {line_no})"
+        check_box_presenter(rep, where, block)
         pairs = sum(1 for ln in block if ln.startswith(": "))
         if pairs > limits["max_examples_per_block"]:
             rep.error(
@@ -523,6 +524,27 @@ def check_example_blocks(rep: Report, body: str):
                 f"{where}: {len(roles)} different marks in one block (maximum "
                 f"{limits['max_roles_per_block']})"
             )
+
+
+def check_box_presenter(rep: Report, where: str, block: list[str]):
+    """An examples box names the one presenter who says it, by slug.
+
+    Args:
+        rep: The page's report.
+        where: The box, for the message.
+        block: The lines inside the box.
+    """
+    options, _ = BlockReader().options(block)
+    if "presenters" not in options:
+        rep.error(
+            f"{where}: no :presenters:. Name the one presenter who says it, as "
+            "':presenters: <slug>' on the line under ':::{ol-examples}'"
+        )
+    elif not BlockReader.SLUG.fullmatch(options["presenters"]):
+        rep.error(
+            f"{where}: :presenters: names one presenter, by slug, not "
+            f"{options['presenters']!r}"
+        )
 
 
 def prose_lines(body: str):
@@ -607,14 +629,6 @@ def validate_article(path: Path, ctype: str, workspace: Path | None) -> Report:
     else:
         if "html_meta" in fm:
             rep.error("top-level 'html_meta' is deprecated: nest it under 'myst:'")
-        if "presenter" in fm and not (
-            isinstance(fm["presenter"], str)
-            and BlockReader.SLUG.fullmatch(fm["presenter"])
-        ):
-            rep.error(
-                f"presenter: {fm['presenter']!r} is not a slug, the lower-case "
-                "name a presenter goes by, such as emilia-berger"
-            )
         hm = (fm.get("myst") or {}).get("html_meta") or fm.get("html_meta") or {}
         desc = hm.get("description", "")
         if not desc:
@@ -672,10 +686,10 @@ def validate_article(path: Path, ctype: str, workspace: Path | None) -> Report:
     )
 
     # standardized example format
-    n_divs = len(re.findall(r":::\{div\}\s+ol-examples", body))
+    n_divs = len(re.findall(r"^:::\{ol-examples\}", body, re.M))
     if spec.get("require_examples_div") and n_divs == 0:
         rep.error(
-            "no ':::{div} ol-examples' block: example pairs must use the "
+            "no ':::{ol-examples}' box: example pairs must use the "
             "standardized definition-list format"
         )
     # legacy bullet example pairs (native line + italic translation line)

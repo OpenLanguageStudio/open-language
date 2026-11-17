@@ -1,0 +1,21 @@
+expect: bad_pair
+description: A pairs block whose second group has three examples.
+pages:
+  a1/grammar/doch: |
+    :::{audio-examples}
+    :track: a1/grammar/doch
+    :mode: pairs
+    :presenters: deniz, lina
+
+    Hast du keine Zeit?
+    : Don't you have time?
+    Doch, ich habe Zeit.
+    : Yes, I do have time.
+
+    Kommst du nicht mit?
+    : Aren't you coming?
+    Doch, ich komme mit.
+    : Yes, I'm coming.
+    Doch!
+    : Yes!
+    :::

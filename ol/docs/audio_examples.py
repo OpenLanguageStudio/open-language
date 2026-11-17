@@ -30,10 +30,10 @@ def build_audio_examples_html(examples: list[Example]) -> str:
         The HTML, with every sentence and translation escaped.
     """
     items = ""
-    for sentence, translation in examples:
-        # Multiline examples (writing model texts) keep their line breaks.
-        sentence_html = escape(sentence).replace("\n", "<br>")
-        translation_html = escape(translation).replace("\n", "<br>")
+    for example in examples:
+        # Passage and correspondence examples keep their line breaks.
+        sentence_html = escape(example.sentence).replace("\n", "<br>")
+        translation_html = escape(example.translation).replace("\n", "<br>")
         items += (
             f'<li class="ae-item"><p class="ae-de">{sentence_html}</p>'
             f'<p class="ae-en ae-hidden">{translation_html}</p></li>'
@@ -66,7 +66,8 @@ class AudioExamplesDirective(Directive):
         "title": directives.unchanged,
         "title-en": directives.unchanged,
         "tags": directives.unchanged,
-        "multiline": directives.flag,
+        "mode": directives.unchanged,
+        "presenters": directives.unchanged,
         "duplicate": directives.flag,
     }
     reader: ClassVar[BlockReader] = BlockReader()
@@ -185,12 +186,15 @@ def show_duplicates(app, doctree, docname):
 
 
 def setup(app):
-    """Register the directive and the hooks that match duplicates with their tracks.
+    """Register the directive, the ``ol-examples`` box and the duplicate hooks.
+
+    The hooks match duplicates with their tracks.
 
     Returns:
         The extension's metadata. ``env_version`` makes Sphinx discard a build
-        environment saved by a version that did not record blocks.
+        environment saved by a version that recorded blocks in another form.
     """
+    app.setup_extension("ol.docs.page_examples")
     app.add_node(DuplicateTrack)
     app.add_directive("audio-examples", AudioExamplesDirective)
     app.add_js_file("audio-examples.js")
@@ -201,7 +205,7 @@ def setup(app):
     app.connect("doctree-resolved", show_duplicates)
     return {
         "version": "2.0",
-        "env_version": 2,
+        "env_version": 3,
         "parallel_read_safe": True,
         "parallel_write_safe": True,
     }

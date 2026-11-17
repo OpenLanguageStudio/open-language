@@ -36,7 +36,8 @@ A German greeting is a small choice between formal and casual, and most of the c
 
 Strangers and customers get the formal greeting. Friends and family get the short one.
 
-:::{div} ol-examples
+:::{ol-examples}
+:presenters: emilia
 Guten Tag, Frau Weber.
 : Good day, Ms Weber.
 
@@ -52,6 +53,7 @@ Regional greetings such as *Moin* in the north say more about a place than about
 
 :::{audio-examples}
 :track: a1/how-to/greetings
+:presenters: emilia
 :title: Begrüßungen
 :title-en: Greet someone
 

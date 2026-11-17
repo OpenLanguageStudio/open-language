@@ -1,0 +1,16 @@
+expect: presenter_not_listed
+description: A dialogue sentence names a presenter the block does not list.
+pages:
+  a1/vocabulary/im-cafe: |
+    :::{audio-examples}
+    :track: a1/vocabulary/im-cafe
+    :mode: dialogue
+    :presenters: lina, roman
+
+    lina: Ist hier noch frei?
+    : Is this seat free?
+    roman: Ja, natürlich.
+    : Yes, of course.
+    max: Hallo!
+    : Hello!
+    :::

@@ -1,0 +1,22 @@
+expect: accepted
+description: A dialogue block. Each sentence names its presenter, and a blank line ends an exchange. A sentence may come back.
+pages:
+  a1/vocabulary/im-cafe: |
+    :::{audio-examples}
+    :track: a1/vocabulary/im-cafe
+    :title: Im Café
+    :mode: dialogue
+    :presenters: lina, roman
+
+    lina: Guten Morgen! Ist hier noch frei?
+    : Good morning! Is this seat free?
+    roman: Ja, natürlich.
+    : Yes, of course.
+
+    lina: Danke. Kommen Sie oft hierher?
+    : Thanks. Do you come here often?
+    roman: Ja.
+    : Yes.
+    lina: Ja.
+    : Yes.
+    :::

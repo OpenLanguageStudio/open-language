@@ -91,9 +91,11 @@ GRAMMAR = {
         before(SECTION_2, "```{code-block} python\nx = 1\n```\n\n"),
         "the code-block directive is not a component",
     ),
-    "a div of another class": (
-        lambda s: s.replace(":::{div} ol-examples", ":::{div} ol-box", 1),
-        "a div is an example block",
+    "an examples box written as a div": (
+        lambda s: s.replace(
+            ":::{ol-examples}\n:presenters: emilia\n", ":::{div} ol-examples\n", 1
+        ),
+        "the div directive is not a component",
     ),
     "a notice with another title": (
         lambda s: s.replace(
@@ -179,9 +181,7 @@ GRAMMAR = {
         "a highlighted span",
     ),
     "a paragraph of bold text": (
-        lambda s: s.replace(
-            ":::{div} ol-examples", "**Examples:**\n\n:::{div} ol-examples", 1
-        ),
+        lambda s: s.replace(":::{ol-examples}", "**Examples:**\n\n:::{ol-examples}", 1),
         "'Examples:' is a paragraph of bold text",
     ),
     # Notices.
@@ -306,7 +306,7 @@ def test_a_role_the_language_does_not_register_is_not_a_component(tmp_path):
 
 TAB = ":::{{tab-item}} {label}\n{body}:::\n"
 TABLE = "| Phrase | Notes |\n|---|---|\n| {stack}`Hallo \\| Hi` | |\n"
-EXAMPLES = ":::{div} ol-examples\nHallo.\n: Hi.\n:::\n"
+EXAMPLES = ":::{ol-examples}\n:presenters: emilia\nHallo.\n: Hi.\n:::\n"
 
 
 def tab_set(*tabs: tuple[str, str]) -> str:
