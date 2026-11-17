@@ -4,8 +4,9 @@ pages:
   a1/writing/postkarte: |
     :::{audio-examples}
     :track: a1/writing/postkarte
+    :presenters: lina
     :title: Eine Postkarte
-    :multiline:
+    :mode: passage
 
     Liebe Anna,
     viele Grüße aus Hamburg.

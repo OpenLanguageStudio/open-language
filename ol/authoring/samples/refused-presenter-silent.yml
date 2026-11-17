@@ -1,0 +1,14 @@
+expect: presenter_silent
+description: A dialogue block lists a presenter who says nothing.
+pages:
+  a1/vocabulary/im-cafe: |
+    :::{audio-examples}
+    :track: a1/vocabulary/im-cafe
+    :mode: dialogue
+    :presenters: lina, roman, max
+
+    lina: Ist hier noch frei?
+    : Is this seat free?
+    roman: Ja, natürlich.
+    : Yes, of course.
+    :::

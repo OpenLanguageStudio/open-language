@@ -75,6 +75,20 @@ An `audio-examples` directive on an article. A block with examples writes its
 track: its examples are the track's examples.
 _Avoid_: listening block, audio block.
 
+**Presenter**:
+A person whose voice says a track's examples. A block that writes its track
+names its presenters with `:presenters:`, and the first speaks the track's
+spoken title. Each example is said by one presenter, worked out from the
+block's mode.
+_Avoid_: speaker, voice (when the person is meant).
+
+**Mode**:
+How a block's examples are read and spoken: `examples`, one model sentence
+after another; `pairs`, a question and its answer; `dialogue`, a conversation;
+`passage`, a connected text one presenter says in full; `correspondence`,
+messages sent back and forth. A pair, an exchange or a message thread is the
+example's group.
+
 **Duplicate block**:
 A block that shows a track another block writes. It carries `:duplicate:` and
 the track's address, and it writes nothing.

@@ -1,0 +1,11 @@
+expect: bad_presenters
+description: An examples block names two presenters, and examples takes one.
+pages:
+  a1/grammar/dativ: |
+    :::{audio-examples}
+    :track: a1/grammar/dativ
+    :presenters: lina, roman
+
+    Ich fahre mit dem Bus.
+    : I go by bus.
+    :::

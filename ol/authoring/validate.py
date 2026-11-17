@@ -198,8 +198,8 @@ def check_audio_block(rep: Report, block: Block, ctype: str | None):
             "titles use no dashes"
         )
 
-    if block.multiline:
-        if ctype == "writing":
+    if block.mode != "examples":
+        if ctype == "writing" and block.mode in ("passage", "correspondence"):
             words = sum(len(example.sentence.split()) for example in block.examples)
             if words < limits["min_model_text_words"]:
                 rep.error(
@@ -607,13 +607,10 @@ def validate_article(path: Path, ctype: str, workspace: Path | None) -> Report:
     else:
         if "html_meta" in fm:
             rep.error("top-level 'html_meta' is deprecated: nest it under 'myst:'")
-        if "presenter" in fm and not (
-            isinstance(fm["presenter"], str)
-            and BlockReader.SLUG.fullmatch(fm["presenter"])
-        ):
+        if "presenter" in fm:
             rep.error(
-                f"presenter: {fm['presenter']!r} is not a slug, the lower-case "
-                "name a presenter goes by, such as emilia-berger"
+                "presenter: is withdrawn: a page never names a presenter. Name "
+                "them on each block that writes a track, with :presenters:"
             )
         hm = (fm.get("myst") or {}).get("html_meta") or fm.get("html_meta") or {}
         desc = hm.get("description", "")

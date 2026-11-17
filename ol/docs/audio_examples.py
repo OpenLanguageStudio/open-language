@@ -30,7 +30,7 @@ def build_audio_examples_html(examples: list[Example]) -> str:
         The HTML, with every sentence and translation escaped.
     """
     items = ""
-    for sentence, translation in examples:
+    for sentence, translation, *_ in examples:
         # Multiline examples (writing model texts) keep their line breaks.
         sentence_html = escape(sentence).replace("\n", "<br>")
         translation_html = escape(translation).replace("\n", "<br>")
@@ -66,7 +66,8 @@ class AudioExamplesDirective(Directive):
         "title": directives.unchanged,
         "title-en": directives.unchanged,
         "tags": directives.unchanged,
-        "multiline": directives.flag,
+        "mode": directives.unchanged,
+        "presenters": directives.unchanged,
         "duplicate": directives.flag,
     }
     reader: ClassVar[BlockReader] = BlockReader()

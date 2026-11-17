@@ -1,0 +1,12 @@
+expect: unknown_mode
+description: A mode that is not one of the five.
+pages:
+  a1/grammar/dativ: |
+    :::{audio-examples}
+    :track: a1/grammar/dativ
+    :mode: interview
+    :presenters: lina
+
+    Ich fahre mit dem Bus.
+    : I go by bus.
+    :::

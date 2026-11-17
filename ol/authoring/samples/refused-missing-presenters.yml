@@ -1,0 +1,10 @@
+expect: missing_presenters
+description: A block that writes its track without naming who says it.
+pages:
+  a1/grammar/dativ: |
+    :::{audio-examples}
+    :track: a1/grammar/dativ
+
+    Ich fahre mit dem Bus.
+    : I go by bus.
+    :::

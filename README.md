@@ -163,12 +163,13 @@ Ich bleibe zu Hause, weil ich krank bin.
 | `:title:` | The track's title in the language taught |
 | `:title-en:` | The title in English |
 | `:tags:` | Words that say what the track is about, separated by commas |
-| `:multiline:` | Each example may run over several lines, as in a model text, and a blank line inside its text or its translation is a paragraph break |
+| `:presenters:` | The slugs of the presenters who say the track, separated by commas, in the order the mode gives them a meaning. Every block that writes carries it, and the first presenter speaks the spoken title. |
+| `:mode:` | How the examples are read and spoken: `examples` (the default), `pairs`, `dialogue`, `passage` or `correspondence` |
 | `:duplicate:` | The block shows a track another block writes and writes nothing. It carries only `:track:` and, if wanted, `:tags:`. |
 
 The body holds the examples: a sentence, then its translation on the next line after `: `. A sentence and its translation are plain text, with no role markup, backticks or braces.
 
-In a `:multiline:` block, an example is its lines, then its translation's lines each after `: `. A blank line ends the example only after its translation, where the next line is the next example's text. Any blank line before that is a paragraph break, on the page and in the audio.
+In a `passage` block, an example is its lines, then its translation's lines each after `: `. A blank line ends the example only after its translation, where the next line is the next example's text. Any blank line before that is a paragraph break, on the page and in the audio.
 
 A block is refused with one of these codes:
 
@@ -214,7 +215,7 @@ for refusal in BlockCollection.from_docs(Path("docs")).refusals():
 | `BlockReader.read(page, options, body, line)` | Reads one block from its options, by name, and the lines of its body. A flag's value is ignored. |
 | `BlockReader.find(page, text)` | Reads every block on a page of Markdown. A block quoted in a code fence is not a block. |
 | `BlockReader.sentence_key(text)` | The form two sentences are compared in for `sentence_twice` |
-| `Block` | One block: `page`, `line`, `address`, `level`, `category`, `name`, `title`, `title_en`, `tags`, `examples`, `multiline`, `duplicate`, `writes` and `refusals`, the codes it earns on its own |
+| `Block` | One block: `page`, `line`, `address`, `level`, `category`, `name`, `title`, `title_en`, `tags`, `examples`, `mode`, `presenters`, `duplicate`, `writes` and `refusals`, the codes it earns on its own |
 | `Example` | One example: `sentence` and `translation` |
 | `BlockFormatError` | Raised when a body cannot be read as examples, such as a sentence with no translation or a line with markup |
 | `BlockCollection(blocks)` | Every block of a build. `from_pages(pages)` and `from_docs(root)` read them from Markdown. |

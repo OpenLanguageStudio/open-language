@@ -4,8 +4,9 @@ pages:
   a1/writing/brief: |
     :::{audio-examples}
     :track: a1/writing/brief
+    :presenters: lina
     :title: Ein Brief
-    :multiline:
+    :mode: passage
 
     Liebe Anna,
 

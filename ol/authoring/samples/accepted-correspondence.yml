@@ -1,0 +1,30 @@
+expect: accepted
+description: A correspondence block. Each message opens with its presenter's slug on a line of its own.
+pages:
+  a1/writing/einladung: |
+    :::{audio-examples}
+    :track: a1/writing/einladung
+    :title: Eine Einladung
+    :mode: correspondence
+    :presenters: lina, roman
+
+    lina:
+    Lieber Roman,
+    hast du am Samstag Zeit?
+    Viele Grüße
+    Lina
+    : Dear Roman,
+    : are you free on Saturday?
+    : Best wishes,
+    : Lina
+
+    roman:
+    Liebe Lina,
+    ja, am Samstag habe ich Zeit.
+    Bis dann
+    Roman
+    : Dear Lina,
+    : yes, I'm free on Saturday.
+    : See you then,
+    : Roman
+    :::

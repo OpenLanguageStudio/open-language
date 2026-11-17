@@ -45,7 +45,8 @@ Before reading this article, make sure you are comfortable with:
 :track: {{level_lc}}/writing/{{example-name}}
 :title: {{NATIVE_TITLE}}
 :title-en: {{ENGLISH_TITLE}}
-:multiline:
+:mode: passage
+:presenters: {{presenter-slug}}
 
 {{Model text line 1}}
 {{Model text line 2}}
@@ -56,8 +57,10 @@ Before reading this article, make sure you are comfortable with:
      "### Hear it in practice" holding a complete at-level model text of 60
      words or more, read aloud. Each block writes its own track, so give each a
      name of its own in :track: (see templates/audio-examples-block.md);
-     :multiline: keeps the text's line breaks on the page and in the audio, and
-     a blank line inside the text or its translation is a paragraph break. -->
+     :mode: passage keeps the text's line breaks on the page and in the audio, and
+     a blank line inside the text or its translation is a paragraph break. The
+     presenter wrote the text, so write it for their life. An exchange of
+     messages between presenters is :mode: correspondence. -->
 
 ## Building blocks
 
