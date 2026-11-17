@@ -415,6 +415,52 @@ def test_short_model_text_is_red(tmp_path, mode, writer, words):
     assert any(f"model text is {words} words" in msg for msg in found), found
 
 
+SHORT_BLOCKS = {
+    "examples": (
+        "lina",
+        "Ich trinke Tee.\n: I drink tea.\n\nDu trinkst Kaffee.\n: You drink coffee.\n\n"
+        "Er trinkt Wasser.\n: He drinks water.\n",
+    ),
+    "dialogue": (
+        "lina, roman",
+        "lina: Hast du Zeit?\n: Do you have time?\n"
+        "roman: Ja, um drei.\n: Yes, at three.\n"
+        "lina: Super, bis dann.\n: Great, see you then.\n",
+    ),
+    "correspondence": (
+        "lina, roman",
+        "lina:\nKommst du heute?\n: Are you coming today?\n\n"
+        "roman:\nJa, um acht.\n: Yes, at eight.\n",
+    ),
+}
+
+
+def short_block_errors(tmp_path: Path, mode: str) -> list[str]:
+    article = tmp_path / "a1/grammar/short.md"
+    article.parent.mkdir(parents=True)
+    presenters, body = SHORT_BLOCKS[mode]
+    article.write_text(
+        "# Short\n\n"
+        ":::{audio-examples}\n:track: a1/grammar/short\n:title: Kurz\n"
+        f":title-en: Short\n:mode: {mode}\n:presenters: {presenters}\n\n{body}:::\n",
+        encoding="utf-8",
+    )
+    return [
+        msg for lvl, msg in validate_file(article, tmp_path).items if lvl == "ERROR"
+    ]
+
+
+@pytest.mark.parametrize("mode", ["dialogue", "correspondence"])
+def test_conversation_is_not_held_to_the_track_example_count(tmp_path, mode):
+    found = short_block_errors(tmp_path, mode)
+    assert not any("a track carries" in msg for msg in found), found
+
+
+def test_short_examples_block_is_red(tmp_path):
+    found = short_block_errors(tmp_path, "examples")
+    assert any("3 examples (a track carries" in msg for msg in found), found
+
+
 def test_review_rubric_is_well_formed():
     import yaml
 

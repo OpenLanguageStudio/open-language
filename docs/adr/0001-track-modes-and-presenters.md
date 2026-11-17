@@ -121,6 +121,10 @@ The package refuses these, and the app reads blocks with the same code.
 - `presenter_not_listed`: a `dialogue` or `correspondence` example names a slug that `:presenters:` does not list.
 - `presenter_silent`: a presenter listed for a `dialogue` or `correspondence` block who says nothing in it.
 
+A block with an unknown `:mode:` reports only `unknown_mode`, and its duplicates elsewhere report `orphan_duplicate` until the mode is fixed.
+
+A track carries 12 to 30 examples in `examples` and `pairs` blocks, where each example counts on its own, so 15 pairs count as 30. A `dialogue`, `passage` or `correspondence` block is not held to this count: a text-message exchange of three to five examples is a whole track.
+
 `sentence_twice` applies to `examples` blocks only. A conversation can repeat "Ja." or "Danke." on purpose.
 
 The package cannot know which presenters exist, because the app holds them. The app refuses a slug it does not know, with the code `unknown_presenter`, which the package defines and lists in `Refusal.APP_ONLY`.

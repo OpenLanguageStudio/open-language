@@ -52,6 +52,8 @@ Rules:
 - ORDERED. Best and most representative sentences FIRST: the build cuts from
   the end when the ~70 s budget is reached (hard floor 45 s). Over-author
   ~12-18 short, natural, at-level sentences.
+- An examples or pairs block carries 12 to 30 examples (a pair is two).
+  Dialogue, passage and correspondence blocks have no example count.
 - Plain text ONLY: no roles, backticks or braces. The native line goes to the
   text-to-speech engine verbatim. Coherent ordering improves prosody.
 - In examples mode each sentence appears once in a block, whatever its spacing

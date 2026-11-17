@@ -98,7 +98,9 @@ common:
   # Marking scheme: distinct roles a reader holds at once.
   max_roles_per_sentence: 2
   max_roles_per_block: 4
-  # Example pairs per audio track (about 20 fills a 70 second track).
+  # Examples per audio track (about 20 fills a 70 second track), counted in
+  # examples and pairs blocks only, one per example. Dialogue, passage and
+  # correspondence blocks are not held to it.
   min_audio_examples: 12
   max_audio_examples: 30
   # Writing model texts: below this the track is too short for the stores.

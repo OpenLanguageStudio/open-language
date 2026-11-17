@@ -56,6 +56,8 @@ Write the separator as `\|` inside a table, because a table splits a cell at eve
 
 The section is `## Hear it in practice`. In writing, each `## Example: <Situation>` holds its own `### Hear it in practice` instead.
 
+A track written by an `examples` or `pairs` block carries 12 to 30 examples, about 20 for a 70 second track. Each half of a pair counts as one example. A `dialogue`, `passage` or `correspondence` block has no example count, so a text-message exchange of three to five examples is a whole track.
+
 In grammar and how-to, a section with several audio blocks may give each one an H3 naming its track, so that on-this-page reaches it. Every block then has its own H3, and these H3s count towards the article's limit.
 
 ## Presenters

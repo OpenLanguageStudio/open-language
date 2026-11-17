@@ -208,6 +208,8 @@ def check_audio_block(rep: Report, block: Block, ctype: str | None):
                     "track too short for the stores"
                 )
         return
+    if block.mode == "dialogue":
+        return
     lo, hi = limits["min_audio_examples"], limits["max_audio_examples"]
     if not lo <= len(block.examples) <= hi:
         rep.error(
