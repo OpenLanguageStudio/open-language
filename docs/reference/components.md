@@ -32,7 +32,7 @@ This page shows how to write each component. How many a page may hold, and where
 
 The full list, which `ol validate` holds a page to:
 
-- **Directives:** `div` (with the class `ol-examples` only), `audio-examples`, `note`, `tip`, `important`, `warning`, `admonition` (the three titles only), `tab-set`, `tab-item`, `grid`, `grid-item-card`, `button-ref`, `toctree`, and `glossary` on the Terminology page.
+- **Directives:** `ol-examples`, `audio-examples`, `note`, `tip`, `important`, `warning`, `admonition` (the three titles only), `tab-set`, `tab-item`, `grid`, `grid-item-card`, `button-ref`, `toctree`, and `glossary` on the Terminology page.
 - **Roles:** the language repository's marking roles, `stack`, `term`, `level` and `bdg-light`; on How to use and Contributing also `kbd`, `guilabel`, `menuselection`, `file`, `command` and `samp`.
 
 ## Inline

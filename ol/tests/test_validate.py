@@ -392,10 +392,10 @@ def test_pack_without_a_running_number_is_red(tmp_path):
 
 
 @pytest.mark.parametrize(
-    ("mode", "writer"),
-    [("passage", ""), ("correspondence", "lina:\n")],
+    ("mode", "writer", "words"),
+    [("passage", "", 6), ("correspondence", "lina:\n", 7)],
 )
-def test_short_model_text_is_red(tmp_path, mode, writer):
+def test_short_model_text_is_red(tmp_path, mode, writer, words):
     article = tmp_path / "a1/writing/postcard.md"
     article.parent.mkdir(parents=True)
     filler = "Writing a postcard is a small, friendly task. " * 6
@@ -412,7 +412,7 @@ def test_short_model_text_is_red(tmp_path, mode, writer):
     found = [
         msg for lvl, msg in validate_file(article, tmp_path).items if lvl == "ERROR"
     ]
-    assert any("model text is" in msg for msg in found), found
+    assert any(f"model text is {words} words" in msg for msg in found), found
 
 
 def test_review_rubric_is_well_formed():
