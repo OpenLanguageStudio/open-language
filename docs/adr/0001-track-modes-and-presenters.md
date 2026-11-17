@@ -21,6 +21,10 @@ A block that writes its track carries `:presenters:`. A duplicate block does not
 
 The first presenter listed speaks the track's spoken title, in every mode.
 
+### Inline examples name their presenter too
+
+The short examples in an article's body (the `ol-examples` boxes) are recorded as well, so each box names its presenter with `:presenters:` and exactly one slug. This replaces the front-matter `presenter:` field, which set them for the whole page. How the option attaches to the box is settled in the build.
+
 ### A block has a mode
 
 `:mode:` says how the block's examples are read and spoken. Leaving it out means `examples`.
@@ -29,9 +33,9 @@ The first presenter listed speaks the track's spoken title, in every mode.
 |---|---|---|---|
 | `examples` | One model sentence after another | Exactly 1 | As today: a sentence, then `: translation`. |
 | `pairs` | A question and its answer; a prompt and its changed form (present to Perfekt, *du* to *Sie*) | 1 or 2 | Groups of exactly two examples, separated by a blank line. The first presenter says the first example of every pair, and the second presenter says the second. With one presenter, they say both. |
-| `dialogue` | A conversation | 2 or more | Each sentence starts with its presenter's slug and a colon: `lina: Ist hier noch frei?`. A blank line ends an exchange. |
+| `dialogue` | A conversation, spoken or in text messages | 2 or more | Each sentence starts with its presenter's slug and a colon: `lina: Ist hier noch frei?`. A blank line ends an exchange. |
 | `passage` | A connected text one presenter says in full: a letter, an email, a voicemail, a short account | Exactly 1 | As `:multiline:` today: sentence lines, then `: translation` lines. Each group is one example and one recording. |
-| `correspondence` | Messages sent back and forth: emails, letters, chat messages | 2 or more | Each message opens with a line holding only its presenter's slug and a colon, such as `lina:`, followed by its sentence lines and then its translation lines. The next slug line starts the next message. A blank line inside a message is a paragraph break. Each message is one example and one recording. |
+| `correspondence` | Written messages sent back and forth: emails, letters, postcards. Text messages are a `dialogue`, one message per example. | 2 or more | Each message opens with a line holding only its presenter's slug and a colon, such as `lina:`, followed by its sentence lines and then its translation lines. The next slug line starts the next message. A blank line inside a message is a paragraph break. Each message is one example and one recording. |
 
 `passage` replaces `:multiline:`, which is withdrawn.
 
