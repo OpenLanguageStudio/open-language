@@ -353,7 +353,7 @@ summary:focus-visible,
 }
 
 /* ── In-article example pairs ─────────────────────────────────────────────
-   Authored as a definition list inside :::{div} ol-examples — native
+   Authored as a definition list inside :::{ol-examples} — native
    sentence as the term, English translation as the definition. Mirrors the
    audio-examples look: no list decorations, muted italic translation,
    hairline separators. */

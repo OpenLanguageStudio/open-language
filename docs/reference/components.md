@@ -18,7 +18,7 @@ This page shows how to write each component. How many a page may hold, and where
 | Page link | `[](/a1/grammar/cases/akkusativ.md)` | A link to another page. Empty brackets: the build writes the page's title. |
 | Level badge | ``{level}`A1` `` | The level after a link to a page of another level, in that level's colour. |
 | Register badge | ``{bdg-light}`informal` `` | A register in a Notes cell. |
-| Example block | `:::{div} ol-examples` | Example sentences with their translations, beside the explanation. |
+| Example block | `:::{ol-examples}` with `:presenters:` | Example sentences with their translations, beside the explanation. |
 | Audio block | `:::{audio-examples}` | The page's track, under Hear it in practice. |
 | Notice | `:::{tip}` and three others | A fact set apart from the text: a nuance, a memory aid, a trap. |
 | Titled notice | `:::{admonition} Common mistakes` | Prerequisites, Common mistakes and Key points, and no other title. |
@@ -32,7 +32,7 @@ This page shows how to write each component. How many a page may hold, and where
 
 The full list, which `ol validate` holds a page to:
 
-- **Directives:** `div` (with the class `ol-examples` only), `audio-examples`, `note`, `tip`, `important`, `warning`, `admonition` (the three titles only), `tab-set`, `tab-item`, `grid`, `grid-item-card`, `button-ref`, `toctree`, and `glossary` on the Terminology page.
+- **Directives:** `ol-examples`, `audio-examples`, `note`, `tip`, `important`, `warning`, `admonition` (the three titles only), `tab-set`, `tab-item`, `grid`, `grid-item-card`, `button-ref`, `toctree`, and `glossary` on the Terminology page.
 - **Roles:** the language repository's marking roles, `stack`, `term`, `level` and `bdg-light`; on How to use and Contributing also `kbd`, `guilabel`, `menuselection`, `file`, `command` and `samp`.
 
 ## Inline
@@ -89,10 +89,11 @@ A badge is a small label. A Coursebook page uses two kinds:
 
 ### Example blocks
 
-Example sentences sit in an `ol-examples` block, a definition list: the sentence, then its translation on the next line after `: `. The section's heading and the block's own look say what it is, so no `**Examples:**` line goes above it.
+Example sentences sit in an `ol-examples` block, a definition list: the sentence, then its translation on the next line after `: `. Its first line under the opening is `:presenters:` with the slug of the one presenter who says every sentence in it. A box without it is refused. The section's heading and the block's own look say what it is, so no `**Examples:**` line goes above it.
 
 ```markdown
-:::{div} ol-examples
+:::{ol-examples}
+:presenters: emilia
 Ich sehe {akk}`den` Turm.
 : I see the tower.
 

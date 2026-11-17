@@ -54,14 +54,16 @@ Before reading this article, make sure you are comfortable with:
 | {{English row label}} | | | | |
 <!-- A table of forms has at most 5 columns. Any other table has at most 3. -->
 
-:::{div} ol-examples
+:::{ol-examples}
+:presenters: {{presenter slug}}
 {{Native sentence, roles/bold marking ONLY the teaching focus, e.g. Ich sehe {akk}`den` Turm.}}
 : {{English translation}} {{(optional short note in parentheses)}}
 
 {{Native sentence 2}}
 : {{English translation 2}}
 :::
-<!-- At most 3 pairs per section. Definition list inside the ol-examples div:
+<!-- At most 3 pairs per section. Definition list inside the ol-examples box, under its one
+     :presenters: slug (the presenter who says every sentence in it):
      native = term, English = definition. No bullet lists for example pairs. -->
 
 ## {{USE_SECTION: e.g. "When to use *der*, *die*, *das*"}}

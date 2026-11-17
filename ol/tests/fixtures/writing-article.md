@@ -24,9 +24,10 @@ The request comes first, politely framed with *ich möchte gern*.
 
 :::{audio-examples}
 :track: a1/writing/email-formal-1
+:presenters: emilia
 :title: Eine E-Mail an den Chef
 :title-en: Emailing your boss
-:multiline:
+:mode: passage
 
 Sehr geehrte Frau Weber,
 ich möchte gern vom vierten bis zum fünfzehnten August Urlaub nehmen. Meine Familie in Polen feiert ein großes Fest, und ich möchte gern dabei sein.

@@ -56,7 +56,19 @@ Write the separator as `\|` inside a table, because a table splits a cell at eve
 
 The section is `## Hear it in practice`. In writing, each `## Example: <Situation>` holds its own `### Hear it in practice` instead.
 
+A track written by an `examples` or `pairs` block carries 12 to 30 examples, about 20 for a 70 second track. Each half of a pair counts as one example. A `dialogue`, `passage` or `correspondence` block has no example count, so a text-message exchange of three to five examples is a whole track.
+
 In grammar and how-to, a section with several audio blocks may give each one an H3 naming its track, so that on-this-page reaches it. Every block then has its own H3, and these H3s count towards the article's limit.
+
+## Presenters
+
+A page never names a presenter. Every audio block that writes its track names its presenters with `:presenters:`, and every `ol-examples` box names its one presenter the same way.
+
+Write for the presenters, in every mode, wherever the lesson allows. The language being taught comes first. Within that, the examples fit the life of the presenter who says them: their work, family, town and interests. This matters most in `dialogue`, `passage` and `correspondence`.
+
+1. At the start of each authoring run, read the presenters' profiles from the app.
+2. Pick the presenters each block and box needs. A sentence that marks the gender of whoever says it, such as *Ich bin Krankenschwester*, needs a presenter it fits.
+3. When a topic fits nobody, add the detail to a presenter's profile in the app first, such as making a presenter a basketball fan, and then write for them.
 
 ## The glossary
 
@@ -85,5 +97,3 @@ An en dash (–) appears in three places only: between the two halves of a title
 ## Frontmatter
 
 Write `html_meta.description` for the snippet a search engine shows under the title.
-
-Write `presenter:` with a presenter's slug to name who speaks the page's `ol-examples` blocks. One presenter speaks a whole page. Leave it out to use the language's usual presenter.

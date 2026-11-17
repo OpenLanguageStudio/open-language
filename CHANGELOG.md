@@ -2,6 +2,17 @@
 
 ## [Unreleased]
 
+### Changed: every block names its presenters, and has a mode (breaking)
+
+Content that passed 0.13.0 fails this version until it is moved. Before a language repository pins it:
+
+- Give every `audio-examples` block that writes its track `:presenters:`, the slug of the presenter who says it, or several slugs separated by commas. A duplicate block takes none.
+- Replace `:multiline:` with `:mode: passage`. `:multiline:` is withdrawn and is now an unknown option.
+- Rewrite every `:::{div} ol-examples` box as `:::{ol-examples}` with `:presenters: <slug>` on the line under it. sphinx-design's `div` refuses options it does not know, so the box is now a directive of its own, `ol-examples`, which `ol.docs.audio_examples` loads. It is still drawn as a `div` of class `ol-examples`.
+- Remove `presenter:` from front matter. The field and its check are withdrawn: a page never names a presenter.
+
+A block's `:mode:` says how its examples are read and spoken: `examples` (the default), `pairs`, `dialogue`, `passage` or `correspondence`. The README describes each one's body and how many presenters it takes. The reader gives the app `Block.mode`, `Block.presenters` in the order listed, and for each example `Example.presenter` and `Example.group`. `Block.multiline` is gone. `PageExamples.read` gives each example its box's presenter. The new refusals are `unknown_mode`, `missing_presenters`, `bad_presenters`, `bad_pair`, `presenter_not_listed` and `presenter_silent`. `sentence_twice` now applies to `examples` blocks only. `unknown_presenter` is defined for the app to report, and listed in `Refusal.APP_ONLY`. The template, the samples, the README, `CONTEXT.md` and the authoring rules follow, and ADR 1 records the design.
+
 ## [0.13.0] - 2026-11-15
 
 ### Added: the level role, drawn in the level's colour

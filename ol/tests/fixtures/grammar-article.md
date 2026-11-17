@@ -24,7 +24,8 @@ Every noun has a fixed gender, and the gender is part of the word. Always learn 
 
 In the plural, all genders share the same article: **die**.
 
-:::{div} ol-examples
+:::{ol-examples}
+:presenters: emilia
 {article}`Der` Hafen ist groß.
 : The harbour is big.
 
@@ -43,7 +44,8 @@ Gender is grammatical, not logical: *das Mädchen* (the girl) is neuter, *der Ti
 
 Use the definite article when the thing is specific or already known. It was mentioned before, there is only one, or everyone can see which one is meant.
 
-:::{div} ol-examples
+:::{ol-examples}
+:presenters: emilia
 Das ist {article}`der` Hafen von Hamburg.
 : That is the harbour of Hamburg. (there is only one)
 
@@ -67,7 +69,8 @@ When the noun is the direct object of the sentence, only the masculine article c
 | Nominative | der | die | das | die |
 | Accusative | **den** | die | das | die |
 
-:::{div} ol-examples
+:::{ol-examples}
+:presenters: emilia
 Ich sehe {akk}`den` Turm.
 : I see the tower.
 
@@ -90,6 +93,7 @@ Sie liest {akk}`das` Buch.
 
 :::{audio-examples}
 :track: a1/grammar/bestimmter-artikel
+:presenters: emilia
 :title: Der bestimmte Artikel
 :title-en: The definite article
 

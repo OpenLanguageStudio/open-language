@@ -1,11 +1,12 @@
 expect: accepted
-description: A multiline block, whose examples run over several lines.
+description: A passage block, whose examples run over several lines.
 pages:
   a1/writing/postkarte: |
     :::{audio-examples}
     :track: a1/writing/postkarte
+    :presenters: lina
     :title: Eine Postkarte
-    :multiline:
+    :mode: passage
 
     Liebe Anna,
     viele Grüße aus Hamburg.

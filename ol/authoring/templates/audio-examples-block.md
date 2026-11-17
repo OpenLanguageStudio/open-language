@@ -5,6 +5,7 @@ BEFORE Summary. Delete these comment lines: HTML comments are banned in docs. --
 
 :::{audio-examples}
 :track: {{level}}/{{category}}/{{name}}
+:presenters: {{presenter-slug}}
 :title: {{NATIVE_TITLE: spoken aloud as the track intro}}
 :title-en: {{ENGLISH_TITLE}}
 :tags: {{tag}}, {{tag}}
@@ -16,7 +17,7 @@ BEFORE Summary. Delete these comment lines: HTML comments are banned in docs. --
 : {{English translation 2}}
 :::
 
-<!-- Options. A block takes these six and no others:
+<!-- Options. A block takes these seven and no others:
 - :track: {{level}}/{{category}}/{{name}} : the track's address, in lower
   case. All three parts are always written: the name is never taken from
   the page. Never change an address once the track has audio.
@@ -24,21 +25,38 @@ BEFORE Summary. Delete these comment lines: HTML comments are banned in docs. --
   English. A title published in the stores keeps its dash: leave :title-en:
   out and the app keeps the title it holds.
 - :tags: : words that say what the track is about, separated by commas.
-- :multiline: : writing model texts only: examples become blank-line-separated
-  groups (native lines, then ':'-prefixed translation lines); line breaks are
-  kept on the page and in the audio. A blank line inside the native lines or
-  the translation lines is a paragraph break. Only a blank line after the
-  translation, with native lines following it, starts the next example.
+- :presenters: : every block that writes its track carries it. One presenter
+  slug, or several separated by commas, in the order the mode gives them a
+  meaning. The first speaks the track's spoken title. Pages never name a
+  presenter in their front matter. Write for the presenters: their work,
+  family, town and interests, from their profiles in the app.
+- :mode: : how the examples are read and spoken. Leave it out for examples.
+  - examples (1 presenter): a sentence, then ': translation'.
+  - pairs (1 or 2): groups of exactly two examples separated by a blank line,
+    such as a question and its answer. The first presenter says the first of
+    every pair and the second the second.
+  - dialogue (2 or more): each sentence opens with its presenter's slug and a
+    colon, such as 'lina: Ist hier noch frei?'. A blank line ends an exchange.
+  - passage (1): a connected text, such as a letter or a voicemail. Each
+    group is sentence lines then ':'-prefixed translation lines, separated by
+    a blank line. Line breaks are kept on the page and in the audio, and a
+    blank line inside the sentence or translation lines is a paragraph break.
+  - correspondence (2 or more): messages back and forth. Each message opens
+    with a line holding only its presenter's slug and a colon, such as
+    'lina:', then its sentence lines, then its translation lines.
 - :duplicate: : shows a track another block writes, on this page too. It
   carries :track: and, if wanted, :tags:, and nothing else: no examples, no
-  title, no English title.
+  title, no English title, no mode and no presenters.
 
 Rules:
 - ORDERED. Best and most representative sentences FIRST: the build cuts from
   the end when the ~70 s budget is reached (hard floor 45 s). Over-author
   ~12-18 short, natural, at-level sentences.
+- An examples or pairs block carries 12 to 30 examples (a pair is two).
+  Dialogue, passage and correspondence blocks have no example count.
 - Plain text ONLY: no roles, backticks or braces. The native line goes to the
   text-to-speech engine verbatim. Coherent ordering improves prosody.
-- Each sentence appears once in a block, whatever its spacing or emphasis.
+- In examples mode each sentence appears once in a block, whatever its spacing
+  or emphasis. A dialogue may repeat "Ja." or "Danke." on purpose.
 - One block writes a track. Any other page that shows it uses :duplicate:.
 - Check the page with `ol validate`. -->

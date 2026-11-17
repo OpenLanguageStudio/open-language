@@ -82,18 +82,19 @@ extensions = [
 
 ## Plain examples
 
-An `ol-examples` block shows sentences beside the explanation they illustrate, each with its translation under it. It is a `div` holding a definition list, and a sentence may be marked up with roles and bold:
+An `ol-examples` box shows sentences beside the explanation they illustrate, each with its translation under it. It holds a definition list, a sentence may be marked up with roles and bold, and `:presenters:` names the one presenter who says every sentence in it:
 
 ```markdown
-:::{div} ol-examples
+:::{ol-examples}
+:presenters: emilia
 {article}`Der` Hafen ist groß.
 : The harbour is big.
 :::
 ```
 
-What is spoken is the sentence as the reader sees it, with its roles and emphasis gone. A page names who speaks its plain examples under `presenter:` in its front matter, as the presenter's slug. `ol validate` fails a `presenter:` that is not a slug and a block that gives one sentence twice. It cannot know who the presenters are, since that is not part of a language workspace. Whoever serves the pages decides what a name means and what happens with a page that names nobody.
+The box is the `ol-examples` directive, `ol.docs.page_examples.ExamplesBox`. The module's `setup` registers it and `ol.docs.audio_examples` loads the module, so a language repository's `extensions` stay as they are. It is drawn as a `div` of class `ol-examples`. What is spoken is the sentence as the reader sees it, with its roles and emphasis gone. `ol validate` fails a box with no `:presenters:`, one that names more than one presenter or a value that is not a slug, and a box that gives one sentence twice. It cannot know who the presenters are, since that is not part of a language workspace. Whoever serves the pages decides what a name means.
 
-`ol.docs.page_examples.PageExamples.read(doctree)` reads a built page's blocks into `ol.blocks.Example` values, in page order, skipping a block that holds anything but sentences and translations. `ol.blocks.BlockReader.spoken(text)` gives the same sentence from a page's Markdown.
+`ol.docs.page_examples.PageExamples.read(doctree)` reads a built page's boxes into `ol.blocks.Example` values, in page order, each with its box's presenter as `presenter`, skipping a box that holds anything but sentences and translations. `ol.blocks.BlockReader.spoken(text)` gives the same sentence from a page's Markdown.
 
 ## The stack role
 
@@ -148,6 +149,7 @@ A block names a track by its address and either writes it, by giving its example
 ```markdown
 :::{audio-examples}
 :track: a2/grammar/nebensatz-mit-weil
+:presenters: lina
 :title: Nebensatz mit weil
 :title-en: Subordinate clauses with weil
 :tags: nebensatz, konjunktionen
@@ -163,12 +165,37 @@ Ich bleibe zu Hause, weil ich krank bin.
 | `:title:` | The track's title in the language taught |
 | `:title-en:` | The title in English |
 | `:tags:` | Words that say what the track is about, separated by commas |
-| `:multiline:` | Each example may run over several lines, as in a model text, and a blank line inside its text or its translation is a paragraph break |
+| `:presenters:` | The slugs of the presenters who say the track, separated by commas, in the order the mode gives them a meaning. Every block that writes carries it, and the first presenter speaks the spoken title. |
+| `:mode:` | How the examples are read and spoken: `examples` (the default), `pairs`, `dialogue`, `passage` or `correspondence` |
 | `:duplicate:` | The block shows a track another block writes and writes nothing. It carries only `:track:` and, if wanted, `:tags:`. |
 
 The body holds the examples: a sentence, then its translation on the next line after `: `. A sentence and its translation are plain text, with no role markup, backticks or braces.
 
-In a `:multiline:` block, an example is its lines, then its translation's lines each after `: `. A blank line ends the example only after its translation, where the next line is the next example's text. Any blank line before that is a paragraph break, on the page and in the audio.
+### Modes
+
+| Mode | For | Presenters | Body |
+|---|---|---|---|
+| `examples` | One model sentence after another | Exactly 1 | A sentence, then `: translation`. |
+| `pairs` | A question and its answer, or a prompt and its changed form | 1 or 2 | Groups of exactly two examples, separated by a blank line. The first presenter says the first example of every pair and the second presenter the second. With one presenter, they say both. |
+| `dialogue` | A conversation, spoken or in text messages | 2 or more | Each sentence starts with its presenter's slug and a colon: `lina: Ist hier noch frei?`. A blank line ends an exchange. |
+| `passage` | A connected text one presenter says in full: a letter, an email, a voicemail | Exactly 1 | Each example is its lines, then its translation's lines each after `: `. |
+| `correspondence` | Written messages sent back and forth: emails, letters, postcards | 2 or more | Each message opens with a line holding only its presenter's slug and a colon, such as `lina:`, then its lines, then its translation's lines. |
+
+In a `passage` example and a `correspondence` message, a blank line ends the example only after its translation, where the next line is the next example's text or the next message's slug line. Any blank line before that is a paragraph break, on the page and in the audio.
+
+```markdown
+:::{audio-examples}
+:track: a1/grammar/doch
+:title: Doch
+:mode: pairs
+:presenters: deniz, lina
+
+Hast du keine Zeit?
+: Don't you have time?
+Doch, ich habe Zeit.
+: Yes, I do have time.
+:::
+```
 
 A block is refused with one of these codes:
 
@@ -176,13 +203,20 @@ A block is refused with one of these codes:
 |---|---|
 | `unknown_option` | has an option it does not take, such as the retired `:album:`, `:name:`, `:voice:`, `:spotify:` or `:youtube-music:` |
 | `bad_address` | has no `:track:`, or one that is not three lower-case names separated by `/` |
+| `unknown_mode` | has a `:mode:` that is not one of the five. Its body is not read. |
 | `missing_examples` | gives no examples and has no `:duplicate:` |
-| `duplicate_writes` | has `:duplicate:` and gives examples, a title or an English title |
-| `sentence_twice` | gives the same sentence twice, compared after Unicode normalisation, with spacing tidied and the emphasis marks `*` and `_` removed. Case and punctuation count. |
+| `duplicate_writes` | has `:duplicate:` and gives examples, a title, an English title, a mode or presenters |
+| `missing_presenters` | writes its track and has no `:presenters:` |
+| `bad_presenters` | has a `:presenters:` value that is not a slug, names a presenter twice, or names the wrong number of presenters for its mode |
+| `bad_pair` | is a `pairs` block with a group that is not exactly two examples |
+| `presenter_not_listed` | is a `dialogue` or `correspondence` block with an example that names a presenter `:presenters:` does not list |
+| `presenter_silent` | is a `dialogue` or `correspondence` block that lists a presenter who says nothing in it |
+| `sentence_twice` | is an `examples` block that gives the same sentence twice, compared after Unicode normalisation, with spacing tidied and the emphasis marks `*` and `_` removed. Case and punctuation count. A conversation may repeat "Ja." on purpose, so no other mode is refused for it. |
 | `written_twice` | writes a track another block writes too. Each of them is refused. |
 | `orphan_duplicate` | has `:duplicate:` and names a track no block writes |
+| `unknown_presenter` | names a presenter the language does not have. The package defines this code and never reports it: only the app knows the presenters. |
 
-The last two need every page of a build, so `ol validate` reads every page of the workspace for them, whichever files it is checking. The Sphinx extension `ol.docs.audio_examples` reports each of the other codes as a build warning, and shows a duplicate with the examples of the block that writes its track. In a build, an option the block does not take is reported by MyST as an unknown option.
+`written_twice` and `orphan_duplicate` need every page of a build, so `ol validate` reads every page of the workspace for them, whichever files it is checking. The Sphinx extension `ol.docs.audio_examples` reports each of the other codes as a build warning, and shows a duplicate with the examples of the block that writes its track. In a build, an option the block does not take is reported by MyST as an unknown option.
 
 ### Reading blocks in code
 
@@ -194,7 +228,11 @@ from ol.blocks import BlockCollection, BlockReader
 reader = BlockReader()
 block = reader.read(
     "a2/grammar/nebensatz-mit-weil",
-    {"track": "a2/grammar", "title": "Nebensatz mit weil"},
+    {
+        "track": "a2/grammar/nebensatz-mit-weil",
+        "title": "Nebensatz mit weil",
+        "presenters": "lina",
+    },
     [
         "Ich bleibe zu Hause, weil ich krank bin.",
         ": I am staying at home because I am ill.",
@@ -202,7 +240,10 @@ block = reader.read(
     line=12,
 )
 block.address  # "a2/grammar/nebensatz-mit-weil"
-block.examples  # (Example(sentence="Ich bleibe zu Hause, ...", translation="I am ..."),)
+block.mode  # "examples"
+block.presenters  # ("lina",)
+block.examples  # (Example(sentence="Ich bleibe ...", translation="I am ...",
+#                  presenter="lina", group=1),)
 block.refusals  # ()
 
 for refusal in BlockCollection.from_docs(Path("docs")).refusals():
@@ -214,12 +255,12 @@ for refusal in BlockCollection.from_docs(Path("docs")).refusals():
 | `BlockReader.read(page, options, body, line)` | Reads one block from its options, by name, and the lines of its body. A flag's value is ignored. |
 | `BlockReader.find(page, text)` | Reads every block on a page of Markdown. A block quoted in a code fence is not a block. |
 | `BlockReader.sentence_key(text)` | The form two sentences are compared in for `sentence_twice` |
-| `Block` | One block: `page`, `line`, `address`, `level`, `category`, `name`, `title`, `title_en`, `tags`, `examples`, `multiline`, `duplicate`, `writes` and `refusals`, the codes it earns on its own |
-| `Example` | One example: `sentence` and `translation` |
+| `Block` | One block: `page`, `line`, `address`, `level`, `category`, `name`, `title`, `title_en`, `tags`, `examples`, `mode`, `presenters`, `duplicate`, `writes` and `refusals`, the codes it earns on its own |
+| `Example` | One example: `sentence`, `translation`, `presenter`, the slug of the presenter who says it, worked out from the block's mode, and `group`, the number of the pair, exchange or message thread it belongs to, counted from 1. In `examples` and `passage` each example is its own group, and every message of a `correspondence` block is in group 1. |
 | `BlockFormatError` | Raised when a body cannot be read as examples, such as a sentence with no translation or a line with markup |
 | `BlockCollection(blocks)` | Every block of a build. `from_pages(pages)` and `from_docs(root)` read them from Markdown. |
 | `BlockCollection.refusals()` | Every `Refusal` of the build: each block's own, then the ones that need more than one page |
-| `Refusal` | A refused `block` and its `code`, with an author-facing `detail`. `Refusal.CODES` lists every code and `Refusal.CROSS_PAGE` the ones that need every page. |
+| `Refusal` | A refused `block` and its `code`, with an author-facing `detail`. `Refusal.CODES` lists every code, `Refusal.CROSS_PAGE` the ones that need every page and `Refusal.APP_ONLY` the ones only the app reports. |
 | `load_samples()` | The sample blocks in `ol/authoring/samples/`, each a `Sample` with its `pages` and the outcome it should get in `expect`: `accepted` or a refusal code. `Sample.blocks()` reads its pages. |
 
 ## Adopting the checks on existing content

@@ -15,6 +15,7 @@ WRITER = """# Weil
 
 :::{audio-examples}
 :track: a2/grammar/weil
+:presenters: lina
 :title: Nebensatz mit weil
 
 Ich bleibe zu Hause, weil ich <krank> bin.
@@ -75,7 +76,8 @@ def build(tmp_path):
 
 PLAIN = """# Hafen
 
-:::{div} ol-examples
+:::{ol-examples}
+:presenters: emilia
 {mark}`Der` Hafen ist **groß**.
 : The harbour is big.
 
@@ -90,17 +92,20 @@ Nicht hier.
 : Not here.
 :::
 
-:::{div} ol-examples
+:::{ol-examples}
+:presenters: emilia
 Der Satz.
 : The sentence.
 : Another translation.
 :::
 
-:::{div} ol-examples
+:::{ol-examples}
+:presenters: emilia
 Ein Absatz, kein Beispiel.
 :::
 
-:::{div} ol-examples
+:::{ol-examples}
+:presenters: max
 Noch ein Satz.
 : One more sentence.
 :::
@@ -108,16 +113,23 @@ Noch ein Satz.
 
 
 class TestPageExamples:
-    def read(self, tmp_path: Path) -> list[Example]:
+    def build(
+        self,
+        tmp_path: Path,
+        page: str = PLAIN,
+        extension: str = "ol.docs.page_examples",
+    ) -> Sphinx:
         src = tmp_path / "src"
         src.mkdir()
         (src / "conf.py").write_text(
-            'extensions = ["myst_parser", "sphinx_design", "ol.docs.roles"]\n'
+            f'extensions = ["myst_parser", "sphinx_design", "ol.docs.roles", '
+            f'"{extension}"]\n'
             'myst_enable_extensions = ["colon_fence", "deflist"]\n'
             'custom_roles = ["mark"]\n'
             "suppress_warnings = ['toc.not_readable']\n"
         )
-        (src / "index.md").write_text(PLAIN, encoding="utf-8")
+        (src / "index.md").write_text(page, encoding="utf-8")
+        self.warnings = StringIO()
         app = Sphinx(
             str(src),
             str(src),
@@ -125,14 +137,20 @@ class TestPageExamples:
             str(tmp_path / "doctrees"),
             "html",
             status=None,
-            warning=StringIO(),
+            warning=self.warnings,
         )
         app.build()
+        return app
+
+    def read(self, tmp_path: Path, page: str = PLAIN) -> list[Example]:
+        app = self.build(tmp_path, page)
         return PageExamples.read(app.env.get_doctree("index"))
 
     def test_a_page_gives_what_its_blocks_show_with_no_markup(self, tmp_path):
         examples = self.read(tmp_path)
-        assert examples[0] == Example("Der Hafen ist groß.", "The harbour is big.")
+        assert examples[0] == Example(
+            "Der Hafen ist groß.", "The harbour is big.", "emilia"
+        )
         assert examples[1].sentence == "Die Brücke heißt “Alsterbrücke”."
         assert examples[1].translation.endswith(
             "\nA second paragraph of the translation."
@@ -142,12 +160,35 @@ class TestPageExamples:
         sentences = [example.sentence for example in self.read(tmp_path)]
         assert sentences[2:] == ["Noch ein Satz."]
 
+    def test_each_example_is_said_by_the_presenter_its_box_names(self, tmp_path):
+        presenters = [example.presenter for example in self.read(tmp_path)]
+        assert presenters == ["emilia", "emilia", "max"]
+
+    def test_the_box_is_drawn_as_a_div_of_its_class(self, tmp_path):
+        self.build(tmp_path)
+        html = (tmp_path / "out" / "index.html").read_text(encoding="utf-8")
+        assert '<div class="ol-examples docutils">' in html
+
+    @pytest.mark.parametrize("presenters", ["", ":presenters: emilia, max\n"])
+    def test_a_box_that_does_not_name_one_presenter_warns_and_names_none(
+        self, tmp_path, presenters
+    ):
+        page = f"# Hafen\n\n:::{{ol-examples}}\n{presenters}Ja.\n: Yes.\n:::\n"
+        app = self.build(tmp_path, page)
+        assert "presenter" in self.warnings.getvalue()
+        examples = PageExamples.read(app.env.get_doctree("index"))
+        assert [example.presenter for example in examples] == [""]
+
+    def test_the_audio_examples_extension_brings_the_box(self, tmp_path):
+        app = self.build(tmp_path, extension="ol.docs.audio_examples")
+        assert len(PageExamples.read(app.env.get_doctree("index"))) == 3
+
 
 class TestAudioExamplesDirective:
     def test_a_paragraph_break_in_a_model_text_shows_as_a_gap(self, tmp_path):
         page = (
             "# Brief\n\n:::{audio-examples}\n:track: a1/writing/brief\n"
-            ":multiline:\n\nLiebe Anna,\n\nbis bald.\n"
+            ":mode: passage\n:presenters: lina\n\nLiebe Anna,\n\nbis bald.\n"
             ": Dear Anna,\n\n: see you soon.\n:::\n"
         )
         built = Build(tmp_path, {"brief": page})

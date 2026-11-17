@@ -59,8 +59,8 @@ class Block:
 
     @property
     def examples(self) -> bool:
-        """Whether this is a ``:::{div} ol-examples`` block."""
-        return self.is_directive("div") and "ol-examples" in self.arg
+        """Whether this is an ``:::{ol-examples}`` box."""
+        return self.is_directive("ol-examples")
 
 
 @dataclass

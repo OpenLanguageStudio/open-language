@@ -80,9 +80,27 @@ BROKEN_ARTICLES = {
         ),
         "gives the sentence",
     ),
-    "a presenter that is not a slug": (
-        lambda s: s.replace("---\n", "---\npresenter: Emilia Berger\n", 1),
-        "presenter:",
+    "an examples box that names no presenter": (
+        lambda s: s.replace(
+            ":::{ol-examples}\n:presenters: emilia\n", ":::{ol-examples}\n", 1
+        ),
+        "no :presenters:",
+    ),
+    "an examples box with two presenters": (
+        lambda s: s.replace(":presenters: emilia\n", ":presenters: emilia, max\n", 1),
+        "names one presenter",
+    ),
+    "an examples box with a presenter that is not a slug": (
+        lambda s: s.replace(":presenters: emilia\n", ":presenters: Emilia\n", 1),
+        "names one presenter",
+    ),
+    "an audio block that names no presenter": (
+        lambda s: s.replace(
+            ":track: a1/grammar/bestimmter-artikel\n:presenters: emilia\n",
+            ":track: a1/grammar/bestimmter-artikel\n",
+            1,
+        ),
+        "missing_presenters",
     ),
     "too many inline examples": (
         lambda s: s.replace(
@@ -248,11 +266,6 @@ def test_broken_article_is_red(tmp_path, source, case):
     assert any(expected in msg for msg in found), found
 
 
-def test_a_page_can_name_its_presenter(tmp_path, source):
-    named = source.replace("---\n", "---\npresenter: emilia-berger\n", 1)
-    assert errors(tmp_path, named) == []
-
-
 def test_stock_phrase_in_an_example_is_not_prose(tmp_path, source):
     glossed = source.replace(": The harbour is big.", ": The harbour is robust.", 1)
     assert errors(tmp_path, glossed) == []
@@ -378,21 +391,74 @@ def test_pack_without_a_running_number_is_red(tmp_path):
     assert any("running number" in msg for msg in found), found
 
 
-def test_short_model_text_is_red(tmp_path):
+@pytest.mark.parametrize(
+    ("mode", "writer", "words"),
+    [("passage", "", 6), ("correspondence", "lina:\n", 7)],
+)
+def test_short_model_text_is_red(tmp_path, mode, writer, words):
     article = tmp_path / "a1/writing/postcard.md"
     article.parent.mkdir(parents=True)
     filler = "Writing a postcard is a small, friendly task. " * 6
+    presenters = "lina" if mode == "passage" else "lina, roman"
+    reply = "" if mode == "passage" else "\nroman:\nDanke!\n: Thanks!\n"
     article.write_text(
         f"# A Postcard\n\n{filler}\n\n"
         ":::{audio-examples}\n:track: a1/writing/postcard\n:title: Eine Postkarte\n"
-        ":multiline:\n\nLiebe Anna,\nviele Grüße aus Hamburg.\n"
-        ": Dear Anna,\n: greetings from Hamburg.\n:::\n",
+        f":mode: {mode}\n:presenters: {presenters}\n\n{writer}"
+        "Liebe Anna,\nviele Grüße aus Hamburg.\n"
+        f": Dear Anna,\n: greetings from Hamburg.\n{reply}:::\n",
         encoding="utf-8",
     )
     found = [
         msg for lvl, msg in validate_file(article, tmp_path).items if lvl == "ERROR"
     ]
-    assert any("model text is 6 words" in msg for msg in found), found
+    assert any(f"model text is {words} words" in msg for msg in found), found
+
+
+SHORT_BLOCKS = {
+    "examples": (
+        "lina",
+        "Ich trinke Tee.\n: I drink tea.\n\nDu trinkst Kaffee.\n: You drink coffee.\n\n"
+        "Er trinkt Wasser.\n: He drinks water.\n",
+    ),
+    "dialogue": (
+        "lina, roman",
+        "lina: Hast du Zeit?\n: Do you have time?\n"
+        "roman: Ja, um drei.\n: Yes, at three.\n"
+        "lina: Super, bis dann.\n: Great, see you then.\n",
+    ),
+    "correspondence": (
+        "lina, roman",
+        "lina:\nKommst du heute?\n: Are you coming today?\n\n"
+        "roman:\nJa, um acht.\n: Yes, at eight.\n",
+    ),
+}
+
+
+def short_block_errors(tmp_path: Path, mode: str) -> list[str]:
+    article = tmp_path / "a1/grammar/short.md"
+    article.parent.mkdir(parents=True)
+    presenters, body = SHORT_BLOCKS[mode]
+    article.write_text(
+        "# Short\n\n"
+        ":::{audio-examples}\n:track: a1/grammar/short\n:title: Kurz\n"
+        f":title-en: Short\n:mode: {mode}\n:presenters: {presenters}\n\n{body}:::\n",
+        encoding="utf-8",
+    )
+    return [
+        msg for lvl, msg in validate_file(article, tmp_path).items if lvl == "ERROR"
+    ]
+
+
+@pytest.mark.parametrize("mode", ["dialogue", "correspondence"])
+def test_conversation_is_not_held_to_the_track_example_count(tmp_path, mode):
+    found = short_block_errors(tmp_path, mode)
+    assert not any("a track carries" in msg for msg in found), found
+
+
+def test_short_examples_block_is_red(tmp_path):
+    found = short_block_errors(tmp_path, "examples")
+    assert any("3 examples (a track carries" in msg for msg in found), found
 
 
 def test_review_rubric_is_well_formed():
