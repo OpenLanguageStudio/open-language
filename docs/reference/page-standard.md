@@ -81,7 +81,7 @@ Terms that are only a German word being taught, such as *der* or *Konjunktiv II*
 A page is built from the components in [components](components.md), which shows how to write each one. The kit is small on purpose: a reader who has seen one page knows what every box, table and card on the next one means.
 
 - A page uses no directive and no role that the components page does not list. [V: an unlisted directive or role is an error]
-- A component that the components page limits to some pages appears on those pages only: card grids on index pages and the Introduction, the button on the Introduction, the block quote in writing, forms tables in grammar, interface roles on How to use and Contributing. [V]
+- A component that the components page limits to some pages appears on those pages only: card grids on index pages and the Introduction, the block quote in writing, forms tables in grammar, interface roles on How to use and Contributing. [V]
 - Inline, a page has no footnotes, no strikethrough, no highlighted span and no abbreviation role. [V]
 - A paragraph is never made of bold text alone, such as `**Examples:**`. A label that is needed is an H3, where the category's template names one; otherwise the block speaks for itself. [V]
 
@@ -109,12 +109,12 @@ Nothing on a page is hidden behind a click, except the versions in a tab set. A 
 - A tab set shows one set of phrases in 2 or 3 versions along one line, such as informal and formal. Each tab label is 3 words or fewer, and every tab holds the same kind of thing: a phrase table or an example block. An article has at most 1 tab set, in grammar or how-to only. [V] When the learner has to compare the versions, one table holds them side by side instead. [R]
 - A tab never holds a heading, a notice, an audio block, Common mistakes or Key points. [V]
 
-### Card grids and buttons
+### Card grids
 
 - A card grid is `::::{grid} 1 1 2 2` with `:gutter: 3`. Each card is a `grid-item-card` with `:link:` and `:link-type: doc`, no header, no footer and no picture. [V]
 - A card's title is the title of the page it links to, and its body is one sentence of 15 words or fewer, unless the page's section sets another limit. [V]
 - A page that shows cards for its toctree's entries hides the toctree with `:hidden:`, and its cards link the same pages in the same order. [V]
-- The only button is the Introduction's, a primary `button-ref`. [V]
+- A page has no buttons: the way into a page is a link or a card. [V]
 
 ## The four categories
 
@@ -184,7 +184,7 @@ H1 is the bare level name. The one place the CEFR level appears in a title. The 
 2. `## What learners know`: 3 to 5 bullets of 15 words or fewer. What the course has taught by the end of the level, in plain words.
 3. `## What learners can do`: 4 to 6 bullets of 15 words or fewer. Each starts with a verb in its base form, and each is something a learner could be asked to do and a listener could judge.
 4. The toctree of the level's categories, in the order how-to, grammar, writing, vocabulary, hidden. [M]
-5. `## Categories`: a card grid of four cards, one per category, in the toctree's order, each linking to the category index with one sentence of 15 words or fewer on what its pages hold.
+4. `## Categories`: a card grid of four cards, one per category, in the toctree's order, each linking to the category index with one sentence of 15 words or fewer on what its pages hold.
 6. `## Additional reading`, as external links only.
 
 Parts 1 to 3 total 150 words or fewer. Levels stop at B2 for now. A level page makes no claim about an exam. It may cite the Council of Europe descriptors, which are public. [R]
@@ -194,12 +194,11 @@ Parts 1 to 3 total 150 words or fewer. Levels stop at B2 for now. A level page m
 The top-level `index.md`. H1 is exactly **Introduction**. [M] The sections are, in order, and no others: [V]
 
 1. A lead of 60 words or fewer: what the coursebook is, who it is for, that it is free and open.
-2. A primary button linking to the first level's page, labelled "Start with" and the level: **Start with A1**.
-3. `## How the course works`: that the pages are not a sequence, that any page can be read first, and that each ends with sentences to listen to. 80 words or fewer.
-4. `## Levels`: a card grid with one card per level that exists, each linking to its level page, its sentence 20 words or fewer. A level that exists has a card, and a card names a level that exists.
-5. `## Categories`: a card grid of exactly four cards, in the order how-to, grammar, writing, vocabulary, each linking to the first level's category index, its sentence 25 words or fewer.
-6. `## Where to start`: two to four bullets, each pairing a situation with a link: new to the language, a single problem, an unfamiliar term. The last always links to the glossary.
-7. The hidden toctree: `how_to_use`, `terminology`, `contributing`, then each level. [M]
+2. `## How the course works`: that the pages are not a sequence, that any page can be read first, and that each ends with sentences to listen to. 80 words or fewer.
+3. `## Levels`: a card grid with one card per level that exists, each linking to its level page, its sentence 20 words or fewer. A level that exists has a card, and a card names a level that exists.
+4. `## Categories`: a card grid of exactly four cards, in the order how-to, grammar, writing, vocabulary, each linking to the first level's category index, its sentence 25 words or fewer.
+5. `## Where to start`: two to four bullets, each pairing a situation with a link: new to the language, a single problem, an unfamiliar term. The last always links to the glossary.
+6. The hidden toctree: `how_to_use`, `terminology`, `contributing`, then each level. [M]
 
 The page is 350 words or fewer. [V]
 

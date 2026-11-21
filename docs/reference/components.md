@@ -27,12 +27,11 @@ This page shows how to write each component. How many a page may hold, and where
 | Block quote | `> ...` | The model text in a writing article. |
 | Tabs | `::::{tab-set}` | One set of phrases in two or three versions: *du* and *Sie*, spoken and written. |
 | Card grid | `::::{grid} 1 1 2 2` | The way into the pages below an index page. Index pages and the Introduction only. |
-| Button | `` ```{button-ref} `` | The Introduction's one call to start. |
 | Toctree | `` ```{toctree} `` | The menu. Index pages only. |
 
 The full list, which `ol validate` holds a page to:
 
-- **Directives:** `ol-examples`, `audio-examples`, `note`, `tip`, `important`, `warning`, `admonition` (the three titles only), `tab-set`, `tab-item`, `grid`, `grid-item-card`, `button-ref`, `toctree`, and `glossary` on the Terminology page.
+- **Directives:** `ol-examples`, `audio-examples`, `note`, `tip`, `important`, `warning`, `admonition` (the three titles only), `tab-set`, `tab-item`, `grid`, `grid-item-card`, `toctree`, and `glossary` on the Terminology page.
 - **Roles:** the language repository's marking roles, `stack`, `term`, `level` and `bdg-light`; on How to use and Contributing also `kbd`, `guilabel`, `menuselection`, `file`, `command` and `samp`.
 
 ## Inline
@@ -216,20 +215,7 @@ Everyday tasks, one per page: greeting, ordering, asking the way.
 ::::
 ```
 
-Cards have no header, no footer, no picture and no badge. [Rule](page-standard.md#card-grids-and-buttons)
-
-### Button
-
-The Introduction has one button, under its lead, that starts the course at its first level:
-
-````markdown
-```{button-ref} a1/index
-:ref-type: doc
-:color: primary
-
-Start with A1
-```
-````
+Cards have no header, no footer, no picture and no badge. [Rule](page-standard.md#card-grids)
 
 ## Page recipes
 
@@ -237,7 +223,7 @@ The [page standard](page-standard.md) gives every page's sections in order, and 
 
 | Page | Built from |
 |---|---|
-| Introduction | Lead, button, `## How the course works`, `## Levels` as a card per level, `## Categories` as four cards, `## Where to start` as a list, hidden toctree. |
+| Introduction | Lead, `## How the course works`, `## Levels` as a card per level, `## Categories` as four cards, `## Where to start` as a list, hidden toctree. |
 | Level page | Lead, `## What learners know` and `## What learners can do` as lists, hidden toctree, `## Categories` as four cards, `## Additional reading` as a list of external links. |
 | Category index with subcategories | Lead, hidden toctree, a card per subcategory. |
 | Flat category index, subcategory index | Lead, visible toctree. |
@@ -267,6 +253,6 @@ Everything else in the kitchen sink stays out of a Coursebook page. This page ca
 | `hlist` columns | A list of words is a phrase table, with room for notes. |
 | Pictures and figures | No artwork exists yet. When it does, a picture is a figure with alt text, and this page gains an entry. |
 | Collapsible elements (the `dropdown` directive) | They hide content. Anything worth writing on a page is worth showing: an aside is a notice, a detail is a sentence in the section, and a long digression is its own page. |
-| Cards with headers or footers, outline buttons, link buttons | One kind of card and one button keep every index page alike. |
+| Cards with headers or footers, and buttons (the `button-ref` directive) | One kind of card keeps every index page alike, and a link or a card is the way into a page. |
 | `eval-rst` | Everything a page needs is in MyST. |
 | Substitutions | A value set once in `conf.py` is a value a reader of the source cannot see. |

@@ -1,7 +1,7 @@
 """The components a page is built from, as ``docs/reference/components.md`` lists them.
 
 A page uses only the directives and roles listed here, each on the pages it is
-limited to. The rules for notices, badges, tabs, card grids and the button are
+limited to. The rules for notices, badges, tabs and card grids are
 in the page standard's Components section. The limits are in ``specs.yml``.
 """
 
@@ -44,7 +44,6 @@ DIRECTIVES = {
     "tab-item",
     "grid",
     "grid-item-card",
-    "button-ref",
     "toctree",
     "glossary",
 }
@@ -302,8 +301,6 @@ def _place(block: Block, page: Page) -> str | None:
         "introduction",
     ):
         return "card grids are for index pages and the Introduction"
-    if block.name == "button-ref" and page.kind != "introduction":
-        return "the only button is the Introduction's"
     if block.name == "glossary" and page.kind != "terminology":
         return "the glossary is on the Terminology page"
     if block.name == "tab-set" and not (

@@ -868,31 +868,6 @@ INTRODUCTION_PAGE = {
         ),
         "'Categories' has four cards",
     ),
-    "no button": (
-        lambda s: s[: s.index("```{button-ref}")] + s[s.index("## How the course") :],
-        "followed by a button to the first level",
-    ),
-    "button with another label": (
-        lambda s: s.replace("Start with A1", "Begin", 1),
-        "labelled 'Start with A1'",
-    ),
-    "outline button": (
-        lambda s: s.replace(":color: primary\n", ":color: primary\n:outline:\n", 1),
-        "never outlined",
-    ),
-    "button to another page": (
-        lambda s: s.replace("{button-ref} a1/index", "{button-ref} terminology", 1),
-        "links the first level's page",
-    ),
-    "second button": (
-        lambda s: s.replace(
-            "## Where to start\n",
-            "## Where to start\n\n```{button-ref} terminology\n:ref-type: doc\n"
-            ":color: primary\n\nTerms\n```\n",
-            1,
-        ),
-        "the Introduction has one button",
-    ),
     "one place to start": (
         lambda s: s.replace("- New to the language: [A1](a1/index.md).\n", "", 1),
         "'Where to start' has 1 bullets",

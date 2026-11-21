@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+### Changed: the Introduction has no button (breaking)
+
+The "Start with A1" button under the Introduction's lead is withdrawn. A page has no buttons: `button-ref` is no longer a component, so `ol validate` reports it on any page, the Introduction included. Before a language repository pins this version, delete the `button-ref` block from its `index.md`. The Introduction's template, the page standard and the components page follow.
+
 ## [0.14.0] - 2026-11-17
 
 ### Changed: every block names its presenters, and has a mode (breaking)

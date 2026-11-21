@@ -126,7 +126,7 @@ GRAMMAR = {
             "```{button-ref} /a1/grammar/cases/nominativ\n:ref-type: doc\n"
             ":color: primary\n\nGo\n```\n\n",
         ),
-        "the only button is the Introduction's",
+        "the button-ref directive is not a component",
     ),
     "a glossary in an article": (
         before(SECTION_2, "```{glossary}\nNoun\n  A word.\n```\n\n"),
