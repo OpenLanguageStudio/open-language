@@ -18,15 +18,6 @@ myst:
 {{Lead of 60 words or fewer: what this coursebook is, who it is for, and that it
 is free and open.}}
 
-```{button-ref} {{first_level}}/index
-:ref-type: doc
-:color: primary
-
-Start with {{FIRST_LEVEL}}
-```
-<!-- The page's one button: a primary button-ref to the first level's page,
-     labelled "Start with" and the level. -->
-
 ## How the course works
 
 {{80 words or fewer: that the pages are not a sequence, that any page can be

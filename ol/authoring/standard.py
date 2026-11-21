@@ -870,35 +870,6 @@ def _page(target: str) -> str:
     return target.lstrip("./").removesuffix(".md")
 
 
-def _check_button(rep, opening, blocks, first_level):
-    """The Introduction's one button, under its lead, starts the first level."""
-    buttons = [block for block in walk(blocks) if block.is_directive("button-ref")]
-    for extra in buttons[1:]:
-        rep.error(f"line {extra.line}: the Introduction has one button")
-    if not first_level:
-        return
-    level = first_level[0]
-    label = f"Start with {level.upper()}"
-    button = opening[1] if len(opening) > 1 else None
-    if button is None or not button.is_directive("button-ref"):
-        rep.error(
-            f"the lead is followed by a button to the first level, "
-            f"'```{{button-ref}} {level}/index' labelled '{label}'"
-        )
-        return
-    where = f"line {button.line}"
-    found = options(button)
-    if found.get("color") != "primary" or found.get("ref-type") != "doc":
-        rep.error(f"{where}: the button takes ':ref-type: doc' and ':color: primary'")
-    if "outline" in found:
-        rep.error(f"{where}: the button is filled, never outlined")
-    if _page(button.arg) != f"{level}/index":
-        rep.error(f"{where}: the button links the first level's page, {level}/index")
-    text = " ".join(plain(b.text) for b in button.children if b.kind == "paragraph")
-    if text != label:
-        rep.error(f"{where}: the button is labelled '{label}' (found '{text}')")
-
-
 def check_introduction(rep, body, workspace: Path, offset=0):
     """The Introduction page, part by part."""
     limits = SPECS["introduction_page"]
@@ -925,7 +896,6 @@ def check_introduction(rep, body, workspace: Path, offset=0):
         )
 
     levels = [lvl for lvl in LEVELS if (workspace / lvl / "index.md").is_file()]
-    _check_button(rep, opening, blocks, levels[:1])
     if section := _section(found, "Levels"):
         linked = [_page(card.link) for card in cards(section.blocks)]
         if linked != [f"{level}/index" for level in levels]:

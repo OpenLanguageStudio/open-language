@@ -24,8 +24,6 @@ def grid(*cards: tuple[str, str, str]) -> str:
 
 INTRODUCTION = (
     f"{SIDEBAR}# Introduction\n\nA free, open coursebook.\n\n"
-    "```{button-ref} a1/index\n:ref-type: doc\n:color: primary\n\n"
-    "Start with A1\n```\n\n"
     "## How the course works\n\nAny page can be read first.\n\n"
     "## Levels\n\n" + grid(("A1", "a1/index", "The first days.")) + "\n"
     "## Categories\n\n"
