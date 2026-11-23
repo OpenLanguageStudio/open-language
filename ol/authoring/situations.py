@@ -24,9 +24,16 @@ SITUATIONS_BOX = "situations"
 HOW_TO_BOX = "how-to-links"
 
 
-def _front_matter(path: Path) -> dict:
-    """The page's front matter, or nothing when it has none or it does not parse."""
-    text = path.read_text(encoding="utf-8").lstrip("﻿")
+def front_matter(text: str) -> dict:
+    """A page's front matter, or nothing when it has none or it does not parse.
+
+    Args:
+        text: The page's Markdown.
+
+    Returns:
+        The front matter as a dict.
+    """
+    text = text.lstrip("\ufeff")
     if not text.startswith("---"):
         return {}
     head, sep, _ = text[3:].partition("\n---")
@@ -37,6 +44,11 @@ def _front_matter(path: Path) -> dict:
     except yaml.YAMLError:
         return {}
     return found if isinstance(found, dict) else {}
+
+
+def _front_matter(path: Path) -> dict:
+    """The front matter of the page at ``path``."""
+    return front_matter(path.read_text(encoding="utf-8"))
 
 
 def _name(link: str) -> str:
@@ -103,7 +115,9 @@ def check_how_to_front_matter(rep, fm: dict | None, path: Path, workspace: Path 
             )
             continue
         if workspace and not (workspace / f"{name}.md").is_file():
-            rep.error(f"front matter '{FRONT_MATTER_KEY}:' entry '{name}' does not exist")
+            rep.error(
+                f"front matter '{FRONT_MATTER_KEY}:' entry '{name}' does not exist"
+            )
         if own is not None and LEVELS.index(bits[0]) > own:
             rep.error(
                 f"front matter '{FRONT_MATTER_KEY}:' entry '{name}' is above the "

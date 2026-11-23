@@ -12,7 +12,8 @@ A situation article is one everyday scene, heard: a conversation at a party, at 
 - The Introduction shows a card for each category the first level has, rather than exactly four.
 - The review rubric gains `situation-at-level`.
 
-The directives `situations` and `how-to-links` that draw the two boxes are not in this change. The release that carries this entry carries them too.
+- The directives `situations` and `how-to-links` draw the two boxes from the situations' front matter, each as a titled list of page links with the level badge after a page of another level. The Situations box lists situations by level, then in the order of the level's `situations/index`. A how-to article is written again when the situations naming it change, so a new situation shows on the pages it names without a fresh build. A box that would link nothing warns. `ol.docs.audio_examples` loads them, so a language repository's `conf.py` needs no change.
+- `link-boxes.css` styles both boxes in the violet accent, in light and dark mode. The shared stylesheet imports it. An app that draws the pages in its own theme links it next to `marks.css`.
 
 ## [0.15.0] - 2026-11-21
 

@@ -19,7 +19,7 @@ Each language lives in its own workspace repository, which installs this package
 - **`ol templates`** lists the article templates, or prints one to start a new article from.
 - **`ol docs`** builds the coursebook, with `--live` for a local preview that rebuilds on save.
 - **`ol outline`** prints the heading structure of the CEFR-level docs.
-- The Sphinx extensions `ol.docs.audio_examples`, `ol.docs.roles` and `ol.docs.branding`, plus the shared stylesheet, fonts and brand assets.
+- The Sphinx extensions `ol.docs.audio_examples` (which loads `ol.docs.page_examples` and `ol.docs.situations`), `ol.docs.roles` and `ol.docs.branding`, plus the shared stylesheet, fonts and brand assets.
 - The page layout in `ol/docs/_templates`, which a workspace's `conf.py` adds to `templates_path`. Its footer says, on every page, that the text is © Open Language under [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/) and that the audio recordings are not covered by that licence: all rights reserved, no use for AI training.
 
 ## Install
@@ -95,6 +95,30 @@ An `ol-examples` box shows sentences beside the explanation they illustrate, eac
 The box is the `ol-examples` directive, `ol.docs.page_examples.ExamplesBox`. The module's `setup` registers it and `ol.docs.audio_examples` loads the module, so a language repository's `extensions` stay as they are. It is drawn as a `div` of class `ol-examples`. What is spoken is the sentence as the reader sees it, with its roles and emphasis gone. `ol validate` fails a box with no `:presenters:`, one that names more than one presenter or a value that is not a slug, and a box that gives one sentence twice. It cannot know who the presenters are, since that is not part of a language workspace. Whoever serves the pages decides what a name means.
 
 `ol.docs.page_examples.PageExamples.read(doctree)` reads a built page's boxes into `ol.blocks.Example` values, in page order, each with its box's presenter as `presenter`, skipping a box that holds anything but sentences and translations. `ol.blocks.BlockReader.spoken(text)` gives the same sentence from a page's Markdown.
+
+## The Situations and How to boxes
+
+`ol.docs.situations` adds two boxes, written with no options and no body. A situation article names the how-to articles it puts to use in its front matter, and both boxes are drawn from that list (ADR 2):
+
+```markdown
+---
+how-to:
+  - /a1/how-to/introduce-yourself.md
+---
+# At a party
+
+Lena meets Tom at a friend's party.
+
+:::{how-to-links}
+:::
+```
+
+- `how-to-links`, on a situation article, links each how-to article its front matter names, in that order.
+- `situations`, on a how-to article, links every situation article whose front matter names it, at any level: by level, then in the order of that level's `situations/index` toctree.
+
+Each link has the target page's title as its text, as a link with empty brackets does. A link to a page of another level is followed by the level badge. A box is drawn once every page is read, and a how-to article is written again whenever the list of situations naming it changes, so adding, removing or reordering a situation redraws the pages it names. A box that would link nothing warns and is left out.
+
+Each box is a `div` of class `ol-links` and `ol-links--situations` or `ol-links--how-to-links`, holding a title and a list. `link-boxes.css` styles it from the accents in `marks.css`, so an app that draws the pages in its own theme links both files. `ol.docs.audio_examples` loads the module, so a language repository's `extensions` stay as they are.
 
 ## The stack role
 

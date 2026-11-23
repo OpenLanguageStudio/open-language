@@ -94,11 +94,23 @@ def level_role(name, rawtext, text, lineno, inliner, options={}, content=[]):  #
             location=(env.docname, lineno),
         )
         return [nodes.Text(text)], []
-    html = (
+    return [nodes.raw("", level_badge_html(code), format="html")], []
+
+
+def level_badge_html(code: str) -> str:
+    """The HTML of a level's badge, in the level's colour.
+
+    Args:
+        code: The level, in lower case, such as ``b1``.
+
+    Returns:
+        The badge as a ``span``.
+    """
+    colour = LEVEL_COLOURS[code]
+    return (
         f'<span class="ol-level ol-level--{code}" style="background-color: '
         f'{colour.background}; color: {colour.text}">{code.upper()}</span>'
     )
-    return [nodes.raw("", html, format="html")], []
 
 
 def show_term_names(app, doctree):

@@ -109,6 +109,17 @@ Wir nehmen {akk}`die` Straßenbahn.
 
 `audio-examples` writes or shows a track, under `## Hear it in practice`. The block's options are in the README of this package and in `ol/authoring/templates/audio-examples-block.md`. It never sits inside a tab or a notice.
 
+### Situations and How to boxes
+
+The two boxes link a how-to article and the situations that put it to use. Neither is written by hand: write the directive with nothing inside it, and the build fills it from the situations' `how-to:` front matter.
+
+```markdown
+:::{situations}
+:::
+```
+
+`situations` stands on a how-to article, after the explanation and any Prerequisites, in place of `## When to use it`. `how-to-links` stands on a situation article, straight after the lead. Each link shows the page's title, and a page of another level is followed by its level badge. Both are drawn as a tinted card with an icon and a small title, so a reader does not take them for a notice. [Rule for How to](page-standard.md#how-to) and [for Situations](page-standard.md#situations)
+
 ### Notices
 
 A notice sets one fact apart from the text. Each of the four kinds has one meaning and its own colour, so the reader knows what a box holds before reading it:
