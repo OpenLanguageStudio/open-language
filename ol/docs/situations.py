@@ -107,9 +107,7 @@ def level_of(docname: str) -> str:
 def read_how_to_links(app, docname, source):
     """Keep the how-to articles a situation article's front matter names."""
     if SITUATION_PAGE.fullmatch(docname):
-        how_to_links_on(app.env)[docname] = (
-            how_to_names(front_matter(source[0])) or []
-        )
+        how_to_links_on(app.env)[docname] = how_to_names(front_matter(source[0])) or []
 
 
 def situations_naming(env, docname: str) -> tuple[str, ...]:
@@ -218,9 +216,7 @@ class DrawLinkBoxes(SphinxPostTransform):
             else:
                 node.parent.remove(node)
 
-    def box(
-        self, box: str, targets: tuple[str, ...], docname: str
-    ) -> nodes.container:
+    def box(self, box: str, targets: tuple[str, ...], docname: str) -> nodes.container:
         """Draw one box.
 
         Args:
