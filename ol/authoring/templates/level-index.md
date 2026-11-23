@@ -30,6 +30,7 @@ html_theme.sidebar_secondary.remove:
 :hidden:
 
 {{how-to/index: when the category exists}}
+{{situations/index: when the category exists}}
 {{grammar/index: when the category exists}}
 {{writing/index: when the category exists}}
 {{vocabulary/index: when the category exists}}
@@ -45,6 +46,13 @@ html_theme.sidebar_secondary.remove:
 :link-type: doc
 
 {{One sentence of 15 words or fewer on what the category's pages hold.}}
+:::
+
+:::{grid-item-card} Situations
+:link: situations/index
+:link-type: doc
+
+{{One sentence.}}
 :::
 
 :::{grid-item-card} Grammar

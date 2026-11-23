@@ -48,7 +48,7 @@ from pathlib import Path
 
 import yaml
 
-from ol.authoring import standard
+from ol.authoring import situations, standard
 from ol.authoring.components import Page, check_components
 from ol.authoring.glossary import check_terminology
 from ol.authoring.specs_data import SPECS
@@ -57,7 +57,7 @@ from ol.workspace import find_workspace, page_path
 
 TEMPLATES_DIR = Path(__file__).resolve().parent / "templates"
 
-CATEGORIES = ("how-to", "grammar", "writing", "vocabulary")
+CATEGORIES = ("how-to", "situations", "grammar", "writing", "vocabulary")
 STUB_BODY_BYTES = SPECS["common"]["stub_body_bytes"]
 
 
@@ -198,6 +198,9 @@ def check_audio_block(rep: Report, block: Block, ctype: str | None):
             "titles use no dashes"
         )
 
+    if ctype == "situations":
+        situations.check_situation_track(rep, block, where)
+        return
     if block.mode in ("passage", "correspondence"):
         if ctype == "writing":
             words = sum(len(example.sentence.split()) for example in block.examples)
@@ -684,8 +687,11 @@ def validate_article(path: Path, ctype: str, workspace: Path | None) -> Report:
             "level": parts[0] if parts else None,
             "workspace": workspace,
             "offset": offset,
+            "path": path,
         },
     )
+    if ctype == "situations":
+        situations.check_how_to_front_matter(rep, fm, path, workspace)
 
     # standardized example format
     n_divs = len(re.findall(r"^:::\{ol-examples\}", body, re.M))
@@ -734,6 +740,8 @@ def validate_article(path: Path, ctype: str, workspace: Path | None) -> Report:
             )
         for block in blocks:
             check_audio_block(rep, block, ctype)
+        if ctype == "situations":
+            situations.check_situation_tracks(rep, len(blocks))
 
     if common.get("check_doc_links"):
         check_doc_links(rep, body, workspace)

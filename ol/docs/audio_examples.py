@@ -186,7 +186,7 @@ def show_duplicates(app, doctree, docname):
 
 
 def setup(app):
-    """Register the directive, the ``ol-examples`` box and the duplicate hooks.
+    """Register the directive, the ``ol-examples`` box, the link boxes and the hooks.
 
     The hooks match duplicates with their tracks.
 
@@ -195,6 +195,7 @@ def setup(app):
         environment saved by a version that recorded blocks in another form.
     """
     app.setup_extension("ol.docs.page_examples")
+    app.setup_extension("ol.docs.situations")
     app.add_node(DuplicateTrack)
     app.add_directive("audio-examples", AudioExamplesDirective)
     app.add_js_file("audio-examples.js")

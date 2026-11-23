@@ -20,6 +20,8 @@ This page shows how to write each component. How many a page may hold, and where
 | Register badge | ``{bdg-light}`informal` `` | A register in a Notes cell. |
 | Example block | `:::{ol-examples}` with `:presenters:` | Example sentences with their translations, beside the explanation. |
 | Audio block | `:::{audio-examples}` | The page's track, under Hear it in practice. |
+| Situations box | `:::{situations}` | On a how-to article, the situations that put it to use. The build writes the list. |
+| How to box | `:::{how-to-links}` | On a situation article, the how-to articles it puts to use. The build writes the list. |
 | Notice | `:::{tip}` and three others | A fact set apart from the text: a nuance, a memory aid, a trap. |
 | Titled notice | `:::{admonition} Common mistakes` | Prerequisites, Common mistakes and Key points, and no other title. |
 | Phrase table | Markdown pipe table | Phrases with notes, two columns. |
@@ -31,7 +33,7 @@ This page shows how to write each component. How many a page may hold, and where
 
 The full list, which `ol validate` holds a page to:
 
-- **Directives:** `ol-examples`, `audio-examples`, `note`, `tip`, `important`, `warning`, `admonition` (the three titles only), `tab-set`, `tab-item`, `grid`, `grid-item-card`, `toctree`, and `glossary` on the Terminology page.
+- **Directives:** `ol-examples`, `audio-examples`, `note`, `tip`, `important`, `warning`, `admonition` (the three titles only), `situations` on how-to articles, `how-to-links` on situation articles, `tab-set`, `tab-item`, `grid`, `grid-item-card`, `toctree`, and `glossary` on the Terminology page.
 - **Roles:** the language repository's marking roles, `stack`, `term`, `level` and `bdg-light`; on How to use and Contributing also `kbd`, `guilabel`, `menuselection`, `file`, `command` and `samp`.
 
 ## Inline
@@ -106,6 +108,17 @@ Wir nehmen {akk}`die` Straßenbahn.
 ### Audio block
 
 `audio-examples` writes or shows a track, under `## Hear it in practice`. The block's options are in the README of this package and in `ol/authoring/templates/audio-examples-block.md`. It never sits inside a tab or a notice.
+
+### Situations and How to boxes
+
+The two boxes link a how-to article and the situations that put it to use. Neither is written by hand: write the directive with nothing inside it, and the build fills it from the situations' `how-to:` front matter.
+
+```markdown
+:::{situations}
+:::
+```
+
+`situations` stands on a how-to article, after the explanation and any Prerequisites, in place of `## When to use it`. `how-to-links` stands on a situation article, straight after the lead. Each link shows the page's title, and a page of another level is followed by its level badge. Both are drawn as a tinted card with an icon and a small title, so a reader does not take them for a notice. [Rule for How to](page-standard.md#how-to) and [for Situations](page-standard.md#situations)
 
 ### Notices
 
@@ -223,12 +236,13 @@ The [page standard](page-standard.md) gives every page's sections in order, and 
 
 | Page | Built from |
 |---|---|
-| Introduction | Lead, `## How the course works`, `## Levels` as a card per level, `## Categories` as four cards, `## Where to start` as a list, hidden toctree. |
-| Level page | Lead, `## What learners know` and `## What learners can do` as lists, hidden toctree, `## Categories` as four cards, `## Additional reading` as a list of external links. |
+| Introduction | Lead, `## How the course works`, `## Levels` as a card per level, `## Categories` as a card per category of the first level, `## Where to start` as a list, hidden toctree. |
+| Level page | Lead, `## What learners know` and `## What learners can do` as lists, hidden toctree, `## Categories` as a card per category, `## Additional reading` as a list of external links. |
 | Category index with subcategories | Lead, hidden toctree, a card per subcategory. |
 | Flat category index, subcategory index | Lead, visible toctree. |
 | Grammar article | Opening paragraphs, Prerequisites, form and use sections with forms tables, example blocks and a notice where one helps, Common mistakes, Hear it in practice, Summary with Key points, Related articles. |
-| How-to article | Opening paragraphs, Prerequisites, When to use it, Key phrases as phrase tables (or one tab set of them), Culture note, Hear it in practice, Summary, Related articles. |
+| How-to article | Opening paragraphs, Prerequisites, the Situations box or When to use it, Key phrases as phrase tables (or one tab set of them), Culture note, Hear it in practice, Summary, Related articles. |
+| Situation article | Lead, the How to box, Hear it in practice with one or two dialogue, correspondence or passage blocks, What to listen for as a list, Related articles. |
 | Writing article | Opening paragraphs, Prerequisites, one or two Example sections each with a block quote and its own Hear it in practice, Building blocks as a phrase table, Summary, Related articles. |
 | Vocabulary article | Opening paragraphs, The words as one phrase table, Hear it in practice, Summary, Related articles. |
 

@@ -21,7 +21,7 @@ A language repository's `AGENTS.md` links this page and does not restate it. It 
 
 ## Categories
 
-Each level has up to four categories, each a directory directly under the level: `how-to`, `grammar`, `writing` and `vocabulary`. There are no others: `topics` and `situations` are not in use, and material about understanding a scenario goes in a how-to article. `ol validate` checks the menu these make (see `CONTEXT.md`, Menu).
+Each level has up to five categories, each a directory directly under the level: `how-to`, `situations`, `grammar`, `writing` and `vocabulary`. There are no others: `topics` is not in use. `ol validate` checks the menu these make (see `CONTEXT.md`, Menu).
 
 ## File names
 
@@ -34,7 +34,9 @@ Each level has up to four categories, each a directory directly under the level:
 
 **Grammar.** Grammar at B levels adds depth, such as exceptions and register, rather than more topics.
 
-**How to.** A goal a learner meets in real situations. Its title finishes the phrase "How to ...", so it opens on a verb in its base form, such as "Order food and drink". The articles are read in any order, so an article names what it truly depends on in its Prerequisites, and nothing else.
+**How to.** A goal a learner meets in real situations. Its title finishes the phrase "How to ...", so it opens on a verb in its base form, such as "Order food and drink". Once a situation names it, it carries `:::{situations}` instead of `## When to use it`. The articles are read in any order, so an article names what it truly depends on in its Prerequisites, and nothing else.
+
+**Situations.** One everyday scene, heard: the people, the place and what they say. A situation shows a how-to goal reached and teaches nothing itself, so it has no phrase tables and no explanation. Its front matter names the one to three how-to articles it puts to use (`how-to:`), at its level or below, and the build links both ways from there. Most are dialogues of six to twenty lines. Keep to the language of the level and of the linked how-to articles, so a learner who has read them can follow every line. A scene may come back at a higher level with harder language.
 
 **Vocabulary.** One theme. At higher levels a pack may widen the words for one meaning ("Ways to say big"). A theme that cannot fill a pack with words at its level waits for a higher level.
 

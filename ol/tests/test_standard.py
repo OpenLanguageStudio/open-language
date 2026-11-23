@@ -22,12 +22,14 @@ PATHS = {
     "how-to": "a1/how-to/greetings.md",
     "writing": "a1/writing/email-formal-1.md",
     "vocabulary": "a1/vocabulary/at-the-beach-1.md",
+    "situations": "a1/situations/at-a-party.md",
 }
 LINK_TARGETS = [
     "a1/grammar/articles/unbestimmter-artikel.md",
     "a1/grammar/cases/nominativ.md",
     "a1/grammar/cases/akkusativ.md",
     "a1/grammar/other/nomen-genus-plural.md",
+    "a1/how-to/introduce-yourself.md",
 ]
 CONF = 'custom_roles = ["akk", "article"]\n'
 WORDS_30 = " ".join(["word"] * 30) + "."
@@ -857,7 +859,7 @@ INTRODUCTION_PAGE = {
     ),
     "categories out of order": (
         lambda s: s.replace(":link: a1/how-to/index", ":link: a1/grammar/index", 1),
-        "'Categories' has four cards, linking in order",
+        "'Categories' has a card for each category the first level has, linking in order",
     ),
     "three categories": (
         lambda s: s.replace(
@@ -866,7 +868,7 @@ INTRODUCTION_PAGE = {
             "",
             1,
         ),
-        "'Categories' has four cards",
+        "'Categories' has a card for each category the first level has",
     ),
     "one place to start": (
         lambda s: s.replace("- New to the language: [A1](a1/index.md).\n", "", 1),

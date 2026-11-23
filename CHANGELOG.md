@@ -2,6 +2,19 @@
 
 ## [Unreleased]
 
+### Added: Situations, a fifth category
+
+A situation article is one everyday scene, heard: a conversation at a party, at the checkout, at a hotel desk. It shows a how-to goal reached and teaches nothing itself (ADR 2). A level lists its categories in the order how-to, situations, grammar, writing, vocabulary, and the sidebar names the new one Situations.
+
+- `situations-article.md` is its template, and `specs.yml` holds its rules under `types.situations`. A situation has a lead that sets the scene, the `:::{how-to-links}` box, `## Hear it in practice` with one `dialogue`, `correspondence` or `passage` block (or two, each under an H3, for two versions of one scene), `## What to listen for` with two to four bullets, and optional Related articles. It has no tables, examples boxes or titled notices. A dialogue has 6 to 20 lines.
+- A situation names the one to three how-to articles it puts to use in its front matter, under `how-to:`, at its level or below. `ol validate` checks each one exists.
+- A how-to article that a situation names carries `:::{situations}` after its explanation in place of `## When to use it`. A how-to article no situation names keeps the section, so content that passed 0.15.0 still passes.
+- The Introduction shows a card for each category the first level has, rather than exactly four.
+- The review rubric gains `situation-at-level`.
+
+- The directives `situations` and `how-to-links` draw the two boxes from the situations' front matter, each as a titled list of page links with the level badge after a page of another level. The Situations box lists situations by level, then in the order of the level's `situations/index`. A how-to article is written again when the situations naming it change, so a new situation shows on the pages it names without a fresh build. A box that would link nothing warns. `ol.docs.audio_examples` loads them, so a language repository's `conf.py` needs no change.
+- `link-boxes.css` styles both boxes in the violet accent, in light and dark mode. The shared stylesheet imports it. An app that draws the pages in its own theme links it next to `marks.css`.
+
 ## [0.15.0] - 2026-11-21
 
 ### Changed: the Introduction has no button (breaking)

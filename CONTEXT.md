@@ -39,9 +39,17 @@ A CEFR level, written in lower case in paths: `a1`, `a2`, `b1`, `b2`. There
 are no levels above B2.
 
 **Category**:
-The kind of article, which decides its template: `how-to`, `grammar`,
-`writing`, `vocabulary`. A level lists them in that order, and no other.
-The sidebar shows each by its name: How to, Grammar, Writing, Vocabulary.
+The kind of article, which decides its template: `how-to`, `situations`,
+`grammar`, `writing`, `vocabulary`. A level lists them in that order, and no
+other. The sidebar shows each by its name: How to, Situations, Grammar,
+Writing, Vocabulary.
+
+**Situation**:
+An article of the `situations` category: one everyday scene, heard, such as a
+conversation at a party. It shows a goal reached and teaches nothing itself; it
+names the how-to articles it puts to use in its front matter (`how-to:`). See
+ADR 2.
+_Avoid_: scenario, role play (for the article).
 
 **Menu**:
 The site's navigation, built from the toctree of the top-level `index.md` and of

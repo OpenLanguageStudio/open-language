@@ -28,7 +28,7 @@ The numeric limits live in `ol/authoring/specs.yml`. This page names the rule an
 
 ## The frame every article shares
 
-An article is these parts, in this order. The four category sections below fill in the middle.
+An article is these parts, in this order. The five category sections below fill in the middle.
 
 | # | Part | Rule | Check |
 |---|---|---|---|
@@ -116,7 +116,7 @@ Nothing on a page is hidden behind a click, except the versions in a tab set. A 
 - A page that shows cards for its toctree's entries hides the toctree with `:hidden:`, and its cards link the same pages in the same order. [V]
 - A page has no buttons: the way into a page is a link or a card. [V]
 
-## The four categories
+## The five categories
 
 Where a page genuinely differs, add up to the limit shown for "other sections" between the named sections. The frame above does not bend.
 
@@ -140,11 +140,26 @@ The H1 finishes the phrase "How to ...", so it opens on a verb in its base form:
 | Order | Section | Rule |
 |---|---|---|
 | 1 | Opening paragraphs | Lead and explanation. |
-| 2 | `## When to use it` | The situations the goal arises in. |
+| 2 | `## When to use it` or `:::{situations}` | The situations the goal arises in. Once a situation article names the page in its `how-to:` front matter, the `:::{situations}` box takes the place of the section: it stands in the opening, after the explanation and any Prerequisites, and the build lists the situations in it. [V] |
 | 3 | `## Key phrases` | The phrases, grouped by situation with H3 group names. Two columns at most. |
 | 4 | Other sections | Zero to three H2s, such as how the phrases change with register. |
 | 5 | Culture note | Optional, 80 words or fewer, under the heading `## Culture note`. |
 | 6 | Closing | Hear it in practice, Summary, Related articles. |
+
+### Situations
+
+One everyday scene, heard. A situation article shows a how-to goal reached and teaches nothing itself (ADR 2). Its H1 names the scene in English, five words or fewer, and does not finish "How to ...": **At a party**, **Paying at the checkout**. [R]
+
+| Order | Section | Rule |
+|---|---|---|
+| 1 | Front matter `how-to:` | One to three links to how-to articles at the article's level or below, in the form `/a1/how-to/introduce-yourself.md`. [V] |
+| 2 | Lead | One or two sentences, 20 to 50 words, setting the scene: who, where, what is happening. There is no explanation paragraph. [V] |
+| 3 | `:::{how-to-links}` | Straight after the lead, with no options and no body. The build writes the links from the front matter. [V] |
+| 4 | `## Hear it in practice` | One `dialogue`, `correspondence` or `passage` block, or two for two versions of one scene, each under its own H3. A dialogue has 6 to 20 lines. [V] |
+| 5 | `## What to listen for` | Two to four bullets of 30 words or fewer, each pointing at one line of the scene. [V] |
+| 6 | Closing | Related articles, optional. |
+
+A situation article has no tables, no examples boxes, no Key points and no Common mistakes. [V]
 
 ### Writing
 
@@ -170,7 +185,7 @@ An index page is not an article. It has no Hear it in practice and no summary.
 
 ### Category index
 
-H1 is the bare category name: **How to**, **Grammar**, **Writing**, **Vocabulary**. [M] The page opens with one to three plain sentences on what its articles have in common. [V] The toctree lists the articles, hidden numbering off. A how-to index never says to work through its articles in order: they are read in any order. [R]
+H1 is the bare category name: **How to**, **Situations**, **Grammar**, **Writing**, **Vocabulary**. [M] The page opens with one to three plain sentences on what its articles have in common. [V] The toctree lists the articles, hidden numbering off. A how-to index never says to work through its articles in order: they are read in any order. [R]
 
 A category index whose toctree lists subcategories, such as A1 Grammar, hides its toctree and shows a card for each subcategory in a card grid, in the toctree's order. A flat category index, and every subcategory index, shows its toctree: a list of twenty articles is shorter on a phone than twenty cards. [V]
 
@@ -183,8 +198,8 @@ H1 is the bare level name. The one place the CEFR level appears in a title. The 
 1. A lead paragraph of 40 words or fewer: where the level sits in the CEFR and where it starts.
 2. `## What learners know`: 3 to 5 bullets of 15 words or fewer. What the course has taught by the end of the level, in plain words.
 3. `## What learners can do`: 4 to 6 bullets of 15 words or fewer. Each starts with a verb in its base form, and each is something a learner could be asked to do and a listener could judge.
-4. The toctree of the level's categories, in the order how-to, grammar, writing, vocabulary, hidden. [M]
-4. `## Categories`: a card grid of four cards, one per category, in the toctree's order, each linking to the category index with one sentence of 15 words or fewer on what its pages hold.
+4. The toctree of the level's categories, in the order how-to, situations, grammar, writing, vocabulary, hidden. [M]
+4. `## Categories`: a card grid of one card per category, in the toctree's order, each linking to the category index with one sentence of 15 words or fewer on what its pages hold.
 6. `## Additional reading`, as external links only.
 
 Parts 1 to 3 total 150 words or fewer. Levels stop at B2 for now. A level page makes no claim about an exam. It may cite the Council of Europe descriptors, which are public. [R]
@@ -196,7 +211,7 @@ The top-level `index.md`. H1 is exactly **Introduction**. [M] The sections are, 
 1. A lead of 60 words or fewer: what the coursebook is, who it is for, that it is free and open.
 2. `## How the course works`: that the pages are not a sequence, that any page can be read first, and that each ends with sentences to listen to. 80 words or fewer.
 3. `## Levels`: a card grid with one card per level that exists, each linking to its level page, its sentence 20 words or fewer. A level that exists has a card, and a card names a level that exists.
-4. `## Categories`: a card grid of exactly four cards, in the order how-to, grammar, writing, vocabulary, each linking to the first level's category index, its sentence 25 words or fewer.
+4. `## Categories`: a card grid of one card for each category the first level has, in the order how-to, situations, grammar, writing, vocabulary, each linking to the first level's category index, its sentence 25 words or fewer.
 5. `## Where to start`: two to four bullets, each pairing a situation with a link: new to the language, a single problem, an unfamiliar term. The last always links to the glossary.
 6. The hidden toctree: `how_to_use`, `terminology`, `contributing`, then each level. [M]
 

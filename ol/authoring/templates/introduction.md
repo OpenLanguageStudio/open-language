@@ -50,6 +50,13 @@ read first, and that each ends with sentences to listen to.}}
 {{One sentence of 25 words or fewer: what to say in a situation.}}
 :::
 
+:::{grid-item-card} Situations
+:link: {{first_level}}/situations/index
+:link-type: doc
+
+{{Everyday scenes to listen to.}}
+:::
+
 :::{grid-item-card} Grammar
 :link: {{first_level}}/grammar/index
 :link-type: doc

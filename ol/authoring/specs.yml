@@ -213,8 +213,11 @@ types:
 
   how-to:
     # The H1 finishes "How to ...": a verb in its base form opens it.
+    # "When to use it" gives way to the :::{situations} box once a situation
+    # names the article (ADR 2), so it is checked against the situations.
     sections:
       - heading: When to use it
+        count: [0, 1]
       - heading: Key phrases
       - other: true
         count: [0, 3]
@@ -231,6 +234,29 @@ types:
     min_audio_examples: 1
     ordered: false
     english_filename: true
+
+  situations:
+    # One everyday scene, heard (ADR 2). The lead sets the scene and no
+    # explanation follows; the :::{how-to-links} box stands after it.
+    sections:
+      - heading: Hear it in practice
+      - heading: What to listen for
+      - heading: Related articles
+        count: [0, 1]
+    require_examples_div: false
+    require_summary_admonitions: false
+    require_common_mistakes: false
+    min_audio_examples: 1
+    ordered: false
+    english_filename: true
+    # The front matter's how-to: list holds one to three how-to articles.
+    how_to_links: [1, 3]
+    # The track modes a scene is written in, and how many tracks a page has.
+    modes: [dialogue, correspondence, passage]
+    max_tracks: 2
+    dialogue_lines: [6, 20]
+    listen_bullets: [2, 4]
+    listen_bullet_max_words: 30
 
   writing:
     # Each example holds the model text, a note on it and its own

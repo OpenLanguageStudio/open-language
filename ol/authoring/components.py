@@ -38,6 +38,8 @@ TITLED_NOTICES = {
 DIRECTIVES = {
     "ol-examples",
     "audio-examples",
+    "situations",
+    "how-to-links",
     *FREE_NOTICES,
     "admonition",
     "tab-set",
@@ -307,6 +309,10 @@ def _place(block: Block, page: Page) -> str | None:
         article and page.category in ("grammar", "how-to")
     ):
         return "tabs are for grammar and how-to articles"
+    if block.name == "situations" and not (article and page.category == "how-to"):
+        return "the situations box is for how-to articles"
+    if block.name == "how-to-links" and not (article and page.category == "situations"):
+        return "the how-to-links box is for situation articles"
     if block.name == "toctree" and article:
         return "the menu is on index pages"
     return None

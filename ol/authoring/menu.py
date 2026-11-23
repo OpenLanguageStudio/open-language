@@ -4,7 +4,7 @@ The menu is the toctree of the root ``index.md`` and of each level index. The
 top level holds exactly the standard pages in ``TOP_LEVEL_PAGES``. The root page
 is the Introduction: its toctree lists the other standard pages in their order,
 then the levels from A1 to B2. Each level lists its categories in the
-order how-to, grammar, writing, vocabulary. Nothing else goes in the menu.
+order how-to, situations, grammar, writing, vocabulary. Nothing else goes in the menu.
 
 The sidebar names the categories, and no toctree numbers its entries: the
 course is not read in a line, so the menu never says first, second, third.
@@ -23,6 +23,7 @@ from ol.workspace import ROOT_EXCLUDES
 
 CATEGORY_NAMES = {
     "how-to": "How to",
+    "situations": "Situations",
     "grammar": "Grammar",
     "writing": "Writing",
     "vocabulary": "Vocabulary",

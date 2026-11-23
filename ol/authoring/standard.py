@@ -25,6 +25,12 @@ from ol.authoring.page import (
     walk,
     word_count,
 )
+from ol.authoring.situations import (
+    SITUATIONS_BOX,
+    check_situation,
+    check_situation_opening,
+    check_situations_box,
+)
 from ol.authoring.specs_data import SPECS
 from ol.levels import LEVELS
 
@@ -111,6 +117,8 @@ def check_opening(rep, opening, fm, language, level, category):
             f"line {lead.line}: the lead paragraph uses none of the phrasings in "
             "html_meta.keywords: use the main one a learner would search with"
         )
+    if category == "situations":
+        return
 
     if len(opening) < 2 or opening[1].kind != "paragraph":
         rep.error(
@@ -132,11 +140,15 @@ def check_opening(rep, opening, fm, language, level, category):
                 f"(maximum {COMMON['opening_max_words']})"
             )
     for block in opening[2:]:
-        if not block.is_directive("admonition", "Prerequisites"):
-            rep.error(
-                f"line {block.line}: only a Prerequisites admonition stands "
-                "between the explanation paragraph and the first H2"
-            )
+        if block.is_directive("admonition", "Prerequisites"):
+            continue
+        if category == "how-to" and block.is_directive(SITUATIONS_BOX):
+            continue
+        also = f" and the {SITUATIONS_BOX} box" if category == "how-to" else ""
+        rep.error(
+            f"line {block.line}: only a Prerequisites admonition{also} stands "
+            "between the explanation paragraph and the first H2"
+        )
 
 
 def check_prerequisites_place(rep, opening, found):
@@ -273,6 +285,8 @@ def _h3_allowed(section: Section, ctype: str) -> bool:
         return section.title in ("Key phrases", "Hear it in practice")
     if ctype == "writing":
         return section.title.startswith("Example: ")
+    if ctype == "situations":
+        return section.title == "Hear it in practice"
     return False
 
 
@@ -604,6 +618,12 @@ def check_vocabulary(rep, found):
                 break
 
 
+def check_situations(rep, found):
+    """Each of two tracks has its own H3, and the scene teaches nothing itself."""
+    check_track_headings(rep, found)
+    check_situation(rep, found)
+
+
 def word_table_rows(found) -> int | None:
     """The rows of the word table, or None when the page has none."""
     section = _section(found, "The words")
@@ -614,6 +634,7 @@ def word_table_rows(found) -> int | None:
 CATEGORY_CHECKS = {
     "grammar": check_grammar,
     "how-to": check_how_to,
+    "situations": check_situations,
     "writing": check_writing,
     "vocabulary": check_vocabulary,
 }
@@ -652,6 +673,12 @@ def check_article(rep, body, fm, ctype, spec, context):
     check_hear_it(rep, found)
     check_related(rep, found)
     CATEGORY_CHECKS[ctype](rep, found)
+    if ctype == "situations":
+        check_situation_opening(rep, opening, blocks)
+    if ctype == "how-to" and context.get("path") is not None:
+        check_situations_box(
+            rep, opening, blocks, found, context["path"], context["workspace"]
+        )
     check_terms(rep, blocks, title, load_terms(context["workspace"]))
     if fm is not None and SIDEBAR_KEY in fm:
         rep.error(
@@ -908,12 +935,13 @@ def check_introduction(rep, body, workspace: Path, offset=0):
             f"{level}/{category}/index"
             for category in MENU_CATEGORIES
             for level in levels[:1]
+            if (workspace / level / category / "index.md").is_file()
         ]
         linked = [_page(card.link) for card in cards(section.blocks)]
         if linked != expected:
             rep.error(
-                f"line {section.line}: 'Categories' has four cards, linking in order "
-                f"to {', '.join(expected)}"
+                f"line {section.line}: 'Categories' has a card for each category "
+                f"the first level has, linking in order to {', '.join(expected)}"
             )
     if section := _section(found, "Where to start"):
         low, high = limits["start_bullets"]
