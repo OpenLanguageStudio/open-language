@@ -113,11 +113,15 @@ BROKEN = {
         "words (maximum 30)",
     ),
     "a summary section": (
-        lambda s: s.replace("## Related articles", "## Summary\n\nNames.\n\n## Related articles"),
+        lambda s: s.replace(
+            "## Related articles", "## Summary\n\nNames.\n\n## Related articles"
+        ),
         "'Summary' is not a section of a situations article",
     ),
     "an examples track": (
-        lambda s: s.replace(":mode: dialogue\n:presenters: lina, roman", ":presenters: lina"),
+        lambda s: s.replace(
+            ":mode: dialogue\n:presenters: lina, roman", ":presenters: lina"
+        ),
         "a situation's track is a dialogue, correspondence, passage block, not examples",
     ),
     "a dialogue too short": (
@@ -184,8 +188,10 @@ def how_to_errors(root: Path, *, named: bool, how_to: str) -> list[str]:
 
 
 def with_box() -> str:
-    return fixture("how-to").replace(WHEN, "").replace(
-        "## Key phrases", BOX + "## Key phrases", 1
+    return (
+        fixture("how-to")
+        .replace(WHEN, "")
+        .replace("## Key phrases", BOX + "## Key phrases", 1)
     )
 
 
@@ -222,8 +228,8 @@ def test_a_how_to_article_with_neither_is_red(tmp_path):
 
 
 def test_the_box_out_of_the_opening_is_red(tmp_path):
-    late = fixture("how-to").replace(WHEN, "").replace(
-        "## Summary", BOX + "## Summary", 1
+    late = (
+        fixture("how-to").replace(WHEN, "").replace("## Summary", BOX + "## Summary", 1)
     )
     found = how_to_errors(tmp_path, named=True, how_to=late)
     assert any("the situations box stands in the opening" in m for m in found), found
