@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [0.16.0] - 2026-11-23
+
 ### Added: Situations, a fifth category
 
 A situation article is one everyday scene, heard: a conversation at a party, at the checkout, at a hotel desk. It shows a how-to goal reached and teaches nothing itself (ADR 2). A level lists its categories in the order how-to, situations, grammar, writing, vocabulary, and the sidebar names the new one Situations.
