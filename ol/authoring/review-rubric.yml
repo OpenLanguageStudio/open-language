@@ -80,8 +80,22 @@ items:
       grammar. A vocabulary pack teaches words on one theme, with no grammar
       and no functional phrases, and every word belongs at the pack's level. A
       writing article teaches correspondence (an email, a letter, a postcard
-      or a message) in a stated register, never a form to fill in.
+      or a message) in a stated register, never a form to fill in. A
+      situation shows one everyday scene, heard, and teaches nothing itself:
+      its explanation belongs in the how-to articles it links.
     fail_when: The article teaches what belongs to another category.
+
+  - id: situation-at-level
+    area: teaching
+    question: >-
+      In a situation article, does the scene use only the grammar and words
+      of its level and of the how-to articles it links, so that a learner who
+      has read them follows every line? Does it sound like people talking
+      (fillers, small talk, a natural ending) rather than a phrase list read
+      in turns?
+    fail_when: >-
+      A line needs grammar or words the learner has not met, or the dialogue
+      reads as the how-to article's key phrases strung together.
 
   - id: prerequisites-true
     area: teaching

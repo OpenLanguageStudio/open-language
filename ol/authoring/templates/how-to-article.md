@@ -49,11 +49,21 @@ Before reading this article, make sure you are comfortable with:
      used without that grammar (e.g. Polite Requests needs Konjunktiv II).
      Otherwise put grammar links in Related articles. -->
 
+
+:::{situations}
+:::
+<!-- CONDITIONAL: ONLY once a situation article names this page in its
+     'how-to:' front matter. The build lists those situations in the box.
+     With the box, DELETE '## When to use it' below; without it, keep the
+     section. ol validate holds the page to whichever is true. -->
+
 ## When to use it
 
 - {{situation 1}}
 - {{situation 2}}
 - {{situation 3}}
+<!-- Concrete scenes, each one a situation article could be written for:
+     "Meeting a new colleague at work", not "Meeting people". -->
 
 ## Key phrases
 

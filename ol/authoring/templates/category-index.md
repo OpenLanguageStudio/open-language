@@ -1,7 +1,7 @@
 <!-- TEMPLATE: index.md for <level>/<category>/ (or a grammar subcategory).
      Replace {{PLACEHOLDERS}}; DELETE every template comment.
      TITLE: the bare category name, the one the sidebar shows: "How to",
-     "Grammar", "Writing" or "Vocabulary". A grammar subcategory takes its own
+     "Situations", "Grammar", "Writing" or "Vocabulary". A grammar subcategory takes its own
      name, such as "Articles".
      ORDERING: how-to articles are read in any order, so the index never says
      to work through them in sequence. Grammar toctrees use a LOGICAL order: noun system, verb system, sentence

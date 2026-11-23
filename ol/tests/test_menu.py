@@ -245,13 +245,13 @@ CASES = {
         "index.md",
         "'how_to_use' is listed twice: remove the second one",
     ),
-    # 3. Each level lists only its four categories, in order.
+    # 3. Each level lists only its five categories, in order.
     "categories out of order": (
         lambda r: write(
             r, "a1/index.md", level_index("a1", "grammar/index", "how-to/index")
         ),
         "a1/index.md",
-        "'how-to/index' comes after 'grammar/index': list the categories in the order how-to, grammar, writing, vocabulary",
+        "'how-to/index' comes after 'grammar/index': list the categories in the order how-to, situations, grammar, writing, vocabulary",
     ),
     "another category in a level": (
         lambda r: write(
@@ -266,9 +266,9 @@ CASES = {
         "'overview' is not a category index",
     ),
     "another category directory": (
-        lambda r: (r / "b2/situations").mkdir(),
+        lambda r: (r / "b2/scenarios").mkdir(),
         "b2/index.md",
-        "category directory b2/situations/ is not one of how-to, grammar, writing, vocabulary",
+        "category directory b2/scenarios/ is not one of how-to, situations, grammar, writing, vocabulary",
     ),
     # 4. Nothing else in the menu.
     "external link in the root": (
@@ -376,7 +376,7 @@ def test_validate_of_named_files_skips_the_menu(tmp_path):
     assert "c2/" not in result.output
 
 
-def test_an_article_outside_the_four_categories_is_told_where_to_go(tmp_path):
+def test_an_article_outside_the_categories_is_told_where_to_go(tmp_path):
     repo = menu_repository(tmp_path)
     (repo / "b2/topics").mkdir()
     article = repo / "b2/topics/smalltalk.md"
@@ -384,7 +384,7 @@ def test_an_article_outside_the_four_categories_is_told_where_to_go(tmp_path):
     errors = [msg for lvl, msg in validate_file(article, repo).items if lvl == "ERROR"]
     assert errors == [
         "b2/topics/ is not a category: move the article into one of "
-        "how-to/, grammar/, writing/, vocabulary/"
+        "how-to/, situations/, grammar/, writing/, vocabulary/"
     ]
 
 
