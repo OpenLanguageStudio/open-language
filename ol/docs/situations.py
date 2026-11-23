@@ -53,7 +53,9 @@ TITLES = {SITUATIONS_BOX: "Situations", HOW_TO_BOX: "How to"}
 class LinkBox(nodes.General, nodes.Element):
     """Where a box goes, until every page is read and its links are known.
 
-    It keeps the box's directive name as ``box``.
+    It keeps the box's directive name as ``box`` and its page as ``docname``,
+    because a builder that joins every page into one document, such as
+    ``singlehtml`` or ``latex``, draws them all as the root page.
     """
 
 
@@ -74,7 +76,7 @@ class LinkBoxDirective(Directive):
         """
         env = self.state.document.settings.env
         boxes_on(env, self.name)[env.docname] = self.lineno
-        return [LinkBox(box=self.name)]
+        return [LinkBox(box=self.name, docname=env.docname)]
 
 
 def _kept(env, key: str) -> dict:
@@ -161,6 +163,10 @@ def merge(app, env, docnames, other):
 def pages_to_redraw(app, env):
     """Name the pages whose ``situations`` box would now list other situations.
 
+    The list a page is drawn with is recorded here, before the page is
+    written. A build stopped while writing may leave a page drawn with the
+    old list, and a fresh build (``-E``) draws it again.
+
     Returns:
         The page names, to be written again.
     """
@@ -184,7 +190,14 @@ def warn_empty_boxes(app, env):
                 location=(docname, line),
             )
     for docname, line in sorted(boxes_on(env, HOW_TO_BOX).items()):
-        if not how_to_links_on(env).get(docname):
+        if not SITUATION_PAGE.fullmatch(docname):
+            logger.warning(
+                "%s: the box goes on a situation article, under "
+                "'<level>/situations/', and is left out here",
+                HOW_TO_BOX,
+                location=(docname, line),
+            )
+        elif not how_to_links_on(env).get(docname):
             logger.warning(
                 "%s: the page's front matter names no how-to article under "
                 "'how-to:', so the box is empty",
@@ -204,9 +217,8 @@ class DrawLinkBoxes(SphinxPostTransform):
 
     def run(self, **kwargs) -> None:
         """Replace each placeholder with its box, or remove an empty one."""
-        docname = self.env.docname
         for node in list(self.document.findall(LinkBox)):
-            box = node["box"]
+            box, docname = node["box"], node["docname"]
             if box == SITUATIONS_BOX:
                 targets = situations_naming(self.env, docname)
             else:

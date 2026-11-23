@@ -157,6 +157,19 @@ class TestSituationsBox:
             "a1/how-to/introduce-yourself"
         )
 
+    def test_changing_a_situations_list_redraws_both_pages(self, course):
+        course.run(
+            {
+                "a1/situations/on-the-phone": situation(
+                    "On the phone", "a1/how-to/say-hello"
+                )
+            }
+        )
+        assert ["On", "the", "phone"] not in course.links(
+            "a1/how-to/introduce-yourself"
+        )
+        assert course.links("a1/how-to/say-hello")[0] == ["On", "the", "phone"]
+
     def test_reordering_a_level_index_reorders_the_box(self, course):
         course.run(
             {"a1/situations/index": index("Situations", "at-a-party", "on-the-phone")}
@@ -191,6 +204,18 @@ class TestHowToBox:
         )
         assert "names no how-to article" in done.warnings.getvalue()
 
+    def test_a_box_on_a_page_that_is_no_situation_warns(self, tmp_path):
+        page = situation("Elsewhere", "a1/how-to/x")
+        done = Build(tmp_path).run(
+            {
+                "index": index("Course", "a1/how-to/x", "a1/grammar/p"),
+                "a1/how-to/x": "# X\n",
+                "a1/grammar/p": page,
+            }
+        )
+        assert "the box goes on a situation article" in done.warnings.getvalue()
+        assert "ol-links" not in done.html("a1/grammar/p")
+
     def test_a_name_that_is_no_page_warns(self, tmp_path):
         done = Build(tmp_path).run(
             {
@@ -205,6 +230,13 @@ def test_a_build_that_draws_no_html_writes_the_level_in_brackets(tmp_path):
     Build(tmp_path).run(COURSE, builder="text")
     text = (tmp_path / "out" / "text" / "a1/how-to/introduce-yourself.txt").read_text()
     assert "A new colleague (B1)" in text
+
+
+def test_a_build_into_one_document_draws_every_box_from_its_own_page(tmp_path):
+    Build(tmp_path).run(COURSE, builder="singlehtml")
+    html = (tmp_path / "out" / "singlehtml" / "index.html").read_text()
+    assert html.count('class="ol-links ') == 5
+    assert "A new colleague</span></a> <span" in html
 
 
 def test_the_audio_examples_extension_brings_the_boxes(tmp_path):
