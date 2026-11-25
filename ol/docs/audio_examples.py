@@ -1,6 +1,10 @@
-"""The ``audio-examples`` directive for a standalone build of a Coursebook."""
+"""The ``audio-examples`` directive for a standalone build of a Coursebook.
 
-from html import escape
+A track's examples are drawn with the list an ``ol-examples`` box draws
+(``ol.docs.example_list``). The track adds its header, the button that shows
+its translations, and the handling of a track that another page writes.
+"""
+
 from typing import ClassVar
 
 from docutils import nodes
@@ -8,6 +12,7 @@ from docutils.parsers.rst import Directive, directives
 from sphinx.util import logging
 
 from ol.blocks import Block, BlockCollection, BlockFormatError, BlockReader, Example
+from ol.docs.example_list import ExampleList
 
 logger = logging.getLogger(__name__)
 
@@ -20,35 +25,36 @@ class DuplicateTrack(nodes.General, nodes.Element):
     """
 
 
-def build_audio_examples_html(examples: list[Example]) -> str:
-    """Build the HTML of a track's examples, each above its hidden translation.
+#: What a track's block says above its examples, and its translations button.
+TRACK_HEADER = (
+    '<div class="ae-header">'
+    '<p class="ae-subtitle">Become familiar with the sounds of the language'
+    " and listen to how this topic sounds in practice.</p>"
+    '<button class="btn btn-sm btn-outline-secondary ae-toggle-btn"'
+    ' type="button">Show Translations</button>'
+    "</div>"
+)
+
+
+def track_list(examples: list[Example]) -> nodes.container:
+    """Draw a track's examples: its header, then the examples' list.
+
+    The list is the one an ``ol-examples`` box draws (``ExampleList``), with
+    the translations hidden until the header's button shows them. The text is
+    drawn exactly as the track gives it, which is what is spoken, so no
+    typographic quotation marks are put in.
 
     Args:
         examples: The track's examples, in order.
 
     Returns:
-        The HTML, with every sentence and translation escaped.
+        The block, as a ``div`` of class ``ae-container``.
     """
-    items = ""
-    for example in examples:
-        # Passage and correspondence examples keep their line breaks.
-        sentence_html = escape(example.sentence).replace("\n", "<br>")
-        translation_html = escape(example.translation).replace("\n", "<br>")
-        items += (
-            f'<li class="ae-item"><p class="ae-de">{sentence_html}</p>'
-            f'<p class="ae-en ae-hidden">{translation_html}</p></li>'
-        )
-    return (
-        '<div class="ae-container">'
-        '<div class="ae-header">'
-        '<p class="ae-subtitle">Become familiar with the sounds of the language'
-        " and listen to how this topic sounds in practice.</p>"
-        '<button class="btn btn-sm btn-outline-secondary ae-toggle-btn"'
-        ' type="button">Show Translations</button>'
-        "</div>"
-        f'<ul class="ae-list" role="list">{items}</ul>'
-        "</div>"
-    )
+    block = nodes.container(classes=["ae-container"], is_div=True)
+    block["support_smartquotes"] = False
+    block += nodes.raw("", TRACK_HEADER, format="html")
+    block += ExampleList.draw(ExampleList.plain(examples), ["ae-list", "ae-hidden"])
+    return block
 
 
 class AudioExamplesDirective(Directive):
@@ -76,7 +82,7 @@ class AudioExamplesDirective(Directive):
         """Read the block, record it for the build and return what it shows.
 
         Returns:
-            A warning for each refusal, then the examples' HTML for a block
+            A warning for each refusal, then the track's examples for a block
             that writes, or a ``DuplicateTrack`` for a duplicate.
         """
         env = self.state.document.settings.env
@@ -94,8 +100,7 @@ class AudioExamplesDirective(Directive):
             for code in block.refusals
         ]
         if block.writes:
-            html = build_audio_examples_html(list(block.examples))
-            shown.append(nodes.raw("", html, format="html"))
+            shown.append(track_list(list(block.examples)))
         elif block.duplicate and not block.refusals:
             shown.append(DuplicateTrack(address=block.address))
         return shown
@@ -179,8 +184,7 @@ def show_duplicates(app, doctree, docname):
     for node in list(doctree.findall(DuplicateTrack)):
         found = writers.get(node["address"], [])
         if len(found) == 1:
-            html = build_audio_examples_html(list(found[0].examples))
-            node.replace_self(nodes.raw("", html, format="html"))
+            node.replace_self(track_list(list(found[0].examples)))
         else:
             node.parent.remove(node)
 

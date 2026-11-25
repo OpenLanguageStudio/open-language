@@ -109,6 +109,8 @@ Wir nehmen {akk}`die` Straßenbahn.
 
 `audio-examples` writes or shows a track, under `## Hear it in practice`. The block's options are in the README of this package and in `ol/authoring/templates/audio-examples-block.md`. It never sits inside a tab or a notice.
 
+`ol-examples` and `audio-examples` are two directives on purpose. A box beside an explanation and a page's track are different things, and neither switches into the other on an option. Underneath they share one list, `ol/docs/example_list.py`: it reads a definition list as sentences and translations, gives each sentence in the form that identifies it, and draws the list. `audio-examples` adds the track's header, its translations button and the handling of a track that another page writes.
+
 ### Situations and How to boxes
 
 The two boxes link a how-to article and the situations that put it to use. Neither is written by hand: write the directive with nothing inside it, and the build fills it from the situations' `how-to:` front matter.

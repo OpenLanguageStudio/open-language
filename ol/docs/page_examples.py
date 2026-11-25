@@ -12,6 +12,8 @@ translation, and names the one presenter who says them::
 
 A build reads the page, so a sentence here is the sentence as the reader sees
 it: roles and emphasis are gone, and typographic quotation marks are in.
+
+The box's list is read and drawn by ``ol.docs.example_list``, as a track's is.
 """
 
 from __future__ import annotations
@@ -22,6 +24,7 @@ from docutils import nodes
 from docutils.parsers.rst import Directive, directives
 
 from ol.blocks import BlockReader, Example
+from ol.docs.example_list import ExampleList
 
 
 class ExamplesBox(Directive):
@@ -55,7 +58,17 @@ class ExamplesBox(Directive):
                     line=self.lineno,
                 )
             )
-        self.state.nested_parse(self.content, self.content_offset, box)
+        parsed = nodes.container()
+        self.state.nested_parse(self.content, self.content_offset, parsed)
+        pairs = ExampleList.read(parsed[0]) if len(parsed) == 1 else None
+        if pairs is None:
+            # Anything else than sentences and translations is shown as written.
+            box += parsed.children
+        else:
+            box += ExampleList.draw(
+                ((term.children, definition.children) for term, definition in pairs),
+                parsed[0]["classes"],
+            )
         return [*found, box]
 
 
@@ -98,21 +111,8 @@ class PageExamples:
             definition list of one term and one definition each.
         """
         children = list(block.children)
-        if len(children) != 1 or not isinstance(children[0], nodes.definition_list):
-            return []
-        examples = []
-        for item in children[0].children:
-            parts = list(item.children)
-            if (
-                len(parts) != 2
-                or not isinstance(parts[0], nodes.term)
-                or not isinstance(parts[1], nodes.definition)
-            ):
-                return []
-            sentence = BlockReader.sentence_key(parts[0].astext())
-            translation = "\n".join(p.astext() for p in parts[1].children)
-            examples.append(Example(sentence, translation))
-        return examples
+        pairs = ExampleList.read(children[0]) if len(children) == 1 else None
+        return [ExampleList.example(*pair) for pair in pairs or []]
 
 
 def setup(app):
