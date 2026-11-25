@@ -48,7 +48,7 @@ from pathlib import Path
 
 import yaml
 
-from ol.authoring import related, situations, skills, standard
+from ol.authoring import related, situations, skills, standard, tags
 from ol.authoring.components import Page, check_components
 from ol.authoring.glossary import check_terminology
 from ol.authoring.specs_data import SPECS
@@ -704,6 +704,9 @@ def validate_article(path: Path, ctype: str, workspace: Path | None) -> Report:
 
     check_article_headings(rep, body)
     check_prerequisites(rep, body)
+    track_tags = tags.load_tags(workspace)
+    tags.check_file(rep, track_tags)
+    tags.check_article_tags(rep, fm if isinstance(fm, dict) else None, track_tags)
     own = page_path(path, workspace) if workspace else None
     skills.check_article_skills(
         rep,
@@ -787,6 +790,7 @@ def validate_article(path: Path, ctype: str, workspace: Path | None) -> Report:
             )
         for block in blocks:
             check_audio_block(rep, block, ctype)
+            tags.check_block_tags(rep, block, track_tags)
         if ctype == "situations":
             situations.check_situation_tracks(rep, len(blocks))
 
