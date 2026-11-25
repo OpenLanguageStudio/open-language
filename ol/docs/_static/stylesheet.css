@@ -297,36 +297,10 @@ summary:focus-visible,
   margin: 0 0 var(--space-3) 0;
 }
 
-.ae-list {
-  list-style: none !important;
-  padding: 0;
-  margin: 0;
-}
+/* The list itself is drawn and styled as an examples box's, below. A track
+   hides its translations until its button shows them. */
 
-.ae-item {
-  padding: 0.45rem 0;
-  border-bottom: 1px solid var(--rule);
-}
-
-.ae-item:last-child {
-  border-bottom: none;
-}
-
-.ae-de {
-  margin: 0;
-  font-size: 1rem;
-  line-height: 1.5;
-}
-
-.ae-en {
-  margin: 0.15rem 0 0;
-  font-size: 0.875rem;
-  color: var(--text-muted);
-  font-style: italic;
-  line-height: 1.4;
-}
-
-.ae-en.ae-hidden {
+.ae-list.ae-hidden dd {
   display: none;
 }
 
@@ -353,34 +327,40 @@ summary:focus-visible,
   line-height: 1.4;
 }
 
-/* ── In-article example pairs ─────────────────────────────────────────────
-   Authored as a definition list inside :::{ol-examples} — native
-   sentence as the term, English translation as the definition. Mirrors the
-   audio-examples look: no list decorations, muted italic translation,
-   hairline separators. */
+/* ── Example lists (.ol-example-list) ────────────────────────────────────
+   The definition list both example blocks draw, an :::{ol-examples} box and
+   a track's :::{audio-examples} block: the sentence as the term, its English
+   translation as the definition. No list decorations, a muted italic
+   translation and hairline separators. A box that holds anything else keeps
+   the look for its own list. */
 
+.ol-example-list,
 .ol-examples dl {
   margin: 0 0 var(--space-4) 0;
 }
 
-.ol-examples dt {
+.ol-example-list dt,
+.ol-examples dl dt {
   font-weight: var(--weight-regular);
   font-size: 1rem;
   line-height: 1.6;
   padding-top: 0.45rem;
 }
 
-.ol-examples dd {
+.ol-example-list dd,
+.ol-examples dl dd {
   margin: 0.15rem 0 0 0;
   padding-bottom: 0.45rem;
   border-bottom: 1px solid var(--rule);
 }
 
-.ol-examples dd:last-child {
+.ol-example-list dd:last-child,
+.ol-examples dl dd:last-child {
   border-bottom: none;
 }
 
-.ol-examples dd p {
+.ol-example-list dd p,
+.ol-examples dl dd p {
   margin: 0;
   font-size: 0.875rem;
   color: var(--text-muted);

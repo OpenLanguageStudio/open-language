@@ -4,15 +4,13 @@
   function initAudioExamples() {
     document.querySelectorAll('.ae-container').forEach(function (container) {
       var toggleBtn = container.querySelector('.ae-toggle-btn')
-      var translations = container.querySelectorAll('.ae-en')
+      var list = container.querySelector('.ae-list')
       var translationsVisible = false
 
-      if (toggleBtn) {
+      if (toggleBtn && list) {
         toggleBtn.addEventListener('click', function () {
           translationsVisible = !translationsVisible
-          translations.forEach(function (el) {
-            el.classList.toggle('ae-hidden', !translationsVisible)
-          })
+          list.classList.toggle('ae-hidden', !translationsVisible)
           toggleBtn.textContent = translationsVisible
             ? 'Hide Translations'
             : 'Show Translations'

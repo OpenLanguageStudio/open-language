@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import re
 from io import StringIO
 from pathlib import Path
 
@@ -179,6 +180,24 @@ class TestPageExamples:
         examples = PageExamples.read(app.env.get_doctree("index"))
         assert [example.presenter for example in examples] == [""]
 
+    def test_each_box_of_pairs_draws_the_shared_example_list(self, tmp_path):
+        self.build(tmp_path)
+        html = (tmp_path / "out" / "index.html").read_text(encoding="utf-8")
+        lists = re.findall(r'<dl class="([^"]*)"', html)
+        # The div of another class and the box whose pair has two
+        # translations draw their lists as written.
+        assert ["ol-example-list" in classes.split() for classes in lists] == [
+            True,
+            False,
+            False,
+            True,
+        ]
+
+    def test_a_box_of_anything_but_pairs_is_shown_as_written(self, tmp_path):
+        self.build(tmp_path)
+        html = (tmp_path / "out" / "index.html").read_text(encoding="utf-8")
+        assert "Ein Absatz, kein Beispiel." in html
+
     def test_the_audio_examples_extension_brings_the_box(self, tmp_path):
         app = self.build(tmp_path, extension="ol.docs.audio_examples")
         assert len(PageExamples.read(app.env.get_doctree("index"))) == 3
@@ -195,6 +214,20 @@ class TestAudioExamplesDirective:
         html = (built.out / "brief.html").read_text(encoding="utf-8")
         assert "Liebe Anna,<br><br>bis bald." in html
         assert "Dear Anna,<br><br>see you soon." in html
+
+    def test_a_track_draws_the_list_a_box_draws_with_its_translations_hidden(
+        self, build
+    ):
+        html = build({"a2/grammar/weil": WRITER}).html("a2/grammar/weil")
+        (classes,) = re.findall(r'<dl class="([^"]*)"', html)
+        assert {"ol-example-list", "ae-list", "ae-hidden"} <= set(classes.split())
+        assert "<dt>Ich bleibe zu Hause" in html
+
+    def test_a_track_shows_its_quotation_marks_as_they_are_spoken(self, build):
+        page = WRITER.replace("<krank>", '"krank"')
+        done = build({"a2/grammar/weil": page, "a2/grammar/denn": DUPLICATE})
+        for name in ("a2/grammar/weil", "a2/grammar/denn"):
+            assert "weil ich &quot;krank&quot; bin." in done.html(name)
 
     def test_a_block_that_writes_shows_its_examples_escaped(self, build):
         html = build({"a2/grammar/weil": WRITER}).html("a2/grammar/weil")
