@@ -27,6 +27,7 @@ from ol.authoring.page import (
 )
 from ol.authoring.situations import (
     SITUATIONS_BOX,
+    check_retired_boxes,
     check_situation,
     check_situation_opening,
     check_situations_box,
@@ -674,6 +675,7 @@ def check_article(rep, body, fm, ctype, spec, context):
     check_section_order(rep, found, ctype, spec["sections"])
     check_hear_it(rep, found)
     check_related(rep, found)
+    check_retired_boxes(rep, blocks, fm)
     CATEGORY_CHECKS[ctype](rep, found)
     if ctype == "situations":
         check_situation_opening(rep, opening, blocks)
