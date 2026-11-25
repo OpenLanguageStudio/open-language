@@ -229,7 +229,7 @@ class DrawRelated(SphinxPostTransform):
             heading += nodes.strong(label, label)
             items = nodes.bullet_list(classes=["ol-related-list"])
             for link in groups[kind]:
-                items += link_item(self.app, self.env, link, docname)
+                items += link_item(self, link, docname)
             section += [heading, items]
         return section
 

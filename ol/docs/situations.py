@@ -263,7 +263,7 @@ class DrawLinkBoxes(SphinxPostTransform):
         title += nodes.strong(TITLES[box], TITLES[box])
         items = nodes.bullet_list(classes=["ol-links-list"])
         for target in targets:
-            items += link_item(self.app, self.env, target, docname)
+            items += link_item(self, target, docname)
         return nodes.container(
             "",
             title,
@@ -273,17 +273,18 @@ class DrawLinkBoxes(SphinxPostTransform):
         )
 
 
-def level_badge(app, env, level: str) -> nodes.Node:
+def level_badge(transform, level: str) -> nodes.Node:
     """A level's badge, or the level in brackets where HTML is not drawn."""
     # Sphinx 9 keeps the builder's class on the environment, as its own
-    # post-transforms read it. Sphinx 8 has only the application's builder.
-    builder = getattr(env, "_builder_cls", None) or app.builder
+    # post-transforms read it. Sphinx 8 has only the application's builder,
+    # which Sphinx 9 deprecates, so it is read only when there is no other.
+    builder = getattr(transform.env, "_builder_cls", None) or transform.app.builder
     if builder.format == "html":
         return nodes.raw("", level_badge_html(level), format="html")
     return nodes.Text(f"({level.upper()})")
 
 
-def link_item(app, env, target: str, docname: str) -> nodes.list_item:
+def link_item(transform, target: str, docname: str) -> nodes.list_item:
     """One link to a page, as a list item.
 
     The link is a ``doc`` cross-reference with no text of its own, so Sphinx
@@ -291,8 +292,7 @@ def link_item(app, env, target: str, docname: str) -> nodes.list_item:
     page of another level is followed by that level's badge.
 
     Args:
-        app: The Sphinx application.
-        env: The Sphinx build environment.
+        transform: The post-transform drawing the link.
         target: The linked page's name.
         docname: The page the link is on.
 
@@ -313,7 +313,7 @@ def link_item(app, env, target: str, docname: str) -> nodes.list_item:
     level = level_of(target)
     if level and level != level_of(docname):
         paragraph += nodes.Text(" ")
-        paragraph += level_badge(app, env, level)
+        paragraph += level_badge(transform, level)
     return nodes.list_item("", paragraph)
 
 
