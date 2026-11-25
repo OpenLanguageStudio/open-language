@@ -24,7 +24,9 @@ BEFORE Summary. Delete these comment lines: HTML comments are banned in docs. --
 - :title: / :title-en: : the title in the language taught (spoken) and in
   English. A title published in the stores keeps its dash: leave :title-en:
   out and the app keeps the title it holds.
-- :tags: : words that say what the track is about, separated by commas.
+- :tags: : words that say what the track is about, separated by commas. When
+  the repository has track-tags.yml, every block that writes its track carries
+  tags and each tag is listed there.
 - :presenters: : every block that writes its track carries it. One presenter
   slug, or several separated by commas, in the order the mode gives them a
   meaning. The first speaks the track's spoken title. Pages never name a

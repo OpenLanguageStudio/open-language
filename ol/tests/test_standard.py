@@ -654,10 +654,11 @@ def test_a_table_in_a_fence_is_not_read(tmp_path):
 def test_a_template_has_the_sections_of_its_category(category):
     text = (TEMPLATES_DIR / f"{category}-article.md").read_text(encoding="utf-8")
     text = re.sub(r"<!--.*?-->", "", text, flags=re.S)
+    # The build draws Related articles from front matter, so no template writes it.
     named = [
         part["heading"]
         for part in SPECS["types"][category]["sections"]
-        if "heading" in part
+        if "heading" in part and part["heading"] != "Related articles"
     ]
     in_template = re.findall(r"^## (.+)$", text, re.M)
     assert [title for title in in_template if title in named] == named

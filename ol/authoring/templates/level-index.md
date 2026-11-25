@@ -7,10 +7,21 @@
      hidden: the Categories cards show it, linking the same pages in the same
      order. Leave out a category the level does not have, and its card; never
      add another entry.
+     SKILLS: the level's skills are written once, under 'skills:' in the front
+     matter, and the two directives below draw them. Each skill has a unique
+     id, a kind (know or can) and a text. The limits of the two lists apply to
+     the texts. Write no bullets beside a directive.
      "Additional reading" holds learner-facing external links only: no private
      files, no agent-facing wording. -->
 ---
 html_theme.sidebar_secondary.remove:
+skills:
+  - id: "{{level_lc}}-{{skill-name}}"
+    kind: know
+    text: "{{3 to 5 skills of kind know, each 15 words or fewer: what the course has taught by the end of the level, in plain words.}}"
+  - id: "{{level_lc}}-{{skill-name}}"
+    kind: can
+    text: "{{4 to 6 skills of kind can, each 15 words or fewer, starting with a verb in its base form, each something a learner could be asked to do and a listener could judge.}}"
 ---
 
 # {{LEVEL: e.g. A1}}
@@ -19,11 +30,13 @@ html_theme.sidebar_secondary.remove:
 
 ## What learners know
 
-- {{3 to 5 bullets of 15 words or fewer: what the course has taught by the end of the level, in plain words.}}
+:::{skills} know
+:::
 
 ## What learners can do
 
-- {{4 to 6 bullets of 15 words or fewer, each starting with a verb in its base form, each something a learner could be asked to do and a listener could judge.}}
+:::{skills} can
+:::
 
 ```{toctree}
 :maxdepth: 2

@@ -96,29 +96,26 @@ The box is the `ol-examples` directive, `ol.docs.page_examples.ExamplesBox`. The
 
 `ol.docs.page_examples.PageExamples.read(doctree)` reads a built page's boxes into `ol.blocks.Example` values, in page order, each with its box's presenter as `presenter`, skipping a box that holds anything but sentences and translations. `ol.blocks.BlockReader.spoken(text)` gives the same sentence from a page's Markdown.
 
-## The Situations and How to boxes
+## Related articles, skills and the link boxes
 
-`ol.docs.situations` adds two boxes, written with no options and no body. A situation article names the how-to articles it puts to use in its front matter, and both boxes are drawn from that list (ADR 2):
+`ol.docs.related` draws Related articles from front matter (ADR 3). An article lists `related:`, page paths without `.md`, relative to its folder or from the root with a leading `/`. A situation article names the how-to articles it puts to use under `how-to:` (ADR 2):
 
 ```markdown
 ---
 how-to:
   - /a1/how-to/introduce-yourself.md
+related: [/a1/situations/at-the-station]
 ---
 # At a party
 
 Lena meets Tom at a friend's party.
-
-:::{how-to-links}
-:::
 ```
 
-- `how-to-links`, on a situation article, links each how-to article its front matter names, in that order.
-- `situations`, on a how-to article, links every situation article whose front matter names it, at any level: by level, then in the order of that level's `situations/index` toctree.
+The build appends the last section of the page, `<section id="related-articles">` with an `<h2>`. It holds a paragraph of class `ol-related-kind` and a list of class `ol-related-list` for each kind of page, in the order how to, situations, grammar, writing, vocabulary and more. Each item is a link whose text is the target's title, followed by the level badge for a page of another level. The links a how-to article gets from the situations naming it, and a situation gets from its own `how-to:`, are in the same section, which is written again when they change. An entry that names no page, ends in `.md` or is not a string stops the build.
 
-Each link has the target page's title as its text, as a link with empty brackets does. A link to a page of another level is followed by the level badge. A box is drawn once every page is read, and a how-to article is written again whenever the list of situations naming it changes, so adding, removing or reordering a situation redraws the pages it names. A box that would link nothing warns and is left out.
+A page that keeps a hand-written `## Related articles` section and has no `related:` is drawn as before, with its `situations` or `how-to-links` box. The boxes draw nothing on a page whose section is drawn, and both are retired.
 
-Each box is a `div` of class `ol-links` and `ol-links--situations` or `ol-links--how-to-links`, holding a title and a list. `link-boxes.css` styles it from the accents in `marks.css`, so an app that draws the pages in its own theme links both files. `ol.docs.audio_examples` loads the module, so a language repository's `extensions` stay as they are.
+`ol.docs.skills` adds the `skills` directive for level pages. `:::{skills} know` and `:::{skills} can` draw a bullet list of the texts of that kind from the page's `skills:` front matter. `ol.docs.audio_examples` loads all the modules, so a language repository's `extensions` stay as they are.
 
 ## The stack role
 

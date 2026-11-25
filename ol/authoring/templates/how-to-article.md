@@ -3,8 +3,19 @@
      FILENAME MUST BE ENGLISH kebab-case (reusable across languages).
      The shape and every limit are in docs/reference/page-standard.md.
      Replace {{PLACEHOLDERS}}; DELETE every template comment: no HTML comments
-     may survive in the docs file.                                            -->
+     may survive in the docs file.
+     FRONT MATTER: 'related:' lists page paths without .md, from the root with
+     a leading / or relative to this folder. The build draws them as the last
+     section, grouped by kind: write no '## Related articles' section. Only
+     pages the reader would not reach by the next-page link, and no other
+     article of this subcategory. 'skills:' names one or two skill ids of the
+     level page. 'tags:' comes from track-tags.yml. Leave a key out when the
+     repository does not use it yet.
+-->
 ---
+related: ["{{/level/category/page: a page to read next, without .md}}"]
+skills: ["{{skill-id: an id from the level page's skills, one or two}}"]
+tags: ["{{tag: from track-tags.yml}}"]
 myst:
   html_meta:
     description: "{{SEARCH_SNIPPET_160_CHARS_OR_FEWER}}"
@@ -50,11 +61,7 @@ Before reading this article, make sure you are comfortable with:
      Otherwise put grammar links in Related articles. -->
 
 
-:::{situations}
-:::
-<!-- CONDITIONAL: ONLY once a situation article names this page in its
-     'how-to:' front matter. The build lists those situations in the box.
-     With the box, DELETE '## When to use it' below; without it, keep the
+## When to use it' below; without it, keep the
      section. ol validate holds the page to whichever is true. -->
 
 ## When to use it
@@ -62,7 +69,10 @@ Before reading this article, make sure you are comfortable with:
 - {{situation 1}}
 - {{situation 2}}
 - {{situation 3}}
-<!-- Concrete scenes, each one a situation article could be written for:
+<!-- Keep this section until a situation names this page in its 'how-to:' front
+     matter. From then on the build lists those situations under Related
+     articles, and this section goes (ol validate says so).
+     Concrete scenes, each one a situation article could be written for:
      "Meeting a new colleague at work", not "Meeting people". -->
 
 ## Key phrases
@@ -131,16 +141,3 @@ Before reading this article, make sure you are comfortable with:
 
 - *{{Wrong}}* → {{Right}}. ({{why}})
 :::
-
-## Related articles
-
-- []({{/path.md}})
-<!-- Leave the link text empty: the build writes the page's title. A link to a
-     page of another level is followed by that level as a badge:
-     - [](/b1/grammar/passiv.md) {level}`B1` -->
-<!-- Links only. NEVER link the previous/next article: Sphinx generates that
-     navigation from the toctree and the theme renders it in the page footer.
-     Related articles is for NON-adjacent links only: supporting grammar, another
-     how-to article, a vocabulary pack. In a subcategory, no
-     other article of that subcategory: its index links them all. Leave the
-     section out when it is empty. -->

@@ -2,8 +2,19 @@
      Gold exemplar: german/a1/grammar/articles/bestimmter-artikel.md
      The shape and every limit are in docs/reference/page-standard.md.
      Replace all {{PLACEHOLDERS}}; DELETE every template comment: no HTML
-     comments may survive in the docs file (they leak into built HTML).      -->
+     comments may survive in the docs file (they leak into built HTML).
+     FRONT MATTER: 'related:' lists page paths without .md, from the root with
+     a leading / or relative to this folder. The build draws them as the last
+     section, grouped by kind: write no '## Related articles' section. Only
+     pages the reader would not reach by the next-page link, and no other
+     article of this subcategory. 'skills:' names one or two skill ids of the
+     level page. 'tags:' comes from track-tags.yml. Leave a key out when the
+     repository does not use it yet.
+-->
 ---
+related: ["{{/level/category/page: a page to read next, without .md}}"]
+skills: ["{{skill-id: an id from the level page's skills, one or two}}"]
+tags: ["{{tag: from track-tags.yml}}"]
 myst:
   html_meta:
     description: "{{SEARCH_SNIPPET_160_CHARS_OR_FEWER}}"
@@ -111,15 +122,3 @@ Before reading this article, make sure you are comfortable with:
 - {{key point 2}}
 - {{key point 3}}
 :::
-
-## Related articles
-
-- []({{/path.md}})
-<!-- Leave the link text empty: the build writes the page's title. A link to a
-     page of another level is followed by that level as a badge:
-     - [](/b1/grammar/passiv.md) {level}`B1` -->
-<!-- Links only, none the reader would reach by the next-page link. In a
-     subcategory such as a1/grammar/articles/, no other article of that
-     subcategory: its index links them all. Leave the section out when it is
-     empty. Same-level links encouraged; cross-level only DOWN. Only existing
-     files. -->
