@@ -31,6 +31,8 @@ from ol.authoring.situations import (
     check_situation_opening,
     check_situations_box,
 )
+from ol.authoring.skills import DIRECTIVE as SKILLS
+from ol.authoring.skills import list_problem as skills_list_problem
 from ol.authoring.specs_data import SPECS
 from ol.levels import LEVELS
 
@@ -771,11 +773,19 @@ def check_category_index(rep, body, offset=0):
             )
 
 
-def _bullets(rep, section, low, high, max_words):
-    """The items of a section's list, checked for number and length."""
-    items = [
-        item for block in section.blocks if block.kind == "list" for item in block.items
-    ]
+def _bullets(rep, section, low, high, max_words, items=None):
+    """The items of a section's list, checked for number and length.
+
+    ``items`` stands in for the section's own list when the build draws it from
+    the front matter.
+    """
+    if items is None:
+        items = [
+            item
+            for block in section.blocks
+            if block.kind == "list"
+            for item in block.items
+        ]
     if not low <= len(items) <= high:
         expected = f"{low}" if low == high else f"{low} to {high}"
         rep.error(
@@ -821,7 +831,77 @@ def _check_toctree_place(rep, blocks, h2s_before):
             seen += 1
 
 
-def check_level_index(rep, body, level, offset=0):
+def _check_skills_front_matter(rep, fm, sections):
+    """The level page's ``skills:`` list, and where the directive stands.
+
+    Args:
+        rep: The page's report.
+        fm: The page's front matter.
+        sections: The two sections that may draw skills.
+
+    Returns:
+        The skills when the page lists them soundly, else None.
+    """
+    if not fm or "skills" not in fm:
+        for section in sections:
+            if section and any(b.is_directive(SKILLS) for b in section.blocks):
+                rep.error(
+                    f"line {section.line}: the {SKILLS} directive draws the "
+                    "front matter's 'skills:', and this page has none"
+                )
+        if any(
+            b.kind == "list" for section in sections if section for b in section.blocks
+        ):
+            rep.warn(
+                "the level page lists its skills as bullets: move them into "
+                "'skills:' in the front matter and draw them with the "
+                f"{SKILLS} directive"
+            )
+        return None
+    if problem := skills_list_problem(fm["skills"]):
+        rep.error(f"front matter: {problem}")
+        return None
+    return fm["skills"]
+
+
+def _drawn_texts(rep, section, kind, skills):
+    """The texts the ``skills`` directive draws in a section, or None without it.
+
+    Args:
+        rep: The page's report.
+        section: The section.
+        kind: The kind of skill the section draws.
+        skills: The page's skills, or None.
+
+    Returns:
+        The texts of ``kind``, in front-matter order. None means the section
+        holds hand-written bullets, which are checked as they stand.
+    """
+    boxes = [b for b in section.blocks if b.is_directive(SKILLS)]
+    if skills is not None and not boxes:
+        rep.error(
+            f"line {section.line}: '{section.title}' needs ':::{{{SKILLS}}} "
+            f"{kind}': the page's skills are drawn from its front matter"
+        )
+        return None
+    if not boxes:
+        return None
+    for box in boxes:
+        if box.arg != kind:
+            rep.error(
+                f"line {box.line}: ':::{{{SKILLS}}} {box.arg}' under "
+                f"'{section.title}': this section draws '{kind}'"
+            )
+    if any(b.kind == "list" for b in section.blocks):
+        rep.error(
+            f"line {section.line}: '{section.title}' has a hand-written list "
+            "beside the skills directive: the text is written once, in the "
+            "front matter"
+        )
+    return [s["text"] for s in skills or [] if s["kind"] == kind]
+
+
+def check_level_index(rep, body, level, offset=0, fm=None):
     """The level overview page, part by part."""
     limits = SPECS["level_page"]
     blocks = parse(body, offset)
@@ -850,21 +930,29 @@ def check_level_index(rep, body, level, offset=0):
     )
     know = _section(found, "What learners know")
     can_do = _section(found, "What learners can do")
+    skills = _check_skills_front_matter(rep, fm, [know, can_do])
     total = words
-    if know:
-        low, high = limits["know_bullets"]
-        _bullets(rep, know, low, high, limits["bullet_max_words"])
-        total += _section_words(know)
-    if can_do:
-        low, high = limits["can_do_bullets"]
-        for item in _bullets(rep, can_do, low, high, limits["bullet_max_words"]):
-            first = plain(item).split()[0] if plain(item) else ""
-            if _NOT_BASE_FORM.search(first):
-                rep.error(
-                    f"line {can_do.line}: the bullet '{plain(item)[:40]}' does not "
-                    "start with a verb in its base form"
-                )
-        total += _section_words(can_do)
+    for section, kind, bullets in (
+        (know, "know", "know_bullets"),
+        (can_do, "can", "can_do_bullets"),
+    ):
+        if not section:
+            continue
+        low, high = limits[bullets]
+        drawn = _drawn_texts(rep, section, kind, skills)
+        items = _bullets(rep, section, low, high, limits["bullet_max_words"], drawn)
+        if kind == "can":
+            for item in items:
+                first = plain(item).split()[0] if plain(item) else ""
+                if _NOT_BASE_FORM.search(first):
+                    rep.error(
+                        f"line {section.line}: the bullet '{plain(item)[:40]}' does "
+                        "not start with a verb in its base form"
+                    )
+        if drawn is None:
+            total += _section_words(section)
+        else:
+            total += sum(word_count(plain(text)) for text in drawn)
     if total > limits["overview_max_words"]:
         rep.error(
             f"the lead and the two lists are {total} words together (maximum "

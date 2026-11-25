@@ -42,6 +42,8 @@ common:
   # A body shorter than this is a stub, reported but not held to the templates.
   stub_body_bytes: 200
   description_max_chars: 160
+  # An article names this many skills of its level page, by id, in its front matter.
+  article_skills: [1, 2]
   # The opening: the lead paragraph, then the explanation paragraph.
   lead_min_words: 20
   lead_max_words: 50

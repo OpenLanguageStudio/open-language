@@ -48,11 +48,12 @@ from pathlib import Path
 
 import yaml
 
-from ol.authoring import situations, standard
+from ol.authoring import situations, skills, standard
 from ol.authoring.components import Page, check_components
 from ol.authoring.glossary import check_terminology
 from ol.authoring.specs_data import SPECS
 from ol.blocks import Block, BlockFormatError, BlockReader, Refusal
+from ol.levels import LEVELS
 from ol.workspace import find_workspace, page_path
 
 TEMPLATES_DIR = Path(__file__).resolve().parent / "templates"
@@ -667,6 +668,13 @@ def validate_article(path: Path, ctype: str, workspace: Path | None) -> Report:
 
     check_article_headings(rep, body)
     check_prerequisites(rep, body)
+    own = page_path(path, workspace) if workspace else None
+    skills.check_article_skills(
+        rep,
+        fm if isinstance(fm, dict) else None,
+        workspace,
+        own[0] if own and own[0] in LEVELS else None,
+    )
     check_related_neighbours(rep, body, path, workspace)
     check_related_subcategory(rep, body, path, workspace)
     check_direct_address(rep, body)
@@ -783,7 +791,7 @@ def validate_index(path: Path, ctype: str | None, workspace: Path | None) -> Rep
         rep.error("no toctree found")
         return rep
     if is_level_index:
-        standard.check_level_index(rep, body, path.parent.name, offset)
+        standard.check_level_index(rep, body, path.parent.name, offset, fm)
     else:
         standard.check_category_index(rep, body, offset)
     if not entries:
