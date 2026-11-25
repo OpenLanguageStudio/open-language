@@ -15,6 +15,10 @@ matter names it, at any level. A link to a page of another level is followed
 by that level's badge, as the ``level`` role draws it after a Related articles
 link.
 
+Both boxes are retired: where a page has a Related articles section drawn from
+its front matter (``ol.docs.related``), its links are in that section and the
+box draws nothing. A page that keeps a hand-written section is drawn as before.
+
 A box is drawn once every page is read, because the situations naming a page
 may be read after it. A page whose list of situations has changed is written
 again, so adding a situation redraws the how-to articles it names.
@@ -100,6 +104,16 @@ def drawn_on(env) -> dict[str, tuple[str, ...]]:
     return _kept(env, "ol_situations_drawn")
 
 
+def related_on(env) -> dict[str, object]:
+    """What each page's front matter holds under ``related:``, by page name."""
+    return _kept(env, "ol_related_entries")
+
+
+def generated_on(env) -> dict[str, tuple[str, ...]]:
+    """The links of each page whose Related articles section the build draws."""
+    return _kept(env, "ol_related_generated")
+
+
 def level_of(docname: str) -> str:
     """The level a page belongs to, or nothing for a page outside the levels."""
     level = docname.partition("/")[0]
@@ -182,6 +196,8 @@ def pages_to_redraw(app, env):
 def warn_empty_boxes(app, env):
     """Warn about a box that would link nothing, once every page is read."""
     for docname, line in sorted(boxes_on(env, SITUATIONS_BOX).items()):
+        if docname in generated_on(env) or docname in related_on(env):
+            continue
         if not situations_naming(env, docname):
             logger.warning(
                 "%s: no situation names this page in its 'how-to:' front matter, "
@@ -190,6 +206,8 @@ def warn_empty_boxes(app, env):
                 location=(docname, line),
             )
     for docname, line in sorted(boxes_on(env, HOW_TO_BOX).items()):
+        if docname in generated_on(env) or docname in related_on(env):
+            continue
         if not SITUATION_PAGE.fullmatch(docname):
             logger.warning(
                 "%s: the box goes on a situation article, under "
@@ -223,7 +241,9 @@ class DrawLinkBoxes(SphinxPostTransform):
                 targets = situations_naming(self.env, docname)
             else:
                 targets = tuple(how_to_links_on(self.env).get(docname, []))
-            if targets:
+            if docname in generated_on(self.env):
+                node.parent.remove(node)
+            elif targets:
                 node.replace_self(self.box(box, targets, docname))
             else:
                 node.parent.remove(node)
@@ -243,22 +263,7 @@ class DrawLinkBoxes(SphinxPostTransform):
         title += nodes.strong(TITLES[box], TITLES[box])
         items = nodes.bullet_list(classes=["ol-links-list"])
         for target in targets:
-            paragraph = nodes.paragraph()
-            paragraph += addnodes.pending_xref(
-                "",
-                nodes.inline("", ""),
-                refdomain="std",
-                reftype="doc",
-                reftarget=f"/{target}",
-                refexplicit=False,
-                refwarn=True,
-                refdoc=docname,
-            )
-            level = level_of(target)
-            if level and level != level_of(docname):
-                paragraph += nodes.Text(" ")
-                paragraph += self.badge(level)
-            items += nodes.list_item("", paragraph)
+            items += link_item(self.app, self.env, target, docname)
         return nodes.container(
             "",
             title,
@@ -267,14 +272,49 @@ class DrawLinkBoxes(SphinxPostTransform):
             is_div=True,
         )
 
-    def badge(self, level: str) -> nodes.Node:
-        """A level's badge, or the level in brackets where HTML is not drawn."""
-        # Sphinx 9 keeps the builder's class on the environment, as its own
-        # post-transforms read it. Sphinx 8 has only the application's builder.
-        builder = getattr(self.env, "_builder_cls", None) or self.app.builder
-        if builder.format == "html":
-            return nodes.raw("", level_badge_html(level), format="html")
-        return nodes.Text(f"({level.upper()})")
+
+def level_badge(app, env, level: str) -> nodes.Node:
+    """A level's badge, or the level in brackets where HTML is not drawn."""
+    # Sphinx 9 keeps the builder's class on the environment, as its own
+    # post-transforms read it. Sphinx 8 has only the application's builder.
+    builder = getattr(env, "_builder_cls", None) or app.builder
+    if builder.format == "html":
+        return nodes.raw("", level_badge_html(level), format="html")
+    return nodes.Text(f"({level.upper()})")
+
+
+def link_item(app, env, target: str, docname: str) -> nodes.list_item:
+    """One link to a page, as a list item.
+
+    The link is a ``doc`` cross-reference with no text of its own, so Sphinx
+    writes the target page's title as it does for a link with empty brackets. A
+    page of another level is followed by that level's badge.
+
+    Args:
+        app: The Sphinx application.
+        env: The Sphinx build environment.
+        target: The linked page's name.
+        docname: The page the link is on.
+
+    Returns:
+        The list item.
+    """
+    paragraph = nodes.paragraph()
+    paragraph += addnodes.pending_xref(
+        "",
+        nodes.inline("", ""),
+        refdomain="std",
+        reftype="doc",
+        reftarget=f"/{target}",
+        refexplicit=False,
+        refwarn=True,
+        refdoc=docname,
+    )
+    level = level_of(target)
+    if level and level != level_of(docname):
+        paragraph += nodes.Text(" ")
+        paragraph += level_badge(app, env, level)
+    return nodes.list_item("", paragraph)
 
 
 def setup(app):

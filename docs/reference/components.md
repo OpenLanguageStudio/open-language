@@ -20,8 +20,8 @@ This page shows how to write each component. How many a page may hold, and where
 | Register badge | ``{bdg-light}`informal` `` | A register in a Notes cell. |
 | Example block | `:::{ol-examples}` with `:presenters:` | Example sentences with their translations, beside the explanation. |
 | Audio block | `:::{audio-examples}` | The page's track, under Hear it in practice. |
-| Situations box | `:::{situations}` | On a how-to article, the situations that put it to use. The build writes the list. |
-| How to box | `:::{how-to-links}` | On a situation article, the how-to articles it puts to use. The build writes the list. |
+| Situations box (retired) | `:::{situations}` | Folded into Related articles. Remove it. |
+| How to box (retired) | `:::{how-to-links}` | Folded into Related articles. Remove it. |
 | Skills list | `:::{skills} can` | On a level page, the skills of one kind, drawn from the front matter. `know` or `can`. |
 | Notice | `:::{tip}` and three others | A fact set apart from the text: a nuance, a memory aid, a trap. |
 | Titled notice | `:::{admonition} Common mistakes` | Prerequisites, Common mistakes and Key points, and no other title. |
@@ -112,16 +112,9 @@ Wir nehmen {akk}`die` Straßenbahn.
 
 `ol-examples` and `audio-examples` are two directives on purpose. A box beside an explanation and a page's track are different things, and neither switches into the other on an option. Underneath they share one list, `ol/docs/example_list.py`: it reads a definition list as sentences and translations, gives each sentence in the form that identifies it, and draws the list. `audio-examples` adds the track's header, its translations button and the handling of a track that another page writes.
 
-### Situations and How to boxes
+### Situations and How to boxes (retired)
 
-The two boxes link a how-to article and the situations that put it to use. Neither is written by hand: write the directive with nothing inside it, and the build fills it from the situations' `how-to:` front matter.
-
-```markdown
-:::{situations}
-:::
-```
-
-`situations` stands on a how-to article, after the explanation and any Prerequisites, in place of `## When to use it`. `how-to-links` stands on a situation article, straight after the lead. Each link shows the page's title, and a page of another level is followed by its level badge. Both are drawn as a tinted card with an icon and a small title, so a reader does not take them for a notice. [Rule for How to](page-standard.md#how-to) and [for Situations](page-standard.md#situations)
+The two boxes are folded into Related articles. The build draws a how-to article's situations, and a situation's how-to articles, under `## Related articles` from the situations' `how-to:` front matter, so no page writes a box. A page with `related:` that still holds one fails, and a page without `related:` is warned about. See [Related articles](page-standard.md#related-articles).
 
 ### Skills
 
@@ -248,8 +241,8 @@ The [page standard](page-standard.md) gives every page's sections in order, and 
 | Category index with subcategories | Lead, hidden toctree, a card per subcategory. |
 | Flat category index, subcategory index | Lead, visible toctree. |
 | Grammar article | Opening paragraphs, Prerequisites, form and use sections with forms tables, example blocks and a notice where one helps, Common mistakes, Hear it in practice, Summary with Key points, Related articles. |
-| How-to article | Opening paragraphs, Prerequisites, the Situations box or When to use it, Key phrases as phrase tables (or one tab set of them), Culture note, Hear it in practice, Summary, Related articles. |
-| Situation article | Lead, the How to box, Hear it in practice with one or two dialogue, correspondence or passage blocks, What to listen for as a list, Related articles. |
+| How-to article | Opening paragraphs, Prerequisites, When to use it until a situation names the article, Key phrases as phrase tables (or one tab set of them), Culture note, Hear it in practice, Summary, Related articles. |
+| Situation article | Lead, Hear it in practice with one or two dialogue, correspondence or passage blocks, What to listen for as a list, Related articles. |
 | Writing article | Opening paragraphs, Prerequisites, one or two Example sections each with a block quote and its own Hear it in practice, Building blocks as a phrase table, Summary, Related articles. |
 | Vocabulary article | Opening paragraphs, The words as one phrase table, Hear it in practice, Summary, Related articles. |
 
