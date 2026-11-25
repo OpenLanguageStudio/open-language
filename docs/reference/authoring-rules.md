@@ -99,3 +99,5 @@ An en dash (–) appears in three places only: between the two halves of a title
 ## Frontmatter
 
 Write `html_meta.description` for the snippet a search engine shows under the title.
+
+On a level page, write the skills once under `skills:` in the front matter, each with an `id`, a `kind` of `know` or `can`, and a `text`. Draw them with `:::{skills} know` and `:::{skills} can` under the two sections, and write no list beside them. On an article, name one or two of the level's skill ids under `skills:`.

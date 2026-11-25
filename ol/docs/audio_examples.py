@@ -200,6 +200,7 @@ def setup(app):
     """
     app.setup_extension("ol.docs.page_examples")
     app.setup_extension("ol.docs.situations")
+    app.setup_extension("ol.docs.skills")
     app.add_node(DuplicateTrack)
     app.add_directive("audio-examples", AudioExamplesDirective)
     app.add_js_file("audio-examples.js")

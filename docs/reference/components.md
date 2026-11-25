@@ -22,6 +22,7 @@ This page shows how to write each component. How many a page may hold, and where
 | Audio block | `:::{audio-examples}` | The page's track, under Hear it in practice. |
 | Situations box | `:::{situations}` | On a how-to article, the situations that put it to use. The build writes the list. |
 | How to box | `:::{how-to-links}` | On a situation article, the how-to articles it puts to use. The build writes the list. |
+| Skills list | `:::{skills} can` | On a level page, the skills of one kind, drawn from the front matter. `know` or `can`. |
 | Notice | `:::{tip}` and three others | A fact set apart from the text: a nuance, a memory aid, a trap. |
 | Titled notice | `:::{admonition} Common mistakes` | Prerequisites, Common mistakes and Key points, and no other title. |
 | Phrase table | Markdown pipe table | Phrases with notes, two columns. |
@@ -33,7 +34,7 @@ This page shows how to write each component. How many a page may hold, and where
 
 The full list, which `ol validate` holds a page to:
 
-- **Directives:** `ol-examples`, `audio-examples`, `note`, `tip`, `important`, `warning`, `admonition` (the three titles only), `situations` on how-to articles, `how-to-links` on situation articles, `tab-set`, `tab-item`, `grid`, `grid-item-card`, `toctree`, and `glossary` on the Terminology page.
+- **Directives:** `ol-examples`, `audio-examples`, `note`, `tip`, `important`, `warning`, `admonition` (the three titles only), `skills` on level pages, `situations` on how-to articles and `how-to-links` on situation articles (both retired: see below), `tab-set`, `tab-item`, `grid`, `grid-item-card`, `toctree`, and `glossary` on the Terminology page.
 - **Roles:** the language repository's marking roles, `stack`, `term`, `level` and `bdg-light`; on How to use and Contributing also `kbd`, `guilabel`, `menuselection`, `file`, `command` and `samp`.
 
 ## Inline
@@ -121,6 +122,10 @@ The two boxes link a how-to article and the situations that put it to use. Neith
 ```
 
 `situations` stands on a how-to article, after the explanation and any Prerequisites, in place of `## When to use it`. `how-to-links` stands on a situation article, straight after the lead. Each link shows the page's title, and a page of another level is followed by its level badge. Both are drawn as a tinted card with an icon and a small title, so a reader does not take them for a notice. [Rule for How to](page-standard.md#how-to) and [for Situations](page-standard.md#situations)
+
+### Skills
+
+A level page lists its skills once, under `skills:` in its front matter, and draws them with the directive: `:::{skills} know` under "What learners know" and `:::{skills} can` under "What learners can do". It takes no options and no body. The build writes a bullet list of the text of every skill of that kind, in front-matter order. [Rule](page-standard.md#level-overview-page)
 
 ### Notices
 
@@ -239,7 +244,7 @@ The [page standard](page-standard.md) gives every page's sections in order, and 
 | Page | Built from |
 |---|---|
 | Introduction | Lead, `## How the course works`, `## Levels` as a card per level, `## Categories` as a card per category of the first level, `## Where to start` as a list, hidden toctree. |
-| Level page | Lead, `## What learners know` and `## What learners can do` as lists, hidden toctree, `## Categories` as a card per category, `## Additional reading` as a list of external links. |
+| Level page | Lead, `## What learners know` and `## What learners can do` as skills lists, hidden toctree, `## Categories` as a card per category, `## Additional reading` as a list of external links. |
 | Category index with subcategories | Lead, hidden toctree, a card per subcategory. |
 | Flat category index, subcategory index | Lead, visible toctree. |
 | Grammar article | Opening paragraphs, Prerequisites, form and use sections with forms tables, example blocks and a notice where one helps, Common mistakes, Hear it in practice, Summary with Key points, Related articles. |

@@ -44,6 +44,12 @@ An article is these parts, in this order. The five category sections below fill 
 
 Parts 3 and 4 together stay at 180 words or fewer, so the first screen on a phone shows what the page is and why it matters, then the first heading.
 
+### Front matter keys
+
+Besides `html_meta`, an article's front matter holds:
+
+- `skills:` names one or two skills of the level page, by id: `skills: [a1-meet-people]`. Each id is a skill listed in `skills:` on the article's level page, `<level>/index.md`. A list of more than two, or an id the level page does not list, fails. An article with no `skills:` is warned about until its level is migrated. [V]
+
 ### Headings
 
 - Only H1, H2 and H3 exist. There is no H4. [V]
@@ -201,6 +207,17 @@ H1 is the bare level name. The one place the CEFR level appears in a title. The 
 4. The toctree of the level's categories, in the order how-to, situations, grammar, writing, vocabulary, hidden. [M]
 4. `## Categories`: a card grid of one card per category, in the toctree's order, each linking to the category index with one sentence of 15 words or fewer on what its pages hold.
 6. `## Additional reading`, as external links only.
+
+The skills are written once, in the page's front matter, and the two sections draw them:
+
+```yaml
+skills:
+  - id: a1-meet-people
+    kind: can          # know or can
+    text: "Greet people, introduce themselves and others, and give personal details."
+```
+
+Each skill has a unique `id`, a `kind` of `know` or `can`, and a `text`. The section "What learners know" holds `:::{skills} know` and "What learners can do" holds `:::{skills} can`, each with no options and no body, and no hand-written list beside it. The build draws the texts of that kind, in front-matter order, and the limits above apply to those texts. A page with `skills:` uses the directive in both sections. A page still written with hand-written bullets passes with a warning to move them into `skills:`. [V]
 
 Parts 1 to 3 total 150 words or fewer. Levels stop at B2 for now. A level page makes no claim about an exam. It may cite the Council of Europe descriptors, which are public. [R]
 
