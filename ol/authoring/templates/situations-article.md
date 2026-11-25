@@ -6,10 +6,21 @@
      phrase tables, no examples boxes, no Key points, no Common mistakes.
      If a line needs explaining, the explanation belongs in the how-to article.
      Replace {{PLACEHOLDERS}}; DELETE every template comment: no HTML comments
-     may survive in the docs file.                                            -->
+     may survive in the docs file.
+     FRONT MATTER: 'related:' lists page paths without .md, from the root with
+     a leading / or relative to this folder. The build draws them as the last
+     section, grouped by kind: write no '## Related articles' section. Only
+     pages the reader would not reach by the next-page link, and no other
+     article of this subcategory. 'skills:' names one or two skill ids of the
+     level page. 'tags:' comes from track-tags.yml. Leave a key out when the
+     repository does not use it yet.
+-->
 ---
 how-to:
   - /{{level_lc}}/how-to/{{how-to-article}}.md
+related: ["{{/level/category/page: a page to read next, without .md}}"]
+skills: ["{{skill-id: an id from the level page's skills, one or two}}"]
+tags: ["{{tag: from track-tags.yml}}"]
 myst:
   html_meta:
     description: "{{SEARCH_SNIPPET_160_CHARS_OR_FEWER}}"
@@ -21,10 +32,10 @@ myst:
 ---
 <!-- how-to: ONE TO THREE how-to articles the scene puts to use, at this level
      or below. This list is the only place the link is written: the build draws
-     it as the How to box on this page AND as the Situations box on each
-     how-to article named here. Never write those links by hand.
-     Each how-to article named here must carry ':::{situations}' in place of
-     its '## When to use it' section (ol validate says so). -->
+     it under Related articles on this page AND lists this situation under
+     Related articles on each how-to article named here. Never write those
+     links by hand. Each how-to article named here drops its '## When to use
+     it' section (ol validate says so). -->
 
 # {{ENGLISH_TITLE}}
 <!-- The scene, in English, sentence case, five words or fewer: "At a party",
@@ -40,10 +51,6 @@ phrasing from keywords at least once.}}
      the scene: "Lina has just moved to Freiburg, and her new colleague Deniz
      has invited her to a birthday party where she knows nobody."
      There is no explanation paragraph. -->
-
-:::{how-to-links}
-:::
-<!-- REQUIRED, straight after the lead, with no options and no body. -->
 
 ## Hear it in practice
 
@@ -84,10 +91,3 @@ phrasing from keywords at least once.}}
 <!-- Two to four bullets, 30 words or fewer each. Point at what is in the
      scene: a reply that changes register, a filler, a question turned back,
      how the conversation ends. Never a grammar lesson: link that instead. -->
-
-## Related articles
-
-- []({{/path.md}})
-<!-- OPTIONAL. Links only: another situation, a vocabulary pack. The how-to
-     articles are already in the How to box, so do not repeat them here.
-     Leave the section out when it is empty. -->

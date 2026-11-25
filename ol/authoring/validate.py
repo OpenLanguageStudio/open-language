@@ -48,11 +48,12 @@ from pathlib import Path
 
 import yaml
 
-from ol.authoring import situations, standard
+from ol.authoring import related, situations, skills, standard, tags
 from ol.authoring.components import Page, check_components
 from ol.authoring.glossary import check_terminology
 from ol.authoring.specs_data import SPECS
 from ol.blocks import Block, BlockFormatError, BlockReader, Refusal
+from ol.levels import LEVELS
 from ol.workspace import find_workspace, page_path
 
 TEMPLATES_DIR = Path(__file__).resolve().parent / "templates"
@@ -394,19 +395,55 @@ def toctree_entries(body: str) -> list[str] | None:
 
 
 def related_links(
-    body: str, path: Path, workspace: Path | None
+    body: str, fm: dict | None, path: Path, workspace: Path | None
 ) -> list[tuple[str, Path]]:
-    """Each page link under Related articles, as written and as a file."""
-    section = RELATED_SECTION.search(body)
-    if not section:
-        return []
+    """Each page a page relates to, as written and as a file.
+
+    The links under a hand-written Related articles section and the entries of
+    ``related:`` in the front matter are read alike.
+    """
     links = []
-    for link in re.findall(r"\]\(([^)#\s]+\.md)", section.group(1)):
-        if not link.startswith("/"):
-            links.append((link, path.parent / link))
-        elif workspace:
-            links.append((link, workspace / link.lstrip("/")))
+    section = RELATED_SECTION.search(body)
+    if section:
+        for link in re.findall(r"\]\(([^)#\s]+\.md)", section.group(1)):
+            if not link.startswith("/"):
+                links.append((link, path.parent / link))
+            elif workspace:
+                links.append((link, workspace / link.lstrip("/")))
+    if workspace:
+        docname = page_name(path, workspace)
+        for entry in related.entries(fm):
+            if not entry.endswith(".md"):
+                links.append(
+                    (entry, workspace / f"{related.resolve(docname, entry)}.md")
+                )
     return links
+
+
+def check_related_sources(
+    rep: Report, body: str, fm: dict | None, path: Path, workspace: Path | None
+):
+    """Related links come from the front matter, and never from both places.
+
+    Args:
+        rep: The page's report.
+        body: The page's Markdown.
+        fm: The page's front matter.
+        path: The page's file.
+        workspace: The language repository's root.
+    """
+    related.check_entries(rep, fm, page_name(path, workspace), workspace)
+    written = RELATED_SECTION.search(body) is not None
+    if written and fm and related.KEY in fm:
+        rep.error(
+            "both 'related:' in the front matter and a '## Related articles' "
+            "section: keep the front matter and remove the section"
+        )
+    elif written:
+        rep.warn(
+            "'## Related articles' is written by hand: move its links into "
+            "'related:' in the front matter and remove the section"
+        )
 
 
 def subcategory(path: Path, workspace: Path | None) -> tuple[str, ...] | None:
@@ -421,7 +458,7 @@ def subcategory(path: Path, workspace: Path | None) -> tuple[str, ...] | None:
 
 
 def check_related_neighbours(
-    rep: Report, body: str, path: Path, workspace: Path | None
+    rep: Report, links: list[tuple[str, Path]], path: Path, workspace: Path | None
 ):
     """Related articles in a flat category directory skips toctree neighbours.
 
@@ -442,7 +479,7 @@ def check_related_neighbours(
         for j in (i - 1, i + 1)
         if 0 <= j < len(entries)
     }
-    for link, target in related_links(body, path, workspace):
+    for link, target in links:
         if target.resolve() in neighbours:
             rep.error(
                 f"Related articles links {link}, next to this article in the "
@@ -451,7 +488,7 @@ def check_related_neighbours(
 
 
 def check_related_subcategory(
-    rep: Report, body: str, path: Path, workspace: Path | None
+    rep: Report, links: list[tuple[str, Path]], path: Path, workspace: Path | None
 ):
     """Related articles never links another article of the same subcategory.
 
@@ -461,7 +498,7 @@ def check_related_subcategory(
     own = subcategory(path, workspace)
     if own is None:
         return
-    for link, target in related_links(body, path, workspace):
+    for link, target in links:
         if target.stem != "index" and subcategory(target, workspace) == own:
             rep.error(
                 f"Related articles links {link}, an article in the same "
@@ -667,8 +704,21 @@ def validate_article(path: Path, ctype: str, workspace: Path | None) -> Report:
 
     check_article_headings(rep, body)
     check_prerequisites(rep, body)
-    check_related_neighbours(rep, body, path, workspace)
-    check_related_subcategory(rep, body, path, workspace)
+    track_tags = tags.load_tags(workspace)
+    tags.check_file(rep, track_tags)
+    tags.check_article_tags(rep, fm if isinstance(fm, dict) else None, track_tags)
+    own = page_path(path, workspace) if workspace else None
+    skills.check_article_skills(
+        rep,
+        fm if isinstance(fm, dict) else None,
+        workspace,
+        own[0] if own and own[0] in LEVELS else None,
+    )
+    fm_dict = fm if isinstance(fm, dict) else None
+    links = related_links(body, fm_dict, path, workspace)
+    check_related_neighbours(rep, links, path, workspace)
+    check_related_subcategory(rep, links, path, workspace)
+    check_related_sources(rep, body, fm_dict, path, workspace)
     check_direct_address(rep, body)
     check_example_blocks(rep, body)
     check_ai_vocabulary(rep, body)
@@ -740,6 +790,7 @@ def validate_article(path: Path, ctype: str, workspace: Path | None) -> Report:
             )
         for block in blocks:
             check_audio_block(rep, block, ctype)
+            tags.check_block_tags(rep, block, track_tags)
         if ctype == "situations":
             situations.check_situation_tracks(rep, len(blocks))
 
@@ -783,7 +834,7 @@ def validate_index(path: Path, ctype: str | None, workspace: Path | None) -> Rep
         rep.error("no toctree found")
         return rep
     if is_level_index:
-        standard.check_level_index(rep, body, path.parent.name, offset)
+        standard.check_level_index(rep, body, path.parent.name, offset, fm)
     else:
         standard.check_category_index(rep, body, offset)
     if not entries:

@@ -40,6 +40,7 @@ DIRECTIVES = {
     "audio-examples",
     "situations",
     "how-to-links",
+    "skills",
     *FREE_NOTICES,
     "admonition",
     "tab-set",
@@ -295,6 +296,12 @@ def check_hidden(rep, blocks: list[Block]):
             )
 
 
+def _is_level_page(page: Page) -> bool:
+    """Whether an index page is a level's own overview page."""
+    parts = page_path(page.path, page.workspace) if page.workspace else None
+    return parts is not None and len(parts) == 2 and parts[0] in LEVELS
+
+
 def _place(block: Block, page: Page) -> str | None:
     """Why a directive may not stand on this page, or None when it may."""
     article = page.kind == "article"
@@ -313,6 +320,10 @@ def _place(block: Block, page: Page) -> str | None:
         return "the situations box is for how-to articles"
     if block.name == "how-to-links" and not (article and page.category == "situations"):
         return "the how-to-links box is for situation articles"
+    if block.name == "skills" and not (
+        page.kind == "index" and page.path.name == "index.md" and _is_level_page(page)
+    ):
+        return "the skills directive is for level pages"
     if block.name == "toctree" and article:
         return "the menu is on index pages"
     return None

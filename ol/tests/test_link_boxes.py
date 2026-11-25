@@ -239,6 +239,10 @@ def test_a_build_into_one_document_draws_every_box_from_its_own_page(tmp_path):
     assert "A new colleague</span></a> <span" in html
 
 
-def test_the_audio_examples_extension_brings_the_boxes(tmp_path):
+def test_the_audio_examples_extension_brings_the_links_under_related_articles(
+    tmp_path,
+):
     done = Build(tmp_path, extension="ol.docs.audio_examples").run(COURSE)
-    assert done.links("a1/situations/at-a-party")
+    html = done.html("a1/situations/at-a-party")
+    assert 'id="related-articles"' in html
+    assert "Introduce yourself" in html

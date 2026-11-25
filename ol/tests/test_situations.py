@@ -9,7 +9,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pytest
-from test_standard import FIXTURES, PATHS, errors, fixture, repository
+from test_standard import FIXTURES, PATHS, errors, fixture, report, repository
 
 from ol.authoring.validate import validate_file
 
@@ -48,10 +48,6 @@ BROKEN = {
             "/a1/how-to/introduce-yourself.md", "/b1/how-to/introduce-yourself.md", 1
         ),
         "is above the situation's level",
-    ),
-    "no how-to box": (
-        lambda s: s.replace(":::{how-to-links}\n:::\n\n", ""),
-        "the how-to-links box stands straight after the lead",
     ),
     "an explanation paragraph": (
         lambda s: s.replace(
@@ -203,11 +199,48 @@ def test_a_named_how_to_article_with_the_box_passes(tmp_path):
     assert how_to_errors(tmp_path, named=True, how_to=with_box()) == []
 
 
-def test_a_named_how_to_article_without_the_box_is_red(tmp_path):
+def test_a_named_how_to_article_keeping_when_to_use_it_is_red(tmp_path):
     found = how_to_errors(tmp_path, named=True, how_to=fixture("how-to"))
     assert any(
         "a1/situations/at-a-party names this article" in message for message in found
     ), found
+
+
+def test_a_named_how_to_article_without_the_box_or_the_section_passes(tmp_path):
+    bare = fixture("how-to").replace(WHEN, "")
+    assert how_to_errors(tmp_path, named=True, how_to=bare) == []
+
+
+def test_a_situation_without_the_box_passes(tmp_path):
+    bare = fixture("situations").replace(":::{how-to-links}\n:::\n\n", "")
+    assert errors(tmp_path, "situations", bare) == []
+
+
+def retired(tmp_path, text: str, category: str = "how-to") -> list[tuple[str, str]]:
+    return report(tmp_path, category, text).items
+
+
+def test_a_box_on_a_page_without_related_warns(tmp_path):
+    items = retired(tmp_path, with_box())
+    assert any(lvl == "WARN" and "situations box is retired" in m for lvl, m in items)
+
+
+@pytest.mark.parametrize(
+    ("category", "text"),
+    [
+        ("how-to", lambda: with_box()),
+        (
+            "situations",
+            lambda: fixture("situations").replace("how-to:", "related: []\nhow-to:", 1),
+        ),
+    ],
+)
+def test_a_box_on_a_page_with_related_is_red(tmp_path, category, text):
+    page = text()
+    if category == "how-to":
+        page = page.replace("---\n", "---\nrelated: []\n", 1)
+    items = retired(tmp_path, page, category)
+    assert any(lvl == "ERROR" and "box is retired" in m for lvl, m in items), items
 
 
 def test_the_box_on_an_article_no_situation_names_is_red(tmp_path):

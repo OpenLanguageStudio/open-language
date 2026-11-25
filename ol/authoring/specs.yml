@@ -17,6 +17,12 @@
 #   - NO hand-numbered headings, NO external-reading or "See also" section
 #     in an article, NO Related articles link to another article of the same
 #     subcategory, or, in a flat category directory, to a toctree neighbour
+#   - front matter `related:` lists page paths without .md that exist, held to the
+#     same two rules; the build draws them as Related articles, and a page never
+#     has both `related:` and a hand-written Related articles section
+#   - front matter `skills:` names `article_skills` ids of the level page's skills
+#   - front matter `tags:` and every `:tags:` come from the repository's
+#     track-tags.yml when it has one (ol/authoring/tags.py)
 #   - Prerequisites lists at most `max_prerequisites` links
 #   - no collapsible: no dropdown directive, :class: dropdown notice or <details>
 #   - the components of docs/reference/components.md, each where it goes
@@ -42,6 +48,8 @@ common:
   # A body shorter than this is a stub, reported but not held to the templates.
   stub_body_bytes: 200
   description_max_chars: 160
+  # An article names this many skills of its level page, by id, in its front matter.
+  article_skills: [1, 2]
   # The opening: the lead paragraph, then the explanation paragraph.
   lead_min_words: 20
   lead_max_words: 50

@@ -3,8 +3,19 @@
      an invitation). English kebab-case filename, numbered per register family
      (email-formal-1). English headings only.
      The shape and every limit are in docs/reference/page-standard.md.
-     Replace {{PLACEHOLDERS}}; DELETE every template comment. -->
+     Replace {{PLACEHOLDERS}}; DELETE every template comment.
+     FRONT MATTER: 'related:' lists page paths without .md, from the root with
+     a leading / or relative to this folder. The build draws them as the last
+     section, grouped by kind: write no '## Related articles' section. Only
+     pages the reader would not reach by the next-page link, and no other
+     article of this subcategory. 'skills:' names one or two skill ids of the
+     level page. 'tags:' comes from track-tags.yml. Leave a key out when the
+     repository does not use it yet.
+-->
 ---
+related: ["{{/level/category/page: a page to read next, without .md}}"]
+skills: ["{{skill-id: an id from the level page's skills, one or two}}"]
+tags: ["{{tag: from track-tags.yml}}"]
 myst:
   html_meta:
     description: "{{SEARCH_SNIPPET_160_CHARS_OR_FEWER}}"
@@ -81,11 +92,3 @@ Before reading this article, make sure you are comfortable with:
 
 - {{typical error in this genre}} → {{fix}}
 :::
-
-## Related articles
-
-- []({{/path.md}})
-<!-- Leave the link text empty: the build writes the page's title. A link to a
-     page of another level is followed by that level as a badge:
-     - [](/b1/grammar/passiv.md) {level}`B1` -->
-<!-- Links only. Leave the section out when it is empty. -->

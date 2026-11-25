@@ -99,3 +99,15 @@ An en dash (–) appears in three places only: between the two halves of a title
 ## Frontmatter
 
 Write `html_meta.description` for the snippet a search engine shows under the title.
+
+On a level page, write the skills once under `skills:` in the front matter, each with an `id`, a `kind` of `know` or `can`, and a `text`. Draw them with `:::{skills} know` and `:::{skills} can` under the two sections, and write no list beside them. On an article, name one or two of the level's skill ids under `skills:`.
+
+## Related articles
+
+List related pages under `related:` in the front matter, as page paths without `.md`: relative to the page's folder, or from the root with a leading `/`. Write `related: [/a1/grammar/verbs/sein-und-haben, choose-between-du-and-sie]`. The build draws them as the last section, `## Related articles`, grouped by kind of page. Do not write the section, and write no `:::{situations}` or `:::{how-to-links}` box: the links they drew are drawn there too. A how-to article keeps `## When to use it` until a situation names it, and then the situations replace the section. An entry that names no page stops the build.
+
+Link only pages a reader would not reach by the next-page link, and link no other article of the article's own subcategory.
+
+## Tags
+
+When the repository has `track-tags.yml`, give every audio block that writes a track a `:tags:` option and the article a `tags:` list in its front matter, each tag exactly as the file lists it under `grammar:` or `themes:`. A `:duplicate:` block needs no tags.

@@ -36,13 +36,40 @@ An article is these parts, in this order. The five category sections below fill 
 | 2 | Title (H1) | One per page. English, sentence case, five words or fewer, no level, no category, no number. | V (count, prefix), R (case) |
 | 3 | Lead paragraph | The first paragraph under the title. One or two sentences (20 to 50 words). Says what the page covers in plain words, and uses the main learner phrasing at least once. | V |
 | 4 | Explanation paragraph | The second paragraph. States the one idea of the page in plain language (40 to 120 words). Every technical term in it is linked to the glossary, here or in the lead, so a term is not linked twice two paragraphs apart. | V |
-| 5 | Prerequisites | Optional admonition after the two opening paragraphs, before the first H2. At most 3 links, true dependencies only, each written as described under Related articles. | V |
+| 5 | Prerequisites | Optional admonition after the two opening paragraphs, before the first H2. At most 3 links, true dependencies only, each a list item with empty link text, `- [](/a1/grammar/cases/akkusativ.md)`, so the build writes the target's title. | V |
 | 6 | Body sections | The category's own sections (see below). | V |
 | 7 | Hear it in practice | `## Hear it in practice` with the audio block, after the body and before the summary. In grammar and how-to, several blocks may each sit under an H3 naming the track. | V |
 | 8 | Summary | `## Summary`, as the template for the category shows. | V |
-| 9 | Related articles | `## Related articles` at the very end, only links the reader would not reach by the next-page link. In a subcategory, a directory below a category such as `a1/grammar/articles/`, an article links no other article of that subcategory: the directory already relates them and the subcategory index links them all. Links outside the subcategory are fine. In a flat category directory, such as `b1/grammar/` or `a1/how-to/`, sharing the directory says nothing about two topics being related, so only the toctree neighbours are left out. Omitted when empty. Each link is a list item with empty link text, `- [](/a1/grammar/cases/akkusativ.md)`, so the build writes the target's title and a retitled page leaves no stale link. A link to a page of another level is followed by that level as a level badge, ``{level}`A1` ``. | V |
+| 9 | Related articles | Drawn by the build from `related:` in the front matter (see Front matter keys), as the last section of the page. The page has no `## Related articles` section of its own. | V, B |
 
 Parts 3 and 4 together stay at 180 words or fewer, so the first screen on a phone shows what the page is and why it matters, then the first heading.
+
+### Front matter keys
+
+Besides `html_meta`, an article's front matter holds:
+
+- `related:` lists the pages a reader may want next, as page paths without `.md`, relative to the page's folder or from the root with a leading `/`: `related: [/a1/grammar/verbs/sein-und-haben, choose-between-du-and-sie]`. Each entry names a page that exists and is not the page itself. [V] An entry that names no page, ends in `.md` or is not a string stops the build. [B]
+- `tags:` lists the tags of the article's tracks, each from the repository's `track-tags.yml` (see Tags).
+- `skills:` names one or two skills of the level page, by id: `skills: [a1-meet-people]`. Each id is a skill listed in `skills:` on the article's level page, `<level>/index.md`. A list of more than two, or an id the level page does not list, fails. An article with no `skills:` is warned about until its level is migrated. [V]
+
+### Related articles
+
+The build draws the page's `related:` entries as the last section, `## Related articles`, one group for each kind of page. The groups follow the category order, how to, situations, grammar, writing and vocabulary, and a page that belongs to no category stands last under "More". Within a group the links keep the order of `related:`, and a page listed twice is linked once. Each link shows the target's title, and a page of another level is followed by that level as a level badge.
+
+- Only links the reader would not reach by the next-page link belong in `related:`. In a subcategory, a directory below a category such as `a1/grammar/articles/`, an article relates to no other article of that subcategory: the directory already relates them and the subcategory index links them all. Links outside the subcategory are fine. In a flat category directory, such as `b1/grammar/` or `a1/how-to/`, sharing the directory says nothing about two topics being related, so only the toctree neighbours are left out. [V]
+- The links the Situations and How to boxes drew are folded into the section: a how-to article links every situation whose `how-to:` front matter names it, and a situation links the how-to articles its own `how-to:` names. Both boxes are retired. A page with `related:` that still holds a box fails, and a page without `related:` is warned about. [V]
+- The section is drawn when the page has no hand-written `## Related articles` and at least one link. A page with both `related:` and a hand-written section fails and the build warns. A page with only the hand-written section is warned about until its links move into `related:`. [V, B]
+
+### Tags
+
+A language repository may hold `track-tags.yml` at its root, with two lists of strings, `grammar:` and `themes:`. The allowed tags are the two lists together. When the file exists: [V]
+
+- A block that writes a track has a `:tags:` option. A `:duplicate:` block writes no track and needs none.
+- Every tag in `:tags:` is in the list, written exactly as listed.
+- An article's `tags:` front matter is a list of strings from the list. An article with no `tags:` is warned about until its level is migrated.
+- The file itself is two lists of strings.
+
+Without the file, tags are not checked.
 
 ### Headings
 
@@ -140,7 +167,7 @@ The H1 finishes the phrase "How to ...", so it opens on a verb in its base form:
 | Order | Section | Rule |
 |---|---|---|
 | 1 | Opening paragraphs | Lead and explanation. |
-| 2 | `## When to use it` or `:::{situations}` | The situations the goal arises in. Once a situation article names the page in its `how-to:` front matter, the `:::{situations}` box takes the place of the section: it stands in the opening, after the explanation and any Prerequisites, and the build lists the situations in it. [V] |
+| 2 | `## When to use it` | The situations the goal arises in. Once a situation article names the page in its `how-to:` front matter, the situations are listed under Related articles and the section is removed. [V] |
 | 3 | `## Key phrases` | The phrases, grouped by situation with H3 group names. Two columns at most. |
 | 4 | Other sections | Zero to three H2s, such as how the phrases change with register. |
 | 5 | Culture note | Optional, 80 words or fewer, under the heading `## Culture note`. |
@@ -154,7 +181,7 @@ One everyday scene, heard. A situation article shows a how-to goal reached and t
 |---|---|---|
 | 1 | Front matter `how-to:` | One to three links to how-to articles at the article's level or below, in the form `/a1/how-to/introduce-yourself.md`. [V] |
 | 2 | Lead | One or two sentences, 20 to 50 words, setting the scene: who, where, what is happening. There is no explanation paragraph. [V] |
-| 3 | `:::{how-to-links}` | Straight after the lead, with no options and no body. The build writes the links from the front matter. [V] |
+| 3 | Related articles | The how-to articles named in `how-to:` are linked under Related articles. The retired `:::{how-to-links}` box is allowed straight after the lead and is warned about. [V] |
 | 4 | `## Hear it in practice` | One `dialogue`, `correspondence` or `passage` block, or two for two versions of one scene, each under its own H3. A dialogue has 6 to 20 lines. [V] |
 | 5 | `## What to listen for` | Two to four bullets of 30 words or fewer, each pointing at one line of the scene. [V] |
 | 6 | Closing | Related articles, optional. |
@@ -201,6 +228,17 @@ H1 is the bare level name. The one place the CEFR level appears in a title. The 
 4. The toctree of the level's categories, in the order how-to, situations, grammar, writing, vocabulary, hidden. [M]
 4. `## Categories`: a card grid of one card per category, in the toctree's order, each linking to the category index with one sentence of 15 words or fewer on what its pages hold.
 6. `## Additional reading`, as external links only.
+
+The skills are written once, in the page's front matter, and the two sections draw them:
+
+```yaml
+skills:
+  - id: a1-meet-people
+    kind: can          # know or can
+    text: "Greet people, introduce themselves and others, and give personal details."
+```
+
+Each skill has a unique `id`, a `kind` of `know` or `can`, and a `text`. The section "What learners know" holds `:::{skills} know` and "What learners can do" holds `:::{skills} can`, each with no options and no body, and no hand-written list beside it. The build draws the texts of that kind, in front-matter order, and the limits above apply to those texts. A page with `skills:` uses the directive in both sections. A page still written with hand-written bullets passes with a warning to move them into `skills:`. [V]
 
 Parts 1 to 3 total 150 words or fewer. Levels stop at B2 for now. A level page makes no claim about an exam. It may cite the Council of Europe descriptors, which are public. [R]
 

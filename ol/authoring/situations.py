@@ -138,26 +138,43 @@ def _check_empty_box(rep, block: Block):
 
 
 def check_situation_opening(rep, opening: list[Block], blocks: list[Block]):
-    """After the lead comes the how-to-links box, and nothing else.
+    """After the lead comes the how-to-links box, if there is one, and nothing else.
 
     The lead itself is checked with every article's lead.
     """
     boxes = _boxes(blocks, HOW_TO_BOX)
-    if len(opening) < 2 or not opening[1].is_directive(HOW_TO_BOX):
-        rep.error(
-            f"the {HOW_TO_BOX} box stands straight after the lead: write "
-            f"':::{{{HOW_TO_BOX}}}' and ':::' on the next line"
-        )
     for block in opening[1:]:
         if not block.is_directive(HOW_TO_BOX):
             rep.error(
                 f"line {block.line}: a situation sets its scene in the lead alone: "
-                f"only the {HOW_TO_BOX} box stands between the lead and the first H2"
+                f"only the {HOW_TO_BOX} box may stand between the lead and the "
+                "first H2"
             )
     if len(boxes) > 1:
         rep.error(f"line {boxes[1].line}: {len(boxes)} {HOW_TO_BOX} boxes (one only)")
     for block in boxes:
         _check_empty_box(rep, block)
+
+
+def check_retired_boxes(rep, blocks: list[Block], fm: dict | None):
+    """The two boxes are retired: their links are drawn under Related articles.
+
+    Args:
+        rep: The page's report.
+        blocks: The page's blocks.
+        fm: The page's front matter.
+    """
+    has_related = bool(fm) and "related" in fm
+    for name in (SITUATIONS_BOX, HOW_TO_BOX):
+        for block in _boxes(blocks, name):
+            message = (
+                f"line {block.line}: the {name} box is retired: its links are "
+                "drawn under Related articles, so remove the box"
+            )
+            if has_related:
+                rep.error(message)
+            else:
+                rep.warn(message)
 
 
 def check_situation(rep, found: list[Section]):
@@ -238,20 +255,21 @@ def check_situations_box(
     path: Path,
     workspace: Path | None,
 ):
-    """A how-to article named by a situation carries the box, and only then.
+    """A how-to article keeps ``## When to use it`` until a situation names it.
 
-    The box replaces ``## When to use it`` and stands in the opening, after the
-    explanation and any Prerequisites.
+    Once a situation names the article, the situations are drawn under Related
+    articles and take the section's place. The retired box is allowed where it
+    stood, in the opening, after the explanation and any Prerequisites.
     """
     boxes = _boxes(blocks, SITUATIONS_BOX)
     parts = page_path(path, workspace) if workspace else None
     name = "/".join(parts) if parts else None
     naming = situations_naming(workspace, name) if name else []
     when = next((s for s in found if s.title == "When to use it"), None)
-    if naming and not boxes:
+    if naming and when and not boxes:
         rep.error(
-            f"{', '.join(naming)} names this article: replace '## When to use it' "
-            f"with ':::{{{SITUATIONS_BOX}}}' after the explanation"
+            f"line {when.line}: {', '.join(naming)} names this article, so the "
+            "situations are drawn under Related articles: remove 'When to use it'"
         )
     if boxes and workspace and not naming:
         rep.error(
@@ -263,7 +281,7 @@ def check_situations_box(
             f"line {when.line}: 'When to use it' and the {SITUATIONS_BOX} box: the "
             "box takes the section's place, remove the section"
         )
-    if not boxes and not when:
+    if not naming and not when and not boxes:
         rep.error("a how-to article needs the section '## When to use it'")
     if len(boxes) > 1:
         rep.error(

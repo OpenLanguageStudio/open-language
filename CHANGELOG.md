@@ -2,6 +2,23 @@
 
 ## [Unreleased]
 
+## [0.17.0] - 2026-11-25
+
+### Changed: Related articles are written in front matter (breaking for mixed pages)
+
+A page that has both `related:` and a hand-written `## Related articles` section, or `related:` and a `situations` or `how-to-links` box, now fails `ol validate`, and the build warns about the first. The two boxes are retired: where a page has Related articles drawn from the front matter, a box draws nothing. A page that keeps only its hand-written section, or only a box, passes with a warning to move to `related:`. See ADR 3.
+
+- A how-to article that a situation names no longer carries the box or `## When to use it`: the situations are listed under Related articles. A situation no longer needs `:::{how-to-links}`. A how-to article no situation names keeps `## When to use it`.
+- The article templates carry `related:`, `skills:` and `tags:` and no Related articles section or box.
+
+### Added
+
+- `related:` in an article's front matter lists page paths without `.md`, relative to the page's folder or from the root with a leading `/`. The build draws them as the last section, Related articles, with a group for each kind of page in the order how to, situations, grammar, writing, vocabulary, and "More" for the rest. A page of another level is followed by its level badge. An entry that names no page, ends in `.md` or is not a string stops the build. `ol validate` checks each entry exists, is not the page itself, and follows the rules for Related articles: no neighbour in the toctree of a flat category, no article of the same subcategory.
+- The links the Situations and How to boxes drew are drawn in the same section: a how-to article links the situations that name it, and a situation links the how-to articles it names.
+- `skills:` in a level page's front matter lists the level's skills, each with an `id`, a `kind` of `know` or `can`, and a `text`, drawn by the new `:::{skills} know` and `:::{skills} can` directives under the page's two sections. The limits on bullets apply to the texts. A level page with hand-written bullets passes with a warning to move them into `skills:`.
+- `skills:` in an article's front matter names one or two skill ids of its level page. `ol validate` reports an unknown id and a list of more than two, and warns about an article with none.
+- `track-tags.yml` at a repository's root lists the allowed tags under `grammar:` and `themes:`. When it exists, every block that writes a track needs `:tags:` from the list, and an article's `tags:` front matter must be a list from it. An article with no `tags:` is warned about. A `:duplicate:` block needs no tags.
+
 ## [0.16.0] - 2026-11-23
 
 ### Added: Situations, a fifth category
