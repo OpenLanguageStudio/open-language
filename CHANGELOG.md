@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [0.17.0] - 2026-11-25
+
 ### Changed: Related articles are written in front matter (breaking for mixed pages)
 
 A page that has both `related:` and a hand-written `## Related articles` section, or `related:` and a `situations` or `how-to-links` box, now fails `ol validate`, and the build warns about the first. The two boxes are retired: where a page has Related articles drawn from the front matter, a box draws nothing. A page that keeps only its hand-written section, or only a box, passes with a warning to move to `related:`. See ADR 3.
