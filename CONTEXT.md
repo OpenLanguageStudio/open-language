@@ -124,6 +124,11 @@ are one tag.
 `docs/reference/page-standard.md`: the shape of every page, and which check
 holds each rule.
 
+**Writing rules**:
+`docs/reference/writing-rules.md`: the judgement calls every coursebook follows,
+numbered `OL-W1` onwards. A language repository adds its own in
+`standards/writing-<code>.md` (`DE-W1` onwards). IDs are never renumbered or reused.
+
 **Glossary**:
 The Terminology page's entries. A term on a term list has exactly one, and an
 article links it with the `term` role.
