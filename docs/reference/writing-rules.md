@@ -3,16 +3,15 @@
 How to write a coursebook article, for every language. These are the judgement calls. The
 [page standard](page-standard.md) holds the checkable shape of a page, and the
 [authoring rules](authoring-rules.md) hold the file and front-matter rules. Each rule says what
-to do and, briefly, why. The rules come from Sam's reviews; when he points out something new,
-it is added the same day.
+to do and, briefly, why. When a review turns up something new, it is added as a rule.
 
 Rules for one language only live in that language's repository, in
-`standards/writing-<language code>.md` (German: `DE-W1`, `DE-W2`, …).
+`standards/writing-<language code>.md` (German: `DE-W1` onwards).
 
 ## Rule IDs
 
 - Every rule has an ID: `OL-W<n>` here, `<LANG>-W<n>` in a language repository. Cite the ID in
-  lint messages, review findings, pull request and issue comments, and the deviations log.
+  lint messages, review findings, and pull request and issue comments.
 - IDs are never renumbered or reused. A retired rule keeps its number, marked *Retired* with
   the date, so old citations still resolve. A new rule takes the next free number, wherever it
   sits on the page.
@@ -21,14 +20,12 @@ Rules for one language only live in that language's repository, in
 
 ## Bending a rule
 
-These are guides, not laws. Some articles need a rule bent. When one does, bend it, say so in
-the writer's report, and log it in the batch's deviations log: the page, the rule ID, what was
-done instead, and why. Where the bend shows in the source, mark it with a comment beside it:
-`<!-- OL-W8 bent: this page compares the two registers line by line -->`. Sam reviews the log
-at the end of a batch. A bend nobody logged is a review finding.
+These are guides, not laws. Some articles need a rule bent. When one does, mark the bend with
+a comment beside it in the source, giving the rule ID and the reason:
+`<!-- OL-W8 bent: this page compares the two registers line by line -->`, and say so in the
+pull request. An unmarked bend is a review finding.
 
-Sources: Sam's review of A1 *Introduce yourself*, 2026-11-26 (OL-W1 to OL-W25), plus his
-standing rules from earlier (OL-W26 to OL-W33). Examples are German, the first coursebook.
+The examples are German, the first coursebook.
 
 ## Purpose
 
@@ -117,7 +114,7 @@ the term, link to the article.
 `[Countries and languages](/a1/vocabulary/countries-and-languages-1.md)`, never an empty
 `[](…)`. An empty link borrows the target's title, but a page that is not written yet has no
 title, so the reader would see nothing useful. Text written into the sentence also reads
-better than a pasted title (Sam, 2026-11-26).
+better than a pasted title.
 
 ## Accuracy
 
@@ -170,8 +167,8 @@ cell doesn't count. Teaching beats discoverability.
 
 **OL-W30.** Every first-person sentence is true of the presenter who says it.
 
-**OL-W31.** No disclosure lines (AI voices, fictional presenters) in content. That's the app's
-job.
+**OL-W31.** No disclosure lines (AI voices, fictional presenters) in content. The site shows
+those itself.
 
 **OL-W32.** Never hand-write what the build generates: previous/next links, section numbers,
 Related articles from `related:`.
