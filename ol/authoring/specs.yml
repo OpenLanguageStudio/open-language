@@ -11,7 +11,11 @@
 #   - NO HTML comments (agent notes leak into built HTML)
 #   - NO blockquote subtitle under the H1
 #   - NO :::{seealso} blocks (use Prerequisites admonition or Related articles)
-#   - doc links resolve; no unfilled {{PLACEHOLDER}}
+#   - no unfilled {{PLACEHOLDER}}; a link in the body to a page that does not
+#     exist yet is a wanted page, listed by `ol wanted`, and fails nothing
+#   - `target-title:`, when given, is one line of text
+#   - no heading repeats a track's :title: or :title-en:
+#   - a phrase table has something in its Notes column
 #   - NO TODO or FIXME notes (they leak into built HTML)
 #   - NO CEFR level and NO category prefix in article titles
 #   - NO hand-numbered headings, NO external-reading or "See also" section
@@ -40,6 +44,10 @@
 #   require_examples_div: at least one ":::{ol-examples}" box
 #   require_summary_admonitions / require_common_mistakes
 #   min_audio_examples: minimum count of :::{audio-examples} blocks
+#   tracks_in_sections: a body section may end in its track, and Hear it in
+#     practice is needed only when no body section does
+#   optional_explanation: the second opening paragraph may be left out
+#   require_target_title: no `target-title:` in the front matter is a warning
 #   ordered: toctree order in the category index is the learning sequence
 #   min_pack_words / max_pack_words: rows in the table under "The words"
 #   numbered_filename: the file name ends in a running number (at-the-beach-1)
@@ -176,6 +184,9 @@ components:
   grid_gutter: "3"
   # What a register badge may hold.
   registers: [informal, formal, colloquial]
+  # Culture notes: the culture-note directive, in how-to, grammar and writing.
+  max_culture_notes: 3
+  culture_note_max_words: 80
 
 # The render check in `ol check`: no page scrolls sideways at this width.
 render:
@@ -208,11 +219,15 @@ types:
       - other: true
         count: [2, 5]
       - heading: Hear it in practice
+        count: [0, 1]
       - heading: Summary
       - heading: Related articles
         count: [0, 1]
     no_h3_sections: [Summary, Related articles]
     max_examples_per_section: 3
+    # A body section may end in its track. Hear it in practice is needed only
+    # when none does.
+    tracks_in_sections: true
     require_examples_div: true
     require_summary_admonitions: true
     require_common_mistakes: true
@@ -223,19 +238,23 @@ types:
     # The H1 finishes "How to ...": a verb in its base form opens it.
     # "When to use it" gives way to the :::{situations} box once a situation
     # names the article (ADR 2), so it is checked against the situations.
+    # The explanation paragraph is optional, and a culture note is the
+    # culture-note directive, not a section.
     sections:
       - heading: When to use it
         count: [0, 1]
       - heading: Key phrases
       - other: true
         count: [0, 3]
-      - heading: Culture note
-        count: [0, 1]
       - heading: Hear it in practice
+        count: [0, 1]
       - heading: Summary
       - heading: Related articles
         count: [0, 1]
-    culture_note_max_words: 80
+    optional_explanation: true
+    tracks_in_sections: true
+    # Every how-to article names its goal in the language taught.
+    require_target_title: true
     require_examples_div: true
     require_summary_admonitions: true
     require_common_mistakes: false
@@ -294,6 +313,7 @@ types:
       - other: true
         count: [0, 2]
       - heading: Hear it in practice
+        count: [0, 1]
       - heading: Summary
       - heading: Related articles
         count: [0, 1]
@@ -301,6 +321,7 @@ types:
     require_summary_admonitions: false
     require_common_mistakes: false
     min_audio_examples: 1
+    tracks_in_sections: true
     ordered: false
     english_filename: true
     # 10 to 15 new words on one theme; a word-class pack runs to 20.

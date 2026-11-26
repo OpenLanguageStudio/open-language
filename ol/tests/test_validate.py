@@ -146,9 +146,15 @@ BROKEN_ARTICLES = {
         ),
         "em dash",
     ),
-    "missing audio section": (
-        lambda s: s.replace("## Hear it in practice", "## Listen", 1),
-        "the section '## Hear it in practice'",
+    "no track anywhere": (
+        lambda s: re.sub(
+            r"## Hear it in practice\n\n:::\{audio-examples\}.*?\n:::\n\n",
+            "",
+            s,
+            count=1,
+            flags=re.S,
+        ),
+        "no track: end the body section each track practises",
     ),
     "missing summary": (
         lambda s: s.replace("## Summary", "## Recap", 1),
@@ -170,10 +176,6 @@ BROKEN_ARTICLES = {
     "unfilled placeholder": (
         lambda s: s.replace("## Summary", "{{TITLE}}\n\n## Summary", 1),
         "PLACEHOLDER",
-    ),
-    "broken doc link": (
-        lambda s: s.replace("nomen-genus-plural.md", "missing-page.md", 1),
-        "broken doc link",
     ),
     "stock opener": (
         lambda s: s.replace(
@@ -264,6 +266,18 @@ def test_broken_article_is_red(tmp_path, source, case):
     assert broken != source, "the mutation did not change the fixture"
     found = errors(tmp_path, broken)
     assert any(expected in msg for msg in found), found
+
+
+def test_a_link_in_the_text_to_a_missing_page_fails_nothing(tmp_path, source):
+    wanted = source.replace("nomen-genus-plural.md", "missing-page.md", 1)
+    assert wanted != source
+    assert errors(tmp_path, wanted) == []
+    report = validate_file(tmp_path / ARTICLE, tmp_path)
+    assert any(
+        "wanted page a1/grammar/other/missing-page" in m
+        for lvl, m in report.items
+        if lvl == "INFO"
+    ), report.items
 
 
 def test_stock_phrase_in_an_example_is_not_prose(tmp_path, source):

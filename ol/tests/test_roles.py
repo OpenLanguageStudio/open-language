@@ -173,6 +173,10 @@ class TestStylesheet:
         stylesheet = (self.STATIC / "stylesheet.css").read_text(encoding="utf-8")
         assert '@import url("marks.css");' in stylesheet
 
+    def test_the_site_stylesheet_imports_the_page_parts(self):
+        stylesheet = (self.STATIC / "stylesheet.css").read_text(encoding="utf-8")
+        assert '@import url("page-parts.css");' in stylesheet
+
     def test_no_stylesheet_holds_a_level_colour(self):
         # The level role writes the colour from ol/levels.py, its one source.
         from ol.levels import LEVEL_COLOURS

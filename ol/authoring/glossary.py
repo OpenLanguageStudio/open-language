@@ -3,8 +3,12 @@
 A term is on the shared list (``glossary-terms.yml`` in this package) or on the
 language repository's own list of the same name. Each has one entry in a
 ``{glossary}`` directive on the Terminology page. An article writes the first
-use of a term with Sphinx's ``term`` role, and the build fails on a term the
-glossary does not hold.
+use of a term with Sphinx's ``term`` role, or links to the article that covers
+it, and the build fails on a term the glossary does not hold.
+
+The glossary is for grammar words and words of the language taught that a
+general reader would not know. A writer links to an article first, and uses the
+glossary only when no article fits.
 """
 
 from __future__ import annotations
@@ -29,7 +33,14 @@ TERMS_FILE = "glossary-terms.yml"
 SHARED_TERMS = Path(__file__).resolve().parent / TERMS_FILE
 
 _EXAMPLE = re.compile(r"\*Examples?:\s*.+?\*\s*$", re.S)
-_LINK = re.compile(r"\[[^\]]*\]\([^)]*\)")
+_LINK = re.compile(r"\[(?P<text>[^\]]*)\]\((?P<target>[^)]*)\)")
+_EXTERNAL = re.compile(r"^[a-z][a-z0-9+.-]*:", re.I)
+
+
+def _to_article(target: str) -> bool:
+    """Whether a link goes to another page of the Coursebook, written or wanted."""
+    target = target.strip()
+    return bool(target) and not (_EXTERNAL.match(target) or target.startswith("#"))
 
 
 def _read_terms(path: Path) -> dict[str, str]:
@@ -80,22 +91,37 @@ def term_uses(text: str, forms: dict[str, str]) -> list[tuple[str, bool]]:
         forms: The list from ``load_terms``.
 
     Returns:
-        The term and whether this use is written with the ``term`` role, in
-        order. A word inside another role or inside a link is not a use: a link's
-        text cannot hold a role, and it often names another page.
+        The term and whether this use is linked, in order. A use is linked when
+        it is written with the ``term`` role or is the text of a link to another
+        page of the Coursebook, which covers it. A word inside another role or
+        inside a link off the site is not a use.
     """
     if not forms:
         return []
     uses = []
-    for m in _scanner(forms).finditer(_LINK.sub(" ", text)):
-        if m["bare"]:
-            uses.append((forms[m["bare"].lower()], False))
-        elif m["linked"] is not None:
-            target = EXPLICIT_TARGET.match(m["linked"])
-            name = (target[2] if target else m["linked"]).strip().lower()
-            if name in forms:
-                uses.append((forms[name], True))
+    scanner = _scanner(forms)
+    at = 0
+    for link in [*_LINK.finditer(text), None]:
+        end = link.start() if link else len(text)
+        for m in scanner.finditer(text[at:end]):
+            if m["bare"]:
+                uses.append((forms[m["bare"].lower()], False))
+            elif m["linked"] is not None:
+                target = EXPLICIT_TARGET.match(m["linked"])
+                name = (target[2] if target else m["linked"]).strip().lower()
+                if name in forms:
+                    uses.append((forms[name], True))
+        if link is None:
+            break
+        if _to_article(link["target"]):
+            uses += [(term, True) for term, _ in term_uses(link["text"], forms)]
+        at = link.end()
     return uses
+
+
+def links_to_article(text: str) -> bool:
+    """Whether inline Markdown holds a link to another page of the Coursebook."""
+    return any(_to_article(m["target"]) for m in _LINK.finditer(text))
 
 
 def prose(blocks: list[Block]) -> list[tuple[int, str]]:
@@ -124,9 +150,11 @@ def check_terms(
 ):
     """The first use of each listed term in an article's prose is linked.
 
-    A term in the title is what the page is about, and is exempt on that page. A
-    term linked in the lead needs no second link in the explanation, and a term
-    first used in the explanation is linked there.
+    A first use is linked when it is written with the ``term`` role, or when its
+    sentence links to another page of the Coursebook, the article that covers
+    it. A term in the title is what the page is about, and is exempt on that
+    page. A term linked in the lead needs no second link in the explanation,
+    and a term first used in the explanation is linked there.
 
     Args:
         rep: The page's report.
@@ -136,15 +164,18 @@ def check_terms(
     """
     seen = {term for term, _ in term_uses(title, forms)}
     for line, text in prose(blocks):
-        for term, linked in term_uses(text, forms):
-            if term in seen:
-                continue
-            seen.add(term)
-            if not linked:
-                rep.error(
-                    f"line {line}: first use of the term '{term}' is not linked: "
-                    f"write it as {{term}}`{term}`"
-                )
+        for sentence in sentences(text) or [text]:
+            to_article = links_to_article(sentence)
+            for term, linked in term_uses(sentence, forms):
+                if term in seen:
+                    continue
+                seen.add(term)
+                if not (linked or to_article):
+                    rep.error(
+                        f"line {line}: first use of the term '{term}' is not "
+                        "linked: link the sentence to the article that covers "
+                        f"it, or write it as {{term}}`{term}`"
+                    )
 
 
 def glossary_entries(blocks: list[Block]) -> list[tuple[int, list[str], str]]:

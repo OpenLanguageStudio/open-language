@@ -305,7 +305,8 @@ def test_a_role_the_language_does_not_register_is_not_a_component(tmp_path):
 
 
 TAB = ":::{{tab-item}} {label}\n{body}:::\n"
-TABLE = "| Phrase | Notes |\n|---|---|\n| {stack}`Hallo \\| Hi` | |\n"
+TABLE = "| Phrase | Notes |\n|---|---|\n| {stack}`Hallo \\| Hi` | Casual. |\n"
+EMPTY_TABLE = "| Phrase | Notes |\n|---|---|\n| {stack}`Hallo \\| Hi` | |\n"
 EXAMPLES = ":::{ol-examples}\n:presenters: emilia\nHallo.\n: Hi.\n:::\n"
 
 
@@ -326,6 +327,12 @@ TWO_TABS = tab_set(("Informal", TABLE), ("Formal", TABLE))
 
 def test_a_tab_set_of_phrase_tables_passes(tmp_path):
     assert errors(tmp_path, "how-to", how_to(TWO_TABS)) == []
+
+
+def test_a_tab_set_of_tables_with_nothing_to_note_is_red(tmp_path):
+    tabs = tab_set(("Informal", EMPTY_TABLE), ("Formal", EMPTY_TABLE))
+    found = errors(tmp_path, "how-to", how_to(tabs))
+    assert sum("every Notes cell is empty" in m for m in found) == 2, found
 
 
 def test_a_tab_set_of_example_blocks_passes(tmp_path):

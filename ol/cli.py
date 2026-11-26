@@ -321,6 +321,36 @@ def templates(
     typer.echo(path.read_text(encoding="utf-8"), nl=False)
 
 
+def _print_wanted(workspace: Path) -> int:
+    """Print every wanted page with the pages that link to it.
+
+    Returns:
+        How many pages are wanted.
+    """
+    from ol.authoring.wanted import wanted_pages
+
+    found = wanted_pages(workspace, _article_files(workspace))
+    for page, linking in found.items():
+        typer.echo(f"{page}")
+        for name in linking:
+            typer.echo(f"    linked from {name}")
+    if not found:
+        typer.echo("No wanted pages: every link in the text goes to a page.")
+    return len(found)
+
+
+@app.command()
+def wanted(
+    workspace: Path = typer.Option(Path("."), help="Language workspace root."),
+):
+    """List the pages that are linked in the text but do not exist yet.
+
+    Each missing page is followed by the pages that link to it. A wanted page
+    fails no check: a reviewer decides whether it should be written.
+    """
+    _print_wanted(workspace)
+
+
 def _render_check(workspace: Path) -> bool:
     """Open every built page. A baseline page may scroll sideways."""
     from ol.authoring.render import (
@@ -355,7 +385,8 @@ def check(
     """Run every content check: validate, a strict docs build, then the render check.
 
     This is the same gate CI runs. Every step runs even when an earlier one
-    fails, so one pass reports everything.
+    fails, so one pass reports everything. The wanted pages are listed after
+    validate, and fail nothing.
     """
     failed: list[str] = []
 
@@ -373,6 +404,9 @@ def check(
         failed.append("validate")
     else:
         typer.echo(f"OK: {checked} file(s), no failures outside the baseline.")
+
+    typer.echo("\n== wanted pages (fail nothing, for review)")
+    _print_wanted(workspace)
 
     if not skip_build:
         typer.echo("\n== sphinx-build -W")

@@ -2,6 +2,30 @@
 
 ## [Unreleased]
 
+## [0.18.0] - 2026-11-26
+
+### Changed: three rules that can fail content that passed 0.17.0 (breaking)
+
+- A phrase table whose Notes cells are all empty fails. Phrases with nothing to note go in an `ol-examples` block, where they also play. A cell with only a dash counts as empty. The word table of a vocabulary article is exempt.
+- A heading whose text is a track's `:title:` or `:title-en:` fails. The audio block draws its own title, and a track's title stays out of the sidebar and the page contents.
+- In a how-to article, `## Hear it in practice` takes no H3s. The rule that an H3 there names its track is removed from grammar and how-to: a track now closes the section it practises (below). Situations keep their H3s for two versions of one scene.
+
+### Added
+
+- `target-title:` in an article's front matter holds the goal or topic in the language taught, one line of text. The build draws it straight under the H1 as `<p class="ol-target-title" lang="…">`, and in the PDF as a subtitle. It is not a heading, so no contents list names it. A how-to article without it is warned about. Any article may have one.
+- The `culture-note` directive, `:::{culture-note}`, draws a notice titled "Culture note", of class `ol-culture-note`, in a violet no other notice uses, on the site and in the PDF. It may stand anywhere in the body of a how-to, grammar or writing article. It holds 80 words or fewer, an article has at most 3, it takes no title or options, it holds no other notice, and it does not count toward the free notices. A `## Culture note` heading is warned about, pointing to the directive.
+- A track may close any body section of a grammar, how-to or vocabulary article: one or more audio blocks as the section's last blocks. `## Hear it in practice` is required only when no body section ends in a track. A track in the middle of a section fails.
+- Wanted pages. A link in the text to a page that does not exist yet fails nothing: the build draws its text, or the page's name as words, as `<span class="ol-wanted">` and logs it, and `ol validate` reports it as information. A link names a page when its path ends in `.md`, or has no file suffix and holds a `/`. The new `ol wanted` command lists each wanted page with the pages that link to it, and `ol check` prints the list in its own section and still passes. `related:` stays strict: an entry that names no page still stops the build.
+- The first use of a listed term is also linked when its sentence links to an article of the Coursebook, the article that covers the term. The text of a link to an article is itself a linked use. The docs put an article link before the glossary.
+- A common mistake may end with a link to the article that explains it, "(learn more: [](…))", which may name a wanted page.
+- `ol/docs/_static/page-parts.css` styles the target-language title, the culture note and wanted pages, and the site stylesheet imports it.
+
+### Changed
+
+- The explanation paragraph is optional in a how-to article. When present it states the one idea that organises the page and never previews the sections below. Grammar, writing and vocabulary still need it.
+- The shared term list, `ol/authoring/glossary-terms.yml`, holds grammar jargon only. Removed: adjective, future tense, noun, past tense, plural, present tense, question word, singular, tense, verb and word order. A `{term}` link to one of them still resolves where the glossary has an entry.
+- The how-to template carries `target-title:`, an optional second paragraph, a culture note and a track at the end of a body section, and marks Hear it in practice as needed only when no section ends in a track. The page standard, the components page, the authoring rules, `specs.yml` and the review rubric describe the new frame.
+
 ## [0.17.0] - 2026-11-25
 
 ### Changed: Related articles are written in front matter (breaking for mixed pages)

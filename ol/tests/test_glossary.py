@@ -13,36 +13,25 @@ from ol.authoring.validate import validate_file
 CONFIG = "language: German\nlanguage_code: de\n"
 SHIPPED_LIST = Path(__file__).parents[1] / "authoring" / TERMS_FILE
 SHIPPED_TERMS = {
-    "adjective",
     "adverb",
     "clause",
     "comparative",
     "conjugation",
     "conjunction",
     "direct object",
-    "future tense",
     "imperative",
     "indirect object",
     "infinitive",
     "main clause",
     "negation",
-    "noun",
     "object",
-    "past tense",
     "personal pronoun",
-    "plural",
     "preposition",
-    "present tense",
     "pronoun",
-    "question word",
     "relative clause",
-    "singular",
     "subject",
     "subordinate clause",
     "superlative",
-    "tense",
-    "verb",
-    "word order",
 }
 TERMINOLOGY = """# Terminology
 
@@ -86,7 +75,7 @@ def terminology_errors(root: Path, text: str) -> list[str]:
 def test_the_shared_list_is_read(shipped_items):
     forms = load_terms(None)
     assert set(forms.values()) == SHIPPED_TERMS
-    assert forms["nouns"] == "noun"
+    assert forms["pronouns"] == "pronoun"
     assert forms["negated"] == "negation"
 
 
@@ -198,11 +187,28 @@ class TestUses:
     def test_another_role_is_not_a_use(self):
         assert term_uses("{stack}`noun | noun`", self.forms) == []
 
-    def test_the_text_of_a_link_is_not_a_use(self):
-        assert term_uses("[A1 > Grammar > The noun](/a1/noun.md)", self.forms) == []
+    def test_the_text_of_a_link_to_an_article_is_a_linked_use(self):
+        assert term_uses("[The noun](/a1/noun.md)", self.forms) == [("noun", True)]
+
+    def test_the_text_of_a_link_off_the_site_is_not_a_use(self):
+        assert term_uses("[The noun](https://example.org/noun)", self.forms) == []
 
     def test_a_link_address_is_not_a_use(self):
         assert term_uses("[here](/a1/noun.md)", self.forms) == []
+
+    def test_uses_keep_their_order_around_a_link(self):
+        text = "A noun, [the case](/a1/case.md), then a {term}`dative case`."
+        assert term_uses(text, self.forms) == [
+            ("noun", False),
+            ("case", True),
+            ("dative case", True),
+        ]
+
+
+def test_the_shared_list_leaves_out_everyday_words(shipped_items):
+    terms = set(load_terms(None).values())
+    for word in ("question word", "noun", "verb", "plural", "past tense"):
+        assert word not in terms
 
 
 FIXTURE = Path(__file__).parent / "fixtures" / "how-to-article.md"
@@ -224,6 +230,47 @@ def test_a_first_use_that_is_linked_passes(repository):
         SENTENCE, f"{SENTENCE} A {{term}}`noun` comes next, then a noun.", 1
     )
     assert article_errors(repository, text) == []
+
+
+def test_a_first_use_whose_sentence_links_to_an_article_passes(repository):
+    text = FIXTURE.read_text(encoding="utf-8").replace(
+        SENTENCE,
+        f"{SENTENCE} A noun names a thing, as in [](/a1/how-to/introduce-yourself.md).",
+        1,
+    )
+    assert article_errors(repository, text) == []
+
+
+def test_a_first_use_whose_sentence_links_to_a_wanted_page_passes(repository):
+    text = FIXTURE.read_text(encoding="utf-8").replace(
+        SENTENCE, f"{SENTENCE} A noun names a thing ([](/a1/grammar/nouns.md)).", 1
+    )
+    assert article_errors(repository, text) == []
+
+
+def test_a_first_use_as_the_text_of_a_link_to_an_article_passes(repository):
+    text = FIXTURE.read_text(encoding="utf-8").replace(
+        SENTENCE, f"{SENTENCE} Each [noun](/a1/grammar/nouns.md) has a gender.", 1
+    )
+    assert article_errors(repository, text) == []
+
+
+def test_a_link_in_the_next_sentence_does_not_meet_the_first_use(repository):
+    text = FIXTURE.read_text(encoding="utf-8").replace(
+        SENTENCE,
+        f"{SENTENCE} A noun names a thing. More in [](/a1/grammar/nouns.md).",
+        1,
+    )
+    found = article_errors(repository, text)
+    assert any("first use of the term 'noun'" in msg for msg in found), found
+
+
+def test_a_link_off_the_site_does_not_meet_the_first_use(repository):
+    text = FIXTURE.read_text(encoding="utf-8").replace(
+        SENTENCE, f"{SENTENCE} A noun names a thing ([a list](https://e.org)).", 1
+    )
+    found = article_errors(repository, text)
+    assert any("first use of the term 'noun'" in msg for msg in found), found
 
 
 def test_an_unlinked_first_use_is_red(repository):

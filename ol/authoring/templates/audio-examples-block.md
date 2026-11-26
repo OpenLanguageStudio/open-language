@@ -1,7 +1,8 @@
 <!-- TEMPLATE: the audio-examples block. A block with examples writes its
-track; the track is named by its address, never by an album. The block lives
-in the article under "## Hear it in practice", AFTER the learning sections,
-BEFORE Summary. Delete these comment lines: HTML comments are banned in docs. -->
+track; the track is named by its address, never by an album. The block closes
+the body section it practises, as its last block, or sits under "## Hear it in
+practice", AFTER the learning sections, BEFORE Summary. No heading repeats its
+:title: or :title-en:: the block draws its own title. Delete these comment lines: HTML comments are banned in docs. -->
 
 :::{audio-examples}
 :track: {{level}}/{{category}}/{{name}}

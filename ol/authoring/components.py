@@ -35,8 +35,12 @@ TITLED_NOTICES = {
     "Key points": "note",
 }
 """The only titles an ``admonition`` takes, each with its class."""
+CULTURE_NOTE = "culture-note"
+"""A short note on how people live with the language, titled by the build."""
+CULTURE_NOTE_PAGES = ("how-to", "grammar", "writing")
 DIRECTIVES = {
     "ol-examples",
+    CULTURE_NOTE,
     "audio-examples",
     "situations",
     "how-to-links",
@@ -326,6 +330,10 @@ def _place(block: Block, page: Page) -> str | None:
         return "the skills directive is for level pages"
     if block.name == "toctree" and article:
         return "the menu is on index pages"
+    if block.name == CULTURE_NOTE and not (
+        article and page.category in CULTURE_NOTE_PAGES
+    ):
+        return "a culture note is for how-to, grammar and writing articles"
     return None
 
 
@@ -362,7 +370,7 @@ def check_directives(rep, blocks: list[Block], page: Page):
 
 def _is_notice(block: Block) -> bool:
     return block.kind == "directive" and (
-        block.name in FREE_NOTICES or block.name == "admonition"
+        block.name in FREE_NOTICES or block.name in ("admonition", CULTURE_NOTE)
     )
 
 
@@ -390,8 +398,16 @@ def check_notices(rep, blocks: list[Block], page: Page):
                     f"line {block.line}: the {block.name} is {words} words (maximum "
                     f"{LIMITS['notice_max_words']})"
                 )
+        elif block.name == CULTURE_NOTE:
+            check_culture_note(rep, block)
     if page.kind != "article":
         return
+    notes = [b for b in walk(blocks) if b.is_directive(CULTURE_NOTE)]
+    if len(notes) > LIMITS["max_culture_notes"]:
+        rep.error(
+            f"line {notes[LIMITS['max_culture_notes']].line}: {len(notes)} culture "
+            f"notes (maximum {LIMITS['max_culture_notes']})"
+        )
     free = [b for b in walk(blocks) if b.kind == "directive" and b.name in FREE_NOTICES]
     if len(free) > LIMITS["max_notices"]:
         rep.error(
@@ -417,6 +433,26 @@ def check_notices(rep, blocks: list[Block], page: Page):
                 f"line {section.line}: '{section.title}' holds {len(held)} notices "
                 f"(maximum {LIMITS['max_notices_per_section']})"
             )
+
+
+def check_culture_note(rep, block: Block):
+    """A culture note is short, and the build gives it its title.
+
+    Args:
+        rep: The page's report.
+        block: The ``culture-note`` directive.
+    """
+    words = _words(block.children)
+    if words > LIMITS["culture_note_max_words"]:
+        rep.error(
+            f"line {block.line}: the culture note is {words} words (maximum "
+            f"{LIMITS['culture_note_max_words']})"
+        )
+    if block.arg or options(block):
+        rep.error(
+            f"line {block.line}: a culture note takes no title and no options: "
+            "write ':::{culture-note}' on its own line, and the build titles it"
+        )
 
 
 def check_bold_labels(rep, blocks: list[Block]):

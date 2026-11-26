@@ -1,4 +1,5 @@
 ---
+target-title: Jemanden begrüßen
 myst:
   html_meta:
     description: "Greeting people in German through the day, formally and with friends."
@@ -45,9 +46,9 @@ Hallo, Anna.
 : Hello, Anna.
 :::
 
-## Culture note
-
+:::{culture-note}
 Regional greetings such as *Moin* in the north say more about a place than about the time of day.
+:::
 
 ## Hear it in practice
 

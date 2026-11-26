@@ -190,7 +190,11 @@ def show_duplicates(app, doctree, docname):
 
 
 def setup(app):
-    """Register the directive, the ``ol-examples`` box, the link boxes and the hooks.
+    """Register the directive, the page's other parts and the hooks.
+
+    The other parts are the ``ol-examples`` box, the link boxes, Related
+    articles, the skills, the culture note, the target-language title and the
+    drawing of wanted pages.
 
     The hooks match duplicates with their tracks.
 
@@ -202,6 +206,9 @@ def setup(app):
     app.setup_extension("ol.docs.situations")
     app.setup_extension("ol.docs.related")
     app.setup_extension("ol.docs.skills")
+    app.setup_extension("ol.docs.culture_note")
+    app.setup_extension("ol.docs.target_title")
+    app.setup_extension("ol.docs.wanted")
     app.add_node(DuplicateTrack)
     app.add_directive("audio-examples", AudioExamplesDirective)
     app.add_js_file("audio-examples.js")

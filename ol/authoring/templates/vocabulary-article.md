@@ -54,8 +54,10 @@ technical term in it as {term}`term`.}}
 {{Native sentence 1}}
 : {{English translation 1}}
 :::
-<!-- REQUIRED: every word of the pack appears in a sentence. The block writes
-     the track this page names (see templates/audio-examples-block.md). -->
+<!-- REQUIRED only when no body section ends in a track: every word of the
+     pack appears in a sentence. A track may instead close the section it
+     practises. The block writes the track this page names (see
+     templates/audio-examples-block.md). -->
 
 ## Summary
 
