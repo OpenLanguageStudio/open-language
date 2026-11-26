@@ -1,0 +1,53 @@
+/* ============================================================================
+   Open Language: the parts the build adds to a Coursebook page
+
+   The target-language title under the H1, the culture note and the text of a
+   link to a page that does not exist yet. For any page that draws a
+   Coursebook's HTML: the Sphinx site, where stylesheet.css imports this file
+   after marks.css, and an app that shows the pages in its own theme, which
+   links it beside marks.css. Nothing here styles anything but these classes.
+   ============================================================================ */
+
+/* ── Target-language title ──────────────────────────────────────────────────
+   A subtitle that belongs to the H1 above it: close under it, quieter, and in
+   italics like every phrase of the language taught. It is a paragraph, not a
+   heading, so no contents list names it. */
+
+h1 + .ol-target-title,
+.ol-target-title {
+  margin-top: calc(-1 * var(--space-2, 8px));
+  margin-bottom: var(--space-6, 24px);
+  font-size: 1.25rem;
+  font-style: italic;
+  line-height: 1.3;
+  color: var(--text-muted, #665c50);
+}
+
+/* ── Culture note ───────────────────────────────────────────────────────────
+   Violet, the one accent no other notice uses, so a culture note is known
+   before it is read. */
+
+.ol-culture-note {
+  --ol-culture-note: var(--accent-2, #6b3d99);
+  --ol-culture-note-surface: var(--accent-2-surface, #e7dcf5);
+  --pst-color-admonition-default: var(--ol-culture-note);
+  border-color: var(--ol-culture-note);
+  border-left: 0.2rem solid var(--ol-culture-note);
+}
+
+.ol-culture-note > .admonition-title {
+  background-color: var(--ol-culture-note-surface);
+  color: var(--ol-culture-note);
+}
+
+.ol-culture-note > .admonition-title::after {
+  color: var(--ol-culture-note);
+}
+
+/* ── Wanted page ────────────────────────────────────────────────────────────
+   The text of a link to a page not written yet. It reads as the sentence it
+   stands in, and nothing invites a click. */
+
+.ol-wanted {
+  color: inherit;
+}

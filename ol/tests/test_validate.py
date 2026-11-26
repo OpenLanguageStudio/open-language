@@ -146,9 +146,15 @@ BROKEN_ARTICLES = {
         ),
         "em dash",
     ),
-    "missing audio section": (
-        lambda s: s.replace("## Hear it in practice", "## Listen", 1),
-        "the section '## Hear it in practice'",
+    "no track anywhere": (
+        lambda s: re.sub(
+            r"## Hear it in practice\n\n:::\{audio-examples\}.*?\n:::\n\n",
+            "",
+            s,
+            count=1,
+            flags=re.S,
+        ),
+        "no track: end the body section each track practises",
     ),
     "missing summary": (
         lambda s: s.replace("## Summary", "## Recap", 1),
@@ -170,10 +176,6 @@ BROKEN_ARTICLES = {
     "unfilled placeholder": (
         lambda s: s.replace("## Summary", "{{TITLE}}\n\n## Summary", 1),
         "PLACEHOLDER",
-    ),
-    "broken doc link": (
-        lambda s: s.replace("nomen-genus-plural.md", "missing-page.md", 1),
-        "broken doc link",
     ),
     "stock opener": (
         lambda s: s.replace(
@@ -264,6 +266,71 @@ def test_broken_article_is_red(tmp_path, source, case):
     assert broken != source, "the mutation did not change the fixture"
     found = errors(tmp_path, broken)
     assert any(expected in msg for msg in found), found
+
+
+def test_a_link_in_the_text_to_a_missing_page_fails_nothing(tmp_path, source):
+    wanted = source.replace(
+        "[](/a1/grammar/other/nomen-genus-plural.md)",
+        "[Plurals](/a1/grammar/other/plurals-of-nouns.md)",
+        1,
+    )
+    assert wanted != source
+    assert errors(tmp_path, wanted) == []
+    report = validate_file(tmp_path / ARTICLE, tmp_path)
+    assert any(
+        "wanted page a1/grammar/other/plurals-of-nouns" in m
+        for lvl, m in report.items
+        if lvl == "INFO"
+    ), report.items
+
+
+def items(tmp_path: Path, text: str, level: str) -> list[str]:
+    errors(tmp_path, text)
+    report = validate_file(tmp_path / ARTICLE, tmp_path)
+    return [m for lvl, m in report.items if lvl == level]
+
+
+LINK = "[](/a1/grammar/other/nomen-genus-plural.md)"
+
+
+@pytest.mark.parametrize(
+    ("target", "near"),
+    [
+        (
+            "/a1/grammar/other/nomen-genus-plurl.md",
+            "a1/grammar/other/nomen-genus-plural",
+        ),
+        ("/a1/grammar/akkusativ.md", "a1/grammar/cases/akkusativ"),
+        ("/a1/grammar/cases/akusativ.md", "a1/grammar/cases/akkusativ"),
+    ],
+)
+def test_a_missing_page_close_to_one_that_exists_is_a_broken_link(
+    tmp_path, source, target, near
+):
+    text = source.replace(LINK, f"[More on plurals]({target})", 1)
+    found = errors(tmp_path, text)
+    assert any(f"did you mean {near}?" in m for m in found), found
+
+
+def test_a_link_with_no_text_to_a_missing_page_is_red(tmp_path, source):
+    text = source.replace(LINK, "[](/a1/grammar/other/plurals-of-nouns.md)", 1)
+    found = errors(tmp_path, text)
+    assert any("a page not written yet, has no text" in m for m in found), found
+
+
+def test_a_link_with_no_text_to_a_page_that_exists_is_warned_about(tmp_path, source):
+    assert source.count(LINK) == 1
+    warned = items(tmp_path, source, "WARN")
+    assert any(
+        "the link to a1/grammar/other/nomen-genus-plural has no text" in m
+        for m in warned
+    ), warned
+
+
+def test_a_link_with_its_own_text_is_not_warned_about(tmp_path, source):
+    text = source.replace(LINK, "[Plurals](/a1/grammar/other/nomen-genus-plural.md)")
+    warned = items(tmp_path, text, "WARN")
+    assert not any("nomen-genus-plural has no text" in m for m in warned), warned
 
 
 def test_stock_phrase_in_an_example_is_not_prose(tmp_path, source):

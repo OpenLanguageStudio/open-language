@@ -38,6 +38,9 @@ from ol.authoring.specs_data import SPECS
 from ol.levels import LEVELS
 
 COMMON = SPECS["common"]
+CLOSING = ("Hear it in practice", "Summary", "Related articles")
+"""The sections that close an article, after its body."""
+CULTURE_NOTE_HEADING = "Culture note"
 SIDEBAR_KEY = "html_theme.sidebar_secondary.remove"
 
 _SECOND_PERSON = re.compile(r"\byou(?:r|rs|rself)?\b", re.I)
@@ -50,6 +53,7 @@ _EMPHASIS = re.compile(
 _QUOTED = re.compile(r"[\"“„][^\"”“]*[\"”“]")
 _OPTION = re.compile(r"^:[a-z-]+:")
 _NOT_BASE_FORM = re.compile(r"[^su]s$|\w{3}ing$", re.I)
+_EMPTY_CELL = re.compile(r"[\s\u2013\u2014-]*")
 
 
 def heading_blocks(blocks: list[Block]) -> list[Block]:
@@ -83,8 +87,17 @@ def _learner_phrasings(fm, language, level, category) -> list[str]:
     return [k.lower() for k in _keywords(fm) if k and k.lower() not in generic]
 
 
+def _explanation_left_out(opening, category) -> bool:
+    """Whether a category that may leave out the explanation paragraph has."""
+    optional = SPECS["types"].get(category, {}).get("optional_explanation")
+    return bool(optional) and (len(opening) < 2 or opening[1].kind != "paragraph")
+
+
 def check_opening(rep, opening, fm, language, level, category):
     """The lead, the explanation and the optional Prerequisites.
+
+    A how-to article may leave out the explanation, the paragraph that states
+    the page's one idea.
 
     Args:
         rep: The page's report.
@@ -123,7 +136,9 @@ def check_opening(rep, opening, fm, language, level, category):
     if category == "situations":
         return
 
-    if len(opening) < 2 or opening[1].kind != "paragraph":
+    if _explanation_left_out(opening, category):
+        pass
+    elif len(opening) < 2 or opening[1].kind != "paragraph":
         rep.error(
             "the second paragraph under the title is the explanation: the one "
             "idea of the page in plain language"
@@ -142,7 +157,8 @@ def check_opening(rep, opening, fm, language, level, category):
                 f"the lead and explanation are {lead_words + words} words together "
                 f"(maximum {COMMON['opening_max_words']})"
             )
-    for block in opening[2:]:
+    start = 1 if _explanation_left_out(opening, category) else 2
+    for block in opening[start:]:
         if block.is_directive("admonition", "Prerequisites"):
             continue
         if category == "how-to" and block.is_directive(SITUATIONS_BOX):
@@ -150,15 +166,16 @@ def check_opening(rep, opening, fm, language, level, category):
         also = f" and the {SITUATIONS_BOX} box" if category == "how-to" else ""
         rep.error(
             f"line {block.line}: only a Prerequisites admonition{also} stands "
-            "between the explanation paragraph and the first H2"
+            "between the opening paragraphs and the first H2"
         )
 
 
-def check_prerequisites_place(rep, opening, found):
-    """Prerequisites stand after the two opening paragraphs, before the first H2."""
+def check_prerequisites_place(rep, opening, found, category=None):
+    """Prerequisites stand after the opening paragraphs, before the first H2."""
+    limit = 1 if _explanation_left_out(opening, category) else 2
     misplaced = [
         block
-        for block in opening[:2]
+        for block in opening[:limit]
         if block.is_directive("admonition", "Prerequisites")
     ]
     for section in found:
@@ -285,7 +302,7 @@ def _h3_allowed(section: Section, ctype: str) -> bool:
     if ctype == "grammar":
         return section.title not in SPECS["types"]["grammar"]["no_h3_sections"]
     if ctype == "how-to":
-        return section.title in ("Key phrases", "Hear it in practice")
+        return section.title == "Key phrases"
     if ctype == "writing":
         return section.title.startswith("Example: ")
     if ctype == "situations":
@@ -307,7 +324,7 @@ def check_h3_places(rep, found, ctype):
 
 
 def check_table(rep, block, ctype, translation_headers):
-    """One table's columns and header row."""
+    """One table's columns and header row, and a Notes column with notes in it."""
     where = f"table (line {block.line})"
     limit = COMMON["table_max_columns"]
     if ctype == "grammar":
@@ -334,6 +351,23 @@ def check_table(rep, block, ctype, translation_headers):
                 "the translation under its phrase with the stack role, and "
                 "anything else in a Notes column"
             )
+    if ctype == "vocabulary":
+        return
+    notes = [i for i, cell in enumerate(block.header) if plain(cell) == "Notes"]
+    if (
+        notes
+        and block.rows
+        and all(
+            i >= len(row) or _EMPTY_CELL.fullmatch(plain(row[i]))
+            for row in block.rows
+            for i in notes
+        )
+    ):
+        rep.error(
+            f"{where}: every Notes cell is empty: a table is for phrases with "
+            "something to note, so write these in an ol-examples block, where "
+            "they can be played"
+        )
 
 
 def check_tables(rep, blocks, ctype, extra_headers):
@@ -402,9 +436,15 @@ def _label(part: dict) -> str:
 
 
 def check_section_order(rep, found, ctype, parts):
-    """The H2s are the category's sections, in its order and number."""
+    """The H2s are the category's sections, in its order and number.
+
+    A ``## Culture note`` section is warned about by
+    ``check_culture_note_headings`` and takes no place here.
+    """
     slots = []
     for section in found:
+        if section.title == CULTURE_NOTE_HEADING:
+            continue
         slot = _slot(section.title, parts)
         if slot is None:
             rep.error(
@@ -511,12 +551,7 @@ def _admonition_titled(section: Section, title: str) -> bool:
 
 def check_grammar(rep, found):
     """Common mistakes close the body, and each section keeps few examples."""
-    check_track_headings(rep, found)
-    body = [
-        section
-        for section in found
-        if section.title not in ("Hear it in practice", "Summary", "Related articles")
-    ]
+    body = [section for section in found if section.title not in CLOSING]
     if body and not _admonition_titled(body[-1], "Common mistakes"):
         rep.error(
             f"line {body[-1].line}: the last body section, '{body[-1].title}', "
@@ -539,9 +574,7 @@ def check_grammar(rep, found):
 
 
 def check_how_to(rep, found):
-    """Key phrases are grouped under H3s, and the Culture note stays short."""
-    check_track_headings(rep, found)
-    limits = SPECS["types"]["how-to"]
+    """Key phrases are grouped under H3s, in tables of two columns."""
     phrases = _section(found, "Key phrases")
     if phrases:
         if not any(
@@ -557,14 +590,59 @@ def check_how_to(rep, found):
                     f"table (line {block.line}): {len(block.header)} columns "
                     "under 'Key phrases' (maximum 2)"
                 )
-    culture = _section(found, "Culture note")
-    if culture:
-        words = sum(word_count(plain(text)) for _, text in prose(culture.blocks))
-        if words > limits["culture_note_max_words"]:
-            rep.error(
-                f"line {culture.line}: 'Culture note' is {words} words (maximum "
-                f"{limits['culture_note_max_words']})"
+
+
+def check_culture_note_headings(rep, found):
+    """A culture note is the culture-note directive, never a section of its own."""
+    for section in found:
+        if section.title == CULTURE_NOTE_HEADING:
+            rep.warn(
+                f"line {section.line}: '## {CULTURE_NOTE_HEADING}' is a section: "
+                "write the note as ':::{culture-note}' in the section it belongs "
+                "to, and remove the heading"
             )
+
+
+def _is_track(block: Block) -> bool:
+    return block.is_directive("audio-examples")
+
+
+def check_section_tracks(rep, found):
+    """A track closes the body section it practises, or stands in Hear it in practice.
+
+    A body section may end in one or more audio blocks, and nowhere else does a
+    body section hold one. Hear it in practice is needed only when no body
+    section ends in a track.
+
+    Args:
+        rep: The page's report.
+        found: The article's H2 sections.
+    """
+    ends_in_track = False
+    for section in found:
+        if section.title in CLOSING:
+            continue
+        trailing = len(section.blocks)
+        while trailing and _is_track(section.blocks[trailing - 1]):
+            trailing -= 1
+        ends_in_track |= trailing < len(section.blocks)
+        held = [
+            block
+            for top in section.blocks[:trailing]
+            for block in walk([top])
+            if _is_track(block)
+        ]
+        for block in held:
+            rep.error(
+                f"audio block (line {block.line}) inside '{section.title}': a "
+                "track closes the section it practises, so move it to the end "
+                "of the section"
+            )
+    if not ends_in_track and _section(found, "Hear it in practice") is None:
+        rep.error(
+            "no track: end the body section each track practises with its audio "
+            "block, or give the page '## Hear it in practice'"
+        )
 
 
 def check_writing(rep, found):
@@ -667,13 +745,16 @@ def check_article(rep, body, fm, ctype, spec, context):
     if title and ctype == "how-to":
         check_how_to_title(rep, title)
     check_opening(rep, opening, fm, context["language"], context["level"], ctype)
-    check_prerequisites_place(rep, opening, found)
+    check_prerequisites_place(rep, opening, found, ctype)
     check_headings(rep, blocks, title)
     check_h3_places(rep, found, ctype)
     check_tables(rep, blocks, ctype, context["translation_headers"])
     check_prose(rep, blocks)
     check_section_order(rep, found, ctype, spec["sections"])
+    check_culture_note_headings(rep, found)
     check_hear_it(rep, found)
+    if spec.get("tracks_in_sections"):
+        check_section_tracks(rep, found)
     check_related(rep, found)
     check_retired_boxes(rep, blocks, fm)
     CATEGORY_CHECKS[ctype](rep, found)

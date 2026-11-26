@@ -16,10 +16,12 @@
    equal specificity resolves in our favour.
    ============================================================================ */
 
-/* The grammar marks, the level badge and the link boxes, which an app
-   drawing the pages in its own theme links on their own. */
+/* The grammar marks, the level badge, the link boxes and the parts the
+   build adds to a page, which an app drawing the pages in its own theme links
+   on their own. */
 @import url("marks.css");
 @import url("link-boxes.css");
+@import url("page-parts.css");
 
 /* ── Fonts ─────────────────────────────────────────────────────────────────
    Latin, Latin Ext A/B, combining diacritics, punctuation. The italic is

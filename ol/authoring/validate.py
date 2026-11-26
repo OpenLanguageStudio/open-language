@@ -34,6 +34,8 @@ Usage:
   tables, plain language, the sections of each category, the level and
   Introduction pages, and the glossary. See ol/authoring/standard.py and
   ol/authoring/glossary.py.
+- A link in the text to a page that does not exist yet is a wanted page: it
+  fails nothing, and `ol wanted` lists it (ol/authoring/wanted.py).
 - Stub files (< 200 bytes of body) are reported as STUB, not failed line by line.
 
 Exit code: 1 if any ERROR, else 0. Dependency: PyYAML.
@@ -51,7 +53,9 @@ import yaml
 from ol.authoring import related, situations, skills, standard, tags
 from ol.authoring.components import Page, check_components
 from ol.authoring.glossary import check_terminology
+from ol.authoring.page import parse, plain
 from ol.authoring.specs_data import SPECS
+from ol.authoring.wanted import near_page, page_links, workspace_pages
 from ol.blocks import Block, BlockFormatError, BlockReader, Refusal
 from ol.levels import LEVELS
 from ol.workspace import find_workspace, page_path
@@ -222,13 +226,105 @@ def check_audio_block(rep: Report, block: Block, ctype: str | None):
         )
 
 
-def check_doc_links(rep: Report, body: str, workspace: Path | None):
+def check_doc_links(
+    rep: Report, body: str, path: Path, workspace: Path | None, offset: int = 0
+):
+    """Check each link in the text that names a page.
+
+    A link to a page not written yet is a wanted page: it fails nothing, and
+    ``ol wanted`` lists them all for review. Every link carries its own text,
+    so a link with none is warned about, and is an error when its page does
+    not exist, since the build would have no title to write. A missing page
+    close to one that exists is a broken link.
+
+    Args:
+        rep: The page's report.
+        body: The page's Markdown.
+        path: The page's file.
+        workspace: The language repository's root.
+        offset: Lines above ``body`` in the file.
+    """
     if not workspace:
         return
-    for m in re.finditer(r"\]\((/[^)#\s]+\.md)(#[^)]*)?\)", body):
-        target = workspace / m.group(1).lstrip("/")
-        if not target.exists():
-            rep.error(f"broken doc link: {m.group(1)}")
+    docname = page_name(path, workspace)
+    pages: set[str] | None = None
+    for line, text, page in page_links(body, docname, offset):
+        if (workspace / f"{page}.md").is_file():
+            if not text.strip():
+                rep.warn(
+                    f"line {line}: the link to {page} has no text: give every "
+                    "link its own words, as in [the dative](...)"
+                )
+            continue
+        if pages is None:
+            pages = workspace_pages(workspace)
+        near = near_page(page, pages)
+        if near:
+            rep.error(f"line {line}: broken link to {page}, did you mean {near}?")
+        elif not text.strip():
+            rep.error(
+                f"line {line}: the link to {page}, a page not written yet, has no "
+                "text: give it its own words, which show as plain text until "
+                "the page exists"
+            )
+        else:
+            rep.info(f"line {line}: wanted page {page}: it does not exist yet")
+
+
+TARGET_TITLE = "target-title"
+
+
+def check_target_title(rep: Report, fm: dict | None, spec: dict):
+    """The goal's name in the language taught, drawn under the H1.
+
+    Args:
+        rep: The page's report.
+        fm: The page's front matter.
+        spec: The category's entry in ``specs.yml``.
+    """
+    value = (fm or {}).get(TARGET_TITLE)
+    if value is None:
+        if spec.get("require_target_title"):
+            rep.warn(
+                f"no '{TARGET_TITLE}:' in the front matter: name the goal in the "
+                "language taught, as in 'target-title: Sich vorstellen', and the "
+                "build draws it under the title"
+            )
+        return
+    if not isinstance(value, str) or not value.strip() or "\n" in value.strip():
+        rep.error(
+            f"front matter '{TARGET_TITLE}:' is one line of text, the goal's name "
+            "in the language taught"
+        )
+    elif "\u2014" in value:
+        rep.error(f"front matter '{TARGET_TITLE}:' has an em dash")
+
+
+def check_track_title_headings(
+    rep: Report, body: str, blocks: list[Block], offset: int = 0
+):
+    """No heading repeats a track's title: the audio block draws its own.
+
+    Args:
+        rep: The page's report.
+        body: The page's Markdown.
+        blocks: The page's audio blocks.
+        offset: Lines above ``body`` in the file.
+    """
+    titles = {
+        plain(title).casefold()
+        for block in blocks
+        for title in (block.title, block.title_en)
+        if title
+    }
+    for heading in parse(body, offset):
+        if heading.kind != "heading" or heading.level == 1:
+            continue
+        if plain(heading.text).casefold() in titles:
+            rep.error(
+                f"line {heading.line}: heading '{plain(heading.text)}' is a track's "
+                "title: the audio block draws its title, so the heading goes"
+            )
 
 
 def check_common(rep: Report, body: str):
@@ -682,6 +778,7 @@ def validate_article(path: Path, ctype: str, workspace: Path | None) -> Report:
             )
         if not hm.get("keywords"):
             rep.error("html_meta.keywords missing/empty")
+        check_target_title(rep, fm, spec)
 
     check_common(rep, body)
     offset = text.count("\n", 0, len(text) - len(body))
@@ -793,9 +890,10 @@ def validate_article(path: Path, ctype: str, workspace: Path | None) -> Report:
             tags.check_block_tags(rep, block, track_tags)
         if ctype == "situations":
             situations.check_situation_tracks(rep, len(blocks))
+        check_track_title_headings(rep, body, blocks, offset)
 
     if common.get("check_doc_links"):
-        check_doc_links(rep, body, workspace)
+        check_doc_links(rep, body, path, workspace, offset)
 
     return rep
 
@@ -857,9 +955,8 @@ def validate_index(path: Path, ctype: str | None, workspace: Path | None) -> Rep
         rep.info(
             "ordered category: toctree order IS the learning sequence: review deliberately"
         )
-    if check_links := SPECS["common"].get("check_doc_links"):
-        _ = check_links
-        check_doc_links(rep, body, workspace)
+    if SPECS["common"].get("check_doc_links"):
+        check_doc_links(rep, body, path, workspace, offset)
     return rep
 
 

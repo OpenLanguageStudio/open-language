@@ -16,6 +16,7 @@ Each language lives in its own workspace repository, which installs this package
 - **`ol/authoring/review-rubric.yml`** is the checklist for the part a script cannot judge: level, correctness, teaching value and plain language. Each item is answered pass, concern or fail.
 - **[Authoring rules](docs/reference/authoring-rules.md)** holds the rules neither the checks nor the rubric cover. A language repository's `AGENTS.md` links it instead of restating it.
 - **[Components](docs/reference/components.md)** shows how to write each part of a page, from roles and notices to card grids, and lists the Sphinx and sphinx-design elements a page never uses.
+- **`ol wanted`** lists the wanted pages: each page that a link in the text names but that does not exist yet, with the pages that link to it. A wanted page fails nothing. The build draws its link as plain text until the page is written, and `ol check` prints the same list in its own section after `ol validate`.
 - **`ol templates`** lists the article templates, or prints one to start a new article from.
 - **`ol docs`** builds the coursebook, with `--live` for a local preview that rebuilds on save.
 - **`ol outline`** prints the heading structure of the CEFR-level docs.
@@ -144,7 +145,7 @@ The shared stylesheet shows the phrase in normal weight with the translation ben
 `ol.docs.roles` also adds the `level` role, a level badge drawn in that level's colour. It follows a link to a page of another level:
 
 ```markdown
-- [](/b1/grammar/relativsaetze.md) {level}`B1`
+- [Relative clauses](/b1/grammar/relativsaetze.md) {level}`B1`
 ```
 
 The colours are in `ol/levels.py`, `LEVEL_COLOURS`, the one place they are defined: album covers read the same table, so a level looks the same on a page and on a cover. The role writes the colour on the badge itself:
@@ -161,7 +162,7 @@ A level other than A1, A2, B1 or B2 is a build warning with the page and line, a
 
 ## The glossary
 
-The Terminology page is the glossary, and its entries sit in Sphinx `{glossary}` directives. A technical term is any word on the shared `ol/authoring/glossary-terms.yml` or on a language repository's own `glossary-terms.yml`. `ol validate` fails a listed term with no entry, and the first use of a listed term in an article's prose unless it is written with the `term` role. The build fails on a `{term}` the glossary does not hold. [The authoring rules](docs/reference/authoring-rules.md#the-glossary) show the format.
+The Terminology page is the glossary, and its entries sit in Sphinx `{glossary}` directives. A technical term is any word on the shared `ol/authoring/glossary-terms.yml` or on a language repository's own `glossary-terms.yml`. The shared list holds grammar jargon a general reader would not know, not everyday words such as "noun" or "question word". `ol validate` fails a listed term with no entry, and the first use of a listed term in an article's prose unless it is written with the `term` role or its sentence links to an article, the one that covers it. The build fails on a `{term}` the glossary does not hold. [The authoring rules](docs/reference/authoring-rules.md#the-glossary) show the format.
 
 ## The audio-examples block
 

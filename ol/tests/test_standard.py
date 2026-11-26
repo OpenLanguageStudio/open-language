@@ -318,13 +318,79 @@ HOW_TO = {
         lambda s: s.replace(
             "Regional greetings such", f"{WORDS_30} {WORDS_30} {WORDS_30} Regional", 1
         ),
-        "'Culture note' is",
+        "the culture note is 107 words (maximum 80)",
     ),
-    "culture note after the audio": (
+    "four culture notes": (
         lambda s: s.replace(
-            "## Summary", "## Culture note\n\nMore.\n\n## Summary", 1
-        ).replace("## Culture note\n\nRegional", "Regional", 1),
-        "out of order",
+            "## Formal or casual\n",
+            "## Formal or casual\n\n" + ":::{culture-note}\nA note.\n:::\n\n" * 3,
+            1,
+        ),
+        "4 culture notes (maximum 3)",
+    ),
+    "culture note with a title": (
+        lambda s: s.replace(":::{culture-note}", ":::{culture-note} Greetings", 1),
+        "a culture note takes no title and no options",
+    ),
+    "notice inside a culture note": (
+        lambda s: (
+            s.replace(
+                "Regional greetings such",
+                ":::{tip}\nA tip.\n:::\n\nRegional greetings such",
+                1,
+            )
+            .replace(":::{culture-note}", "::::{culture-note}", 1)
+            .replace(
+                "the time of day.\n:::\n\n## Hear",
+                "the time of day.\n::::\n\n## Hear",
+                1,
+            )
+        ),
+        "a notice holds another notice",
+    ),
+    "H3 under Hear it in practice": (
+        lambda s: s.replace(
+            "## Hear it in practice\n", "## Hear it in practice\n\n### Greetings\n", 1
+        ),
+        "H3 'Greetings' under 'Hear it in practice': a how-to article has no H3",
+    ),
+    "a heading that is a track's title": (
+        lambda s: s.replace("## Formal or casual", "## Greet someone", 1),
+        "heading 'Greet someone' is a track's title",
+    ),
+    "a heading that is a track's native title": (
+        lambda s: s.replace("## Formal or casual", "## *Begrüßungen*", 1),
+        "heading 'Begrüßungen' is a track's title",
+    ),
+    "a track inside a section": (
+        lambda s: s.replace("## Hear it in practice\n\n", "", 1).replace(
+            ":::\n\n## Summary",
+            ":::\n\nTalk continues after the track.\n\n## Summary",
+            1,
+        ),
+        "a track closes the section it practises",
+    ),
+    "no track at all": (
+        lambda s: re.sub(
+            r"## Hear it in practice\n\n:::\{audio-examples\}.*?\n:::\n\n",
+            "",
+            s,
+            count=1,
+            flags=re.S,
+        ),
+        "no track: end the body section each track practises",
+    ),
+    "a phrase table with nothing to note": (
+        lambda s: s.replace("Used until about noon.", "", 1).replace(
+            "With friends and family.", "\u2013", 1
+        ),
+        "every Notes cell is empty",
+    ),
+    "a target title of two lines": (
+        lambda s: s.replace(
+            "target-title: Jemanden begrüßen", "target-title: [Jemanden, begrüßen]", 1
+        ),
+        "'target-title:' is one line of text",
     ),
     "four other sections": (
         lambda s: s.replace(
@@ -499,31 +565,185 @@ def tracks_section(category: str, *parts: str) -> str:
 
 
 @pytest.mark.parametrize("category", ["grammar", "how-to"])
-def test_each_of_several_tracks_may_have_its_own_h3(tmp_path, category):
-    text = tracks_section(category, "first", "### Second", "other")
-    assert errors(tmp_path, category, text) == []
-
-
-@pytest.mark.parametrize("category", ["grammar", "how-to"])
 def test_several_tracks_may_stand_without_h3s(tmp_path, category):
     assert errors(tmp_path, category, tracks_section(category, "other")) == []
 
 
-@pytest.mark.parametrize("category", ["grammar", "how-to"])
+def test_a_grammar_h3_under_hear_it_in_practice_is_a_split_and_names_no_track(
+    tmp_path,
+):
+    text = tracks_section("grammar", "first", "### Second", "other")
+    assert errors(tmp_path, "grammar", text) == []
+
+
+SECTION_TRACK = """:::{{audio-examples}}
+:track: a1/{category}/{track}
+:duplicate:
+:::
+
+"""
+
+
+def tracks_at_section_ends(category: str, heading: str, *tracks: str) -> str:
+    """The fixture with its Hear it in practice section moved into ``heading``.
+
+    The fixture's own block closes the section, after any ``tracks`` named.
+    """
+    text = fixture(category)
+    start = text.index("## Hear it in practice\n")
+    end = text.index("\n## Summary")
+    own = text[start + len("## Hear it in practice\n") : end].strip("\n")
+    text = text[:start] + text[end + 1 :]
+    added = "".join(SECTION_TRACK.format(category=category, track=t) for t in tracks)
+    after = text.index("\n## ", text.index(heading) + len(heading))
+    return text[:after] + "\n" + added + own + "\n" + text[after:]
+
+
 @pytest.mark.parametrize(
-    ("parts", "expected"),
+    ("category", "heading"),
     [
-        (("first",), "an H3 there names one of several audio blocks"),
-        (("### Second", "other"), "has no H3: when one block has its own H3"),
-        (("first", "other", "### Third", "more"), "holds 2 audio blocks"),
-        (("first", "### Second"), "an H3 there names one of several audio blocks"),
-        (("first", "other", "### Third"), "holds 0 audio blocks"),
+        ("how-to", "## Formal or casual"),
+        ("how-to", "## Key phrases"),
+        ("grammar", "## Accusative: *der* becomes *den*"),
+        ("vocabulary", "## The words"),
     ],
-    ids=["one block", "a block with no H3", "two blocks", "only one", "an empty H3"],
 )
-def test_a_track_h3_out_of_place_is_red(tmp_path, category, parts, expected):
-    found = errors(tmp_path, category, tracks_section(category, *parts))
-    assert any(expected in msg for msg in found), found
+def test_a_track_may_close_a_body_section_instead_of_hear_it_in_practice(
+    tmp_path, category, heading
+):
+    text = tracks_at_section_ends(category, heading)
+    assert "## Hear it in practice" not in text
+    assert errors(tmp_path, category, text) == []
+
+
+def test_two_tracks_may_close_one_section(tmp_path):
+    text = tracks_at_section_ends("how-to", "## Formal or casual", "informal")
+    assert errors(tmp_path, "how-to", text) == []
+
+
+def test_hear_it_in_practice_may_follow_a_section_that_ends_in_a_track(tmp_path):
+    text = tracks_at_section_ends("how-to", "## Formal or casual").replace(
+        "## Summary",
+        "## Hear it in practice\n\n"
+        + SECTION_TRACK.format(category="how-to", track="more")
+        + "## Summary",
+        1,
+    )
+    assert errors(tmp_path, "how-to", text) == []
+
+
+def test_an_empty_hear_it_in_practice_is_still_red(tmp_path):
+    text = tracks_at_section_ends("how-to", "## Formal or casual").replace(
+        "## Summary", "## Hear it in practice\n\nText.\n\n## Summary", 1
+    )
+    found = errors(tmp_path, "how-to", text)
+    assert any("'Hear it in practice' has no audio block" in m for m in found), found
+
+
+def test_a_track_title_as_an_h3_is_red_in_every_category(tmp_path):
+    text = fixture("grammar").replace(
+        "## Hear it in practice\n", "## Hear it in practice\n\n### Die Artikel\n", 1
+    )
+    title = re.search(r"^:title: (.+)$", text, re.M)[1]
+    text = text.replace("### Die Artikel", f"### {title}", 1)
+    found = errors(tmp_path, "grammar", text)
+    assert any(f"heading '{title}' is a track's title" in m for m in found), found
+
+
+def test_a_how_to_article_may_leave_out_the_explanation(tmp_path):
+    text = fixture("how-to")
+    explanation = next(p for p in text.split("\n\n") if p.startswith("A German"))
+    text = text.replace(explanation + "\n\n", "", 1)
+    assert errors(tmp_path, "how-to", text) == []
+
+
+def test_without_the_explanation_prerequisites_follow_the_lead(tmp_path):
+    text = fixture("how-to")
+    explanation = next(p for p in text.split("\n\n") if p.startswith("A German"))
+    prerequisites = (
+        ":::{admonition} Prerequisites\n:class: note\n"
+        "- [](/a1/how-to/introduce-yourself.md)\n:::"
+    )
+    text = text.replace(explanation, prerequisites, 1)
+    assert errors(tmp_path, "how-to", text) == []
+
+
+def test_a_grammar_article_still_needs_its_explanation(tmp_path):
+    text = fixture("grammar")
+    explanation = next(p for p in text.split("\n\n") if p.startswith(EXPLANATION))
+    found = errors(tmp_path, "grammar", text.replace(explanation + "\n\n", "", 1))
+    assert any("the explanation" in m for m in found), found
+
+
+def report_items(tmp_path, category, text, level):
+    return [m for lvl, m in report(tmp_path, category, text).items if lvl == level]
+
+
+def test_a_how_to_article_without_a_target_title_is_warned_about(tmp_path):
+    text = fixture("how-to").replace("target-title: Jemanden begrüßen\n", "", 1)
+    assert errors(tmp_path, "how-to", text) == []
+    warnings = report_items(tmp_path, "how-to", text, "WARN")
+    assert any("no 'target-title:'" in m for m in warnings), warnings
+
+
+def test_any_article_may_have_a_target_title(tmp_path):
+    text = fixture("grammar").replace("---\n", "---\ntarget-title: Der Artikel\n", 1)
+    assert errors(tmp_path, "grammar", text) == []
+    assert not any(
+        "target-title" in m for m in report_items(tmp_path, "grammar", text, "WARN")
+    )
+
+
+def test_a_culture_note_heading_is_warned_about_and_points_to_the_directive(tmp_path):
+    text = fixture("how-to").replace(
+        "## Hear it in practice",
+        "## Culture note\n\nRegional words.\n\n## Hear it in practice",
+        1,
+    )
+    assert errors(tmp_path, "how-to", text) == []
+    warnings = report_items(tmp_path, "how-to", text, "WARN")
+    assert any("write the note as ':::{culture-note}'" in m for m in warnings), warnings
+
+
+@pytest.mark.parametrize("category", ["grammar", "writing"])
+def test_a_culture_note_may_sit_in_a_grammar_or_writing_article(tmp_path, category):
+    text = fixture(category).replace(
+        "\n## Summary", "\n:::{culture-note}\nA short note.\n:::\n\n## Summary", 1
+    )
+    assert errors(tmp_path, category, text) == []
+
+
+@pytest.mark.parametrize("category", ["vocabulary", "situations"])
+def test_a_culture_note_is_red_elsewhere(tmp_path, category):
+    text = fixture(category).replace(
+        "\n## Hear it in practice",
+        "\n:::{culture-note}\nA short note.\n:::\n\n## Hear it in practice",
+        1,
+    )
+    found = errors(tmp_path, category, text)
+    assert any("culture-note on this page" in m for m in found), found
+
+
+def test_a_common_mistake_may_end_with_a_link_to_the_article(tmp_path):
+    text = fixture("grammar").replace(
+        "\n:::\n\n## Hear it in practice",
+        " (learn more: [](/a1/grammar/cases/akkusativ.md))\n:::\n\n"
+        "## Hear it in practice",
+        1,
+    )
+    assert "(learn more: [](/a1/grammar/cases/akkusativ.md))" in text
+    assert errors(tmp_path, "grammar", text) == []
+
+
+def test_a_common_mistake_may_link_to_a_wanted_page(tmp_path):
+    text = fixture("grammar").replace(
+        "\n:::\n\n## Hear it in practice",
+        " (learn more in [The dative](/a1/grammar/cases/dativ.md))\n:::\n\n"
+        "## Hear it in practice",
+        1,
+    )
+    assert "cases/dativ.md" in text
+    assert errors(tmp_path, "grammar", text) == []
 
 
 def test_track_h3s_count_towards_the_limit(tmp_path):

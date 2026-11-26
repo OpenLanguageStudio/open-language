@@ -321,6 +321,49 @@ def templates(
     typer.echo(path.read_text(encoding="utf-8"), nl=False)
 
 
+def _print_wanted(workspace: Path, as_json: bool = False) -> int:
+    """Print every wanted page with the pages that link to it.
+
+    Returns:
+        How many pages are wanted.
+    """
+    from ol.authoring.wanted import wanted_pages
+
+    found = wanted_pages(workspace, _article_files(workspace))
+    if as_json:
+        listed = [{"page": page, "linked_from": names} for page, names in found.items()]
+        typer.echo(json.dumps(listed, indent=2, ensure_ascii=False))
+        return len(found)
+    for page, linking in found.items():
+        typer.echo(f"{page}")
+        for name in linking:
+            typer.echo(f"    linked from {name}")
+    if not found:
+        typer.echo("No wanted pages: every link in the text goes to a page.")
+    return len(found)
+
+
+@app.command()
+def wanted(
+    workspace: Path = typer.Option(Path("."), help="Language workspace root."),
+    output_format: str = typer.Option(
+        "text",
+        "--format",
+        help="text, or json: a list of objects with 'page' and 'linked_from'.",
+    ),
+):
+    """List the pages that are linked in the text but do not exist yet.
+
+    Each missing page is followed by the pages that link to it. A wanted page
+    fails no check: a reviewer decides whether it should be written. A link
+    close to a page that exists is a broken link, reported by ol validate, and
+    is not listed.
+    """
+    if output_format not in ("text", "json"):
+        raise typer.BadParameter("--format is text or json")
+    _print_wanted(workspace, as_json=output_format == "json")
+
+
 def _render_check(workspace: Path) -> bool:
     """Open every built page. A baseline page may scroll sideways."""
     from ol.authoring.render import (
@@ -355,7 +398,8 @@ def check(
     """Run every content check: validate, a strict docs build, then the render check.
 
     This is the same gate CI runs. Every step runs even when an earlier one
-    fails, so one pass reports everything.
+    fails, so one pass reports everything. The wanted pages are listed after
+    validate, and fail nothing.
     """
     failed: list[str] = []
 
@@ -373,6 +417,9 @@ def check(
         failed.append("validate")
     else:
         typer.echo(f"OK: {checked} file(s), no failures outside the baseline.")
+
+    typer.echo("\n== wanted pages (fail nothing, for review)")
+    _print_wanted(workspace)
 
     if not skip_build:
         typer.echo("\n== sphinx-build -W")

@@ -2,7 +2,12 @@
 # own in a glossary-terms.yml next to its open-language.yml.
 #
 # A term on either list has exactly one entry on the Terminology page, and the
-# first use of it in an article's prose is written with the {term} role.
+# first use of it in an article's prose is written with the {term} role, or its
+# sentence links to the article that covers it.
+#
+# The list holds grammar words a general reader would not know. Everyday words
+# such as noun, verb, plural, past tense and question word are not on it: an
+# article may still link them with {term} where the glossary has an entry.
 #
 # An item is the term alone, which also matches the term with an -s, or a
 # mapping that names the other forms an article writes it in:
@@ -14,28 +19,16 @@
 
 terms:
   # Parts of speech
-  - noun
   - pronoun
   - personal pronoun
-  - verb
-  - adjective
   - adverb
   - preposition
   - conjunction
-  - question word
-
-  # Number
-  - singular
-  - plural
 
   # Verbs
   - infinitive
   - term: conjugation
     forms: [conjugate, conjugates, conjugated, conjugating]
-  - tense
-  - present tense
-  - past tense
-  - future tense
   - imperative
 
   # Comparing
@@ -51,6 +44,5 @@ terms:
   - main clause
   - subordinate clause
   - relative clause
-  - word order
   - term: negation
     forms: [negate, negates, negated, negating]

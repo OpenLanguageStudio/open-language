@@ -14,18 +14,19 @@ This page shows how to write each component. How many a page may hold, and where
 | Bold | `**den**` | The part of a form that changes: an ending, the corrected word in a mistake. |
 | Marking role | ``{akk}`den` `` | The grammatical job of a word in an example sentence. The language repository lists its roles. |
 | Stacked phrase | ``{stack}`Guten Morgen \| Good morning` `` | A phrase with its translation beneath it, in a table cell or a list. |
-| Glossary term | ``{term}`accusative` `` | The first use of a listed technical term in an article's prose. |
-| Page link | `[](/a1/grammar/cases/akkusativ.md)` | A link to another page. Empty brackets: the build writes the page's title. |
+| Glossary term | ``{term}`accusative` `` | The first use of a listed technical term in an article's prose, when no article covers it. |
+| Page link | `[the accusative](/a1/grammar/cases/akkusativ.md)` | A link to another page, or to a page not written yet, always with its own text. |
 | Level badge | ``{level}`A1` `` | The level after a link to a page of another level, in that level's colour. |
 | Register badge | ``{bdg-light}`informal` `` | A register in a Notes cell. |
 | Example block | `:::{ol-examples}` with `:presenters:` | Example sentences with their translations, beside the explanation. |
-| Audio block | `:::{audio-examples}` | The page's track, under Hear it in practice. |
+| Audio block | `:::{audio-examples}` | A track, at the end of the section it practises or under Hear it in practice. |
 | Situations box (retired) | `:::{situations}` | Folded into Related articles. Remove it. |
 | How to box (retired) | `:::{how-to-links}` | Folded into Related articles. Remove it. |
 | Skills list | `:::{skills} can` | On a level page, the skills of one kind, drawn from the front matter. `know` or `can`. |
 | Notice | `:::{tip}` and three others | A fact set apart from the text: a nuance, a memory aid, a trap. |
 | Titled notice | `:::{admonition} Common mistakes` | Prerequisites, Common mistakes and Key points, and no other title. |
-| Phrase table | Markdown pipe table | Phrases with notes, two columns. |
+| Culture note | `:::{culture-note}` | A short, concrete note on how people live with the language. How-to, grammar and writing. |
+| Phrase table | Markdown pipe table | Phrases with something to note, two columns. |
 | Forms table | Markdown pipe table | A paradigm: forms by gender, person or case. Grammar only. |
 | Block quote | `> ...` | The model text in a writing article. |
 | Tabs | `::::{tab-set}` | One set of phrases in two or three versions: *du* and *Sie*, spoken and written. |
@@ -34,7 +35,7 @@ This page shows how to write each component. How many a page may hold, and where
 
 The full list, which `ol validate` holds a page to:
 
-- **Directives:** `ol-examples`, `audio-examples`, `note`, `tip`, `important`, `warning`, `admonition` (the three titles only), `skills` on level pages, `situations` on how-to articles and `how-to-links` on situation articles (both retired: see below), `tab-set`, `tab-item`, `grid`, `grid-item-card`, `toctree`, and `glossary` on the Terminology page.
+- **Directives:** `ol-examples`, `audio-examples`, `note`, `tip`, `important`, `warning`, `admonition` (the three titles only), `culture-note` in how-to, grammar and writing, `skills` on level pages, `situations` on how-to articles and `how-to-links` on situation articles (both retired: see below), `tab-set`, `tab-item`, `grid`, `grid-item-card`, `toctree`, and `glossary` on the Terminology page.
 - **Roles:** the language repository's marking roles, `stack`, `term`, `level` and `bdg-light`; on How to use and Contributing also `kbd`, `guilabel`, `menuselection`, `file`, `command` and `samp`.
 
 ## Inline
@@ -58,29 +59,31 @@ Ich gebe {dativ}`dem Kind` {akk}`den Ball`.
 ```markdown
 | Phrase | Notes |
 |---|---|
-| {stack}`Die Rechnung, bitte. \| The bill, please.` | |
+| {stack}`Die Rechnung, bitte. \| The bill, please.` | To the server, at the table. |
 ```
 
 ### Glossary term
 
-``{term}`noun` `` links a term to its entry on the Terminology page, and ``{term}`nouns <noun>` `` writes another form of it. The [authoring rules](authoring-rules.md#the-glossary) give the entry format.
+``{term}`accusative` `` links a term to its entry on the Terminology page, and ``{term}`accusative case <accusative>` `` writes another form of it. Use it when no article covers the term. The glossary holds grammar jargon and terms of the language taught that a general reader would not know. An everyday word, such as "question word", needs no link. The [authoring rules](authoring-rules.md#the-glossary) give the entry format.
 
 ### Page links
 
-Leave the text of a link to another Coursebook page empty. The build writes the target page's title, so a retitled page never leaves a stale link behind:
+Every link has its own text, the words the sentence or the list needs:
 
 ```markdown
-- [](/a1/grammar/cases/akkusativ.md)
+- [The accusative](/a1/grammar/cases/akkusativ.md)
 ```
 
-A link that needs words of its own inside a sentence keeps them: `the [accusative case](/a1/grammar/cases/akkusativ.md)`. A link off the site is written in full, with its text: `[Goethe-Institut: A1 Wortliste](https://...)`. External links appear only under a level page's Additional reading.
+Inside a sentence the link is the words that name the page's subject: `the [accusative case](/a1/grammar/cases/akkusativ.md)`. A link with empty text, `[](…)`, is warned about, and is an error when its page does not exist. Link in the text, at the point where the reader needs it, and to an article before the glossary: a link to the article that covers a term, in the sentence that first uses it, is the term's link.
+
+A link may name a page that is not written yet, with the path it should have (`<level>/<category>/<file-name>.md`). It is a wanted page. Add no marker: the source never changes. Until the page exists, the build draws the link's text as plain text (`<span class="ol-wanted">`), and once the page is written the next build draws a live link, with no edit to this page. `ol wanted` lists every wanted page with the pages that link to it. A missing page close to one that exists, in the same directory with a name a letter or two away or with the same file name in another directory, is a broken link: "did you mean …?". Use a wanted link for depth only: the page teaches its goal without it, and a reviewer accepts or drops each one before merge. `related:` in the front matter takes pages that exist, and nothing else. A link off the site is written in full, with its text: `[Goethe-Institut: A1 Wortliste](https://...)`. External links appear only under a level page's Additional reading.
 
 ### Badges
 
 A badge is a small label. A Coursebook page uses two kinds:
 
 ```markdown
-- [](/b1/grammar/relativsaetze.md) {level}`B1`
+- [Relative clauses](/b1/grammar/relativsaetze.md) {level}`B1`
 
 | {stack}`Hallo! \| Hi!` | {bdg-light}`informal` |
 ```
@@ -108,7 +111,7 @@ Wir nehmen {akk}`die` Straßenbahn.
 
 ### Audio block
 
-`audio-examples` writes or shows a track, under `## Hear it in practice`. The block's options are in the README of this package and in `ol/authoring/templates/audio-examples-block.md`. It never sits inside a tab or a notice.
+`audio-examples` writes or shows a track. In grammar, how-to and vocabulary a track closes the body section it practises: it is the section's last block, and two tracks may close one section. A page whose sections end in no track has `## Hear it in practice` for it instead. The block draws its own title, so no heading repeats the track's `:title:` or `:title-en:`. The block's options are in the README of this package and in `ol/authoring/templates/audio-examples-block.md`. It never sits inside a tab or a notice.
 
 `ol-examples` and `audio-examples` are two directives on purpose. A box beside an explanation and a page's track are different things, and neither switches into the other on an option. Underneath they share one list, `ol/docs/example_list.py`: it reads a definition list as sentences and translations, gives each sentence in the form that identifies it, and draws the list. `audio-examples` adds the track's header, its translations button and the handling of a track that another page writes.
 
@@ -143,13 +146,14 @@ Three notices have fixed titles and fixed kinds. Prerequisites opens an article,
 :::{admonition} Prerequisites
 :class: note
 Before reading this article, make sure you are comfortable with:
-- [](/a1/grammar/articles/bestimmter-artikel.md)
+- [The definite article](/a1/grammar/articles/bestimmter-artikel.md)
 :::
 
 :::{admonition} Common mistakes
 :class: caution
 
 - *\*Ich sehe der Mann.* → Ich sehe **den** Mann. (direct object, masculine)
+- *\*Wo kommst du?* → **Woher** kommst du? (learn more in [W-questions](/a1/grammar/questions/w-questions.md))
 :::
 
 :::{admonition} Key points
@@ -159,13 +163,21 @@ Before reading this article, make sure you are comfortable with:
 :::
 ```
 
-A wrong form in Common mistakes is in italics after an asterisk, the linguist's mark for a form no speaker uses, and its correction follows the arrow with the changed word in bold. Never strike a wrong form through: a screen reader reads struck text aloud as if it were right.
+A common mistake that another article explains ends with a link to it, "(learn more in [Text](…))", with words of its own. The link may name a page not written yet. A wrong form in Common mistakes is in italics after an asterisk, the linguist's mark for a form no speaker uses, and its correction follows the arrow with the changed word in bold. Never strike a wrong form through: a screen reader reads struck text aloud as if it were right.
+
+A culture note is a notice of its own, with the fixed title "Culture note" and a violet no other notice uses. It stands anywhere in the body of a how-to, grammar or writing article, where it fits, and never under a `## Culture note` heading. It holds 80 words or fewer, an article has at most 3, and it does not count toward the free notices. It takes no title and no options:
+
+```markdown
+:::{culture-note}
+At work, Germans often give only their surname: *Müller*, with a handshake.
+:::
+```
 
 `hint`, `caution`, `attention`, `danger`, `error`, `seealso`, `todo` and the version notes never appear. `hint` and `caution` repeat `tip` and `warning`. `danger` and `error` say something cannot be undone, which nothing in a language course is, and a red alarm box makes a learner anxious about a slip that costs nothing. [Rule](page-standard.md#notices)
 
 ### Tables
 
-A table is a Markdown pipe table, so the checks can count its columns. A phrase table has two columns, Phrase and Notes, with the translation stacked in the first. A forms table, in grammar only, leaves its first header cell empty and names each row in the first column:
+A table is a Markdown pipe table, so the checks can count its columns. A phrase table has two columns, Phrase and Notes, with the translation stacked in the first. It earns its place through its Notes column: a table whose Notes cells are all empty fails, and its phrases go in an example block instead, where they also play. A forms table, in grammar only, leaves its first header cell empty and names each row in the first column:
 
 ```markdown
 | | Masculine | Feminine | Neuter | Plural |
@@ -182,24 +194,28 @@ A block quote holds the model text of a writing article, under its `## Example: 
 
 ### Tabs
 
-Tabs show one set of phrases in two or three versions, of which a reader wants one: informal and formal, spoken and written, Germany, Austria and Switzerland. Each tab holds the same kind of thing, a phrase table or an example block. When a learner has to compare the versions, they go side by side in one table instead, because a tab hides the other side.
+Tabs show one set of phrases in two or three versions, of which a reader wants one: informal and formal, spoken and written, Germany, Austria and Switzerland. Each tab holds the same kind of thing, a phrase table or an example block. Formal and informal versions are labelled `Formal (Sie)` and `Informal (du)`, or the language's own, everywhere in the course. When a learner has to compare the versions, they go side by side in one table instead, because a tab hides the other side.
 
 ```markdown
-::::{tab-set}
+:::::{tab-set}
 
-:::{tab-item} Informal (du)
-| Phrase | Notes |
-|---|---|
-| {stack}`Wie heißt du? \| What's your name?` | |
+::::{tab-item} Formal (Sie)
+:::{ol-examples}
+:presenters: emilia
+Wie heißen Sie?
+: What's your name?
 :::
-
-:::{tab-item} Formal (Sie)
-| Phrase | Notes |
-|---|---|
-| {stack}`Wie heißen Sie? \| What's your name?` | |
-:::
-
 ::::
+
+::::{tab-item} Informal (du)
+:::{ol-examples}
+:presenters: emilia
+Wie heißt du?
+: What's your name?
+:::
+::::
+
+:::::
 ```
 
 [Rule](page-standard.md#tabs-and-hidden-content)
@@ -240,8 +256,8 @@ The [page standard](page-standard.md) gives every page's sections in order, and 
 | Level page | Lead, `## What learners know` and `## What learners can do` as skills lists, hidden toctree, `## Categories` as a card per category, `## Additional reading` as a list of external links. |
 | Category index with subcategories | Lead, hidden toctree, a card per subcategory. |
 | Flat category index, subcategory index | Lead, visible toctree. |
-| Grammar article | Opening paragraphs, Prerequisites, form and use sections with forms tables, example blocks and a notice where one helps, Common mistakes, Hear it in practice, Summary with Key points, Related articles. |
-| How-to article | Opening paragraphs, Prerequisites, When to use it until a situation names the article, Key phrases as phrase tables (or one tab set of them), Culture note, Hear it in practice, Summary, Related articles. |
+| Grammar article | Opening paragraphs, Prerequisites, form and use sections with forms tables, example blocks and a notice or culture note where one helps, each ending in its track where it has one, Common mistakes, Hear it in practice when no section ends in a track, Summary with Key points, Related articles. |
+| How-to article | `target-title:`, the lead and an optional second paragraph, Prerequisites, When to use it until a situation names the article, Key phrases as phrase tables or example blocks (or one tab set of them), other sections each ending in its track, culture notes where they fit, Hear it in practice when no section ends in a track, Summary, Related articles. |
 | Situation article | Lead, Hear it in practice with one or two dialogue, correspondence or passage blocks, What to listen for as a list, Related articles. |
 | Writing article | Opening paragraphs, Prerequisites, one or two Example sections each with a block quote and its own Hear it in practice, Building blocks as a phrase table, Summary, Related articles. |
 | Vocabulary article | Opening paragraphs, The words as one phrase table, Hear it in practice, Summary, Related articles. |

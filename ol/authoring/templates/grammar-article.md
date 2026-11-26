@@ -43,10 +43,10 @@ are 180 words or fewer.}}
 :::{admonition} Prerequisites
 :class: note
 Before reading this article, make sure you are comfortable with:
-- []({{/level/grammar/subcat/file.md}})
-<!-- Leave the link text empty: the build writes the page's title. A link to a
+- [{{Link text: the page's subject}}]({{/level/grammar/subcat/file.md}})
+<!-- Every link has its own text: never [](...). A link to a
      page of another level is followed by that level as a badge:
-     - [](/b1/grammar/passiv.md) {level}`B1` -->
+     - [The passive](/b1/grammar/passiv.md) {level}`B1` -->
 :::
 <!-- CONDITIONAL: at most 3 links, true dependencies only. When in doubt, OMIT
      and use Related articles instead. -->
@@ -105,13 +105,13 @@ Before reading this article, make sure you are comfortable with:
 {{Native sentence 2}}
 : {{English translation 2}}
 :::
-<!-- REQUIRED, in this position: after the learning sections, before Summary.
-     The heading puts the section in the on-this-page navigation. The block
-     writes the track this page names (see templates/audio-examples-block.md):
-     ordered plain-text pairs, best first, over-author ~12-18.
-     With several blocks here, each may sit under its own H3 naming that track,
-     so on-this-page reaches it. Every block then has an H3, and they count
-     towards the article's 6. -->
+<!-- REQUIRED only when no body section ends in a track, and then in this
+     position: after the learning sections, before Summary. A track may
+     instead close the section it practises, as that section's last block.
+     The block writes the track this page names (see
+     templates/audio-examples-block.md): ordered plain-text pairs, best first,
+     over-author ~12-18. No H3s here, and no heading repeats a track's title:
+     the block draws its own. -->
 
 ## Summary
 
