@@ -1,7 +1,6 @@
 # 3. Related links and skills live in front matter
 
 - **Status:** Accepted.
-- **Deciders:** Sam, Lex.
 
 ## Context
 
