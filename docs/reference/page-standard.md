@@ -32,7 +32,7 @@ An article is these parts, in this order. The five category sections below fill 
 
 | # | Part | Rule | Check |
 |---|---|---|---|
-| 1 | Front matter | `html_meta.description` of 160 characters or fewer, written as the search snippet. `keywords` lists the phrasings a learner would type. | V |
+| 1 | Front matter | `html_meta.description` of 160 characters or fewer, written as the search snippet. `keywords` lists the phrasings a learner would type, and each is said in a sentence of the page, not only in a table cell (OL-W29). | V |
 | 2 | Title (H1) | One per page. English, sentence case, five words or fewer, no level, no category, no number. `target-title:` in the front matter names the goal in the language taught, and the build draws it straight under the H1 as a subtitle (see Front matter keys). | V (count, prefix), R (case) |
 | 3 | Lead paragraph | The first paragraph under the title. One or two sentences (20 to 50 words). Says what the page covers in plain words, and uses the main learner phrasing at least once. | V |
 | 4 | Explanation paragraph | The second paragraph. States the one idea of the page in plain language (40 to 120 words). It never previews the sections below. Every technical term in it is linked, here or in the lead, so a term is not linked twice two paragraphs apart. Optional in how-to. | V |
@@ -149,7 +149,7 @@ A notice is read as a break from the text. The fewer there are, the more each on
 
 Nothing on a page is hidden behind a click, except the versions in a tab set. A page has no collapsible element: no `dropdown` directive (sphinx-design's name for it), no notice with `:class: dropdown`, no `<details>`. [V]
 
-- A tab set shows one set of phrases in 2 or 3 versions along one line, such as informal and formal. Each tab label is 3 words or fewer, and every tab holds the same kind of thing: a phrase table or an example block. An article has at most 1 tab set, in grammar or how-to only. [V] When the learner has to compare the versions, one table holds them side by side instead. [R]
+- A tab set shows one set of phrases in 2 or 3 versions along one line, such as informal and formal. Each tab label is 3 words or fewer, and every tab holds the same kind of thing: a phrase table or an example block. An article has at most 1 tab set, in grammar or how-to only. [V] Register tabs use the labels the language sets in `register_tabs:` in `open-language.yml`, in that order (OL-W8, and the language rule that narrows it). [V] When the learner has to compare the versions, one table holds them side by side instead. [R]
 - A tab never holds a heading, a notice, an audio block, Common mistakes or Key points. [V]
 
 ### Card grids

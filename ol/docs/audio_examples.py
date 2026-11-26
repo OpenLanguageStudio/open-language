@@ -192,7 +192,7 @@ def show_duplicates(app, doctree, docname):
 def setup(app):
     """Register the directive, the page's other parts and the hooks.
 
-    The other parts are the ``ol-examples`` box, the link boxes, Related
+    The other parts are the removal of bend comments, the ``ol-examples`` box, the link boxes, Related
     articles, the skills, the culture note, the target-language title and the
     drawing of wanted pages.
 
@@ -202,6 +202,7 @@ def setup(app):
         The extension's metadata. ``env_version`` makes Sphinx discard a build
         environment saved by a version that recorded blocks in another form.
     """
+    app.setup_extension("ol.docs.bends")
     app.setup_extension("ol.docs.page_examples")
     app.setup_extension("ol.docs.situations")
     app.setup_extension("ol.docs.related")

@@ -58,6 +58,9 @@ version while the package is below 1.0.
 
 - A check ships with a test in `ol/tests/` that breaks the fixture article or a sample
   block and asserts the check's error. A check nobody has seen fail is not trusted.
+- A check that enforces a writing rule passes its ID, `rep.error(..., rule="OL-W26")`.
+  The ID must be defined in `docs/reference/writing-rules.md`, and a language rule is
+  found through the global rule it narrows, never named in code.
 - Templates in `ol/authoring/templates/` and the rules in `ol/authoring/specs.yml` change
   together.
 - Text that reaches an author (check messages, templates, docs) uses no em dashes.

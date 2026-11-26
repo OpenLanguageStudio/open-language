@@ -12,6 +12,9 @@ import re
 from dataclasses import dataclass
 from pathlib import Path
 
+import yaml
+
+from ol.authoring import rules
 from ol.authoring.page import (
     Block,
     parse,
@@ -596,6 +599,63 @@ def check_tabs(rep, blocks: list[Block], page: Page):
             )
 
 
+REGISTER_TABS = "register_tabs"
+_LABEL_WORD = re.compile(r"\w+")
+
+
+def register_tab_labels(workspace: Path | None) -> list[str]:
+    """The tab labels a language gives its registers, formal first.
+
+    They are ``register_tabs:`` in the workspace's ``open-language.yml``, as in
+    ``register_tabs: [Formal (Sie), Informal (du)]``.
+    """
+    config = workspace / "open-language.yml" if workspace else None
+    if config is None or not config.is_file():
+        return []
+    labels = (yaml.safe_load(config.read_text(encoding="utf-8")) or {}).get(
+        REGISTER_TABS
+    )
+    return [str(label) for label in labels] if isinstance(labels, list) else []
+
+
+def check_register_tabs(rep, blocks: list[Block], page: Page):
+    """A tab set of registers uses the language's labels, in its order (OL-W8).
+
+    A tab set is one of registers when a label shares a word with the labels
+    the language gives its registers, such as *formal* or *Sie*. The finding
+    cites the language rule that narrows OL-W8, when the language has one.
+
+    Args:
+        rep: The page's report.
+        blocks: The page's blocks.
+        page: Where the page sits.
+    """
+    labels = register_tab_labels(page.workspace)
+    if not labels:
+        return
+    words = {word.casefold() for label in labels for word in _LABEL_WORD.findall(label)}
+    rule = rules.narrowing("OL-W8", page.workspace) or "OL-W8"
+    for tab_set in (b for b in walk(blocks) if b.is_directive("tab-set")):
+        found = [
+            plain(tab.arg).strip()
+            for tab in tab_set.children
+            if tab.is_directive("tab-item")
+        ]
+        if not any(
+            word.casefold() in words
+            for label in found
+            for word in _LABEL_WORD.findall(label)
+        ):
+            continue
+        if found != labels:
+            rep.error(
+                f"line {tab_set.line}: the register tabs are labelled "
+                f"{', '.join(repr(label) for label in found)}: label them "
+                f"{', '.join(repr(label) for label in labels)}, in that order",
+                rule=rule,
+            )
+
+
 def cards(blocks: list[Block]) -> list[Card]:
     """Every card of the card grids among ``blocks``, in page order."""
     return [
@@ -708,6 +768,7 @@ def check_components(rep, body: str, page: Page, offset: int = 0, card_limits=No
     check_level_badges(rep, body, page, offset)
     check_register_badges(rep, body, blocks, offset)
     check_tabs(rep, blocks, page)
+    check_register_tabs(rep, blocks, page)
     check_grids(rep, blocks, page, card_limits or {})
     if page.kind == "article":
         check_article_links(rep, blocks, page)

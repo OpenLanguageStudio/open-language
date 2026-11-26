@@ -2,6 +2,26 @@
 
 ## [Unreleased]
 
+## [0.19.0] - 2026-11-27
+
+### Changed: checks that can fail content that passed 0.18.0 (breaking)
+
+- A keyword in `html_meta.keywords` that appears only in a table cell, and nowhere else on the page, fails (OL-W29). Say it in a sentence.
+- A line of prose that discloses how the audio or the cast was made, such as "AI voices" or "fictional presenters", fails (OL-W31). The app says so.
+- When `open-language.yml` sets `register_tabs:`, as in `register_tabs: [Formal (Sie), Informal (du)]`, a tab set whose labels name a register uses exactly those labels in that order (OL-W8). The finding cites the language's own rule that narrows OL-W8, such as DE-W1, when it has one.
+
+### Added
+
+- Every finding that enforces a writing rule starts with the rule's ID, as in `OL-W26: em dash on line 12`. Tagged so far: OL-W3, OL-W7, OL-W8, OL-W9, OL-W10, OL-W11, OL-W13, OL-W17, OL-W23, OL-W24, OL-W26, OL-W27, OL-W29, OL-W31 and OL-W32. The IDs are read from `docs/reference/writing-rules.md`, which now ships inside the package, and from the language repository's `standards/writing-<code>.md`. A check that cites an ID neither file defines raises, and a test fails.
+- A page may bend a writing rule with `<!-- OL-W8 bent: reason -->`. The rule's findings on that page are dropped, bending a global rule also bends the language rules that narrow it, and `ol validate` and `ol check` list every bend at the end of their output. A bend of an undefined rule, or with no reason, fails. The build removes bend comments, and any other HTML comment still fails.
+- `ol review-tier --pr N` works out the content review a pull request into a language repository needs: trivial, small or full, from its diff and its author's GitHub user id. With `--post` it sets the commit status `content-review` on the head commit, success for trivial and pending otherwise, and writes a comment saying in words what is needed.
+- `ol review-status --pr N --verdict pass|fail --tier small|full --report FILE --model M` posts a review's verdict as the `content-review` status on the head commit and the report as a comment. It refuses a review below the tier needed, a stale `--sha`, and a full review by the writer's model.
+- `docs/reference/content-review.md` describes the tiers, their limits and the workflow a language repository runs.
+
+### Changed
+
+- The messages for em dashes and hand-written navigation links use a colon where they had a spaced hyphen.
+
 ## [0.18.0] - 2026-11-26
 
 ### Changed: three rules that can fail content that passed 0.17.0 (breaking)

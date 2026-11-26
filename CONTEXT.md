@@ -128,6 +128,18 @@ holds each rule.
 `docs/reference/writing-rules.md`: the judgement calls every coursebook follows,
 numbered `OL-W1` onwards. A language repository adds its own in
 `standards/writing-<code>.md` (`DE-W1` onwards). IDs are never renumbered or reused.
+A check that enforces a rule starts its message with the rule's ID.
+
+**Bend**:
+A writing rule a page sets aside on purpose, marked beside the place with
+`<!-- OL-W8 bent: reason -->`. The rule's findings on that page are dropped, the
+bend is listed in the output of `ol validate`, and the build removes the comment.
+
+**Content review**:
+The review a pull request into a language repository needs before it merges:
+trivial (none), small (a fast model) or full (a strong model that did not write
+it). It is the commit status `content-review`. See
+`docs/reference/content-review.md`.
 
 **Glossary**:
 The Terminology page's entries. A term on a term list has exactly one, and an

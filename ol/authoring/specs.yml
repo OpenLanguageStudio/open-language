@@ -8,7 +8,8 @@
 #   - frontmatter with html_meta description/keywords
 #   - exactly one H1; NO CEFR level prefix in index titles
 #   - NO {practice} blocks (learners stay on our platforms)
-#   - NO HTML comments (agent notes leak into built HTML)
+#   - NO HTML comments (agent notes leak into built HTML), except a bend,
+#     <!-- OL-Wn bent: reason -->, which the build removes
 #   - NO blockquote subtitle under the H1
 #   - NO :::{seealso} blocks (use Prerequisites admonition or Related articles)
 #   - no unfilled {{PLACEHOLDER}}; a link in the body to a page that does not
@@ -331,3 +332,18 @@ types:
     max_pack_words: 20
     # Packs on a theme continue from one another (at-the-beach-1, -2).
     numbered_filename: true
+
+# The content review a pull request into a language repository needs
+# (ol/review.py, docs/reference/content-review.md).
+content_review:
+  # Authors whose small prose edits need no review, by numeric GitHub user id.
+  # Never by login: a login can be renamed and then taken by someone else.
+  trusted_authors:
+    47405990: Samuel Jennings
+    335511516: open-language-bot[bot]
+  # Lines added plus lines removed, as GitHub counts them. Ten is about five
+  # edited lines: a typo or two, or a reworded sentence.
+  trivial_max_lines: 10
+  # Above this a fast model's review is not enough. Code review studies find
+  # defect detection falls off past about 200 to 400 changed lines per review.
+  small_max_lines: 200
