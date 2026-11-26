@@ -50,7 +50,7 @@ from pathlib import Path
 
 import yaml
 
-from ol.authoring import related, situations, skills, standard, tags
+from ol.authoring import related, rules, situations, skills, standard, tags
 from ol.authoring.components import Page, check_components
 from ol.authoring.glossary import check_terminology
 from ol.authoring.page import parse, plain
@@ -67,22 +67,34 @@ STUB_BODY_BYTES = SPECS["common"]["stub_body_bytes"]
 
 
 class Report:
-    def __init__(self, path: Path):
+    """The findings on one page.
+
+    A finding that enforces a writing rule names it with ``rule=``, and the
+    message then starts with the rule's ID (``OL-W26: em dash on line 4``).
+    """
+
+    def __init__(self, path: Path, workspace: Path | None = None):
         self.path = path
+        self.workspace = workspace
         self.items: list[tuple[str, str]] = []
 
-    def error(self, msg):
-        self.items.append(("ERROR", msg))
+    def error(self, msg, rule: str | None = None):
+        self.items.append(("ERROR", rules.cite(rule, msg, self.workspace)))
 
-    def warn(self, msg):
-        self.items.append(("WARN", msg))
+    def warn(self, msg, rule: str | None = None):
+        self.items.append(("WARN", rules.cite(rule, msg, self.workspace)))
 
-    def info(self, msg):
-        self.items.append(("INFO", msg))
+    def info(self, msg, rule: str | None = None):
+        self.items.append(("INFO", rules.cite(rule, msg, self.workspace)))
 
     @property
     def failed(self):
         return any(lvl == "ERROR" for lvl, _ in self.items)
+
+
+def read_page(path: Path) -> str:
+    """A page's source as the checks read it, without its bend comments."""
+    return rules.strip_bends(path.read_text(encoding="utf-8"))
 
 
 def split_frontmatter(text: str):
@@ -200,7 +212,8 @@ def check_audio_block(rep: Report, block: Block, ctype: str | None):
     if re.search(r"[\u2013\u2014]| - ", block.title_en or ""):
         rep.error(
             f"{where}: :title-en: contains a dash ({block.title_en!r}): store "
-            "titles use no dashes"
+            "titles use no dashes",
+            rule="OL-W26",
         )
 
     if ctype == "situations":
@@ -253,7 +266,8 @@ def check_doc_links(
             if not text.strip():
                 rep.warn(
                     f"line {line}: the link to {page} has no text: give every "
-                    "link its own words, as in [the dative](...)"
+                    "link its own words, as in [the dative](...)",
+                    rule="OL-W17",
                 )
             continue
         if pages is None:
@@ -265,10 +279,13 @@ def check_doc_links(
             rep.error(
                 f"line {line}: the link to {page}, a page not written yet, has no "
                 "text: give it its own words, which show as plain text until "
-                "the page exists"
+                "the page exists",
+                rule="OL-W17",
             )
         else:
-            rep.info(f"line {line}: wanted page {page}: it does not exist yet")
+            rep.info(
+                f"line {line}: wanted page {page}: it does not exist yet", rule="OL-W3"
+            )
 
 
 TARGET_TITLE = "target-title"
@@ -288,7 +305,8 @@ def check_target_title(rep: Report, fm: dict | None, spec: dict):
             rep.warn(
                 f"no '{TARGET_TITLE}:' in the front matter: name the goal in the "
                 "language taught, as in 'target-title: Sich vorstellen', and the "
-                "build draws it under the title"
+                "build draws it under the title",
+                rule="OL-W7",
             )
         return
     if not isinstance(value, str) or not value.strip() or "\n" in value.strip():
@@ -297,7 +315,7 @@ def check_target_title(rep: Report, fm: dict | None, spec: dict):
             "in the language taught"
         )
     elif "\u2014" in value:
-        rep.error(f"front matter '{TARGET_TITLE}:' has an em dash")
+        rep.error(f"front matter '{TARGET_TITLE}:' has an em dash", rule="OL-W26")
 
 
 def check_track_title_headings(
@@ -323,7 +341,8 @@ def check_track_title_headings(
         if plain(heading.text).casefold() in titles:
             rep.error(
                 f"line {heading.line}: heading '{plain(heading.text)}' is a track's "
-                "title: the audio block draws its title, so the heading goes"
+                "title: the audio block draws its title, so the heading goes",
+                rule="OL-W10",
             )
 
 
@@ -362,7 +381,8 @@ def check_common(rep: Report, body: str):
                 f"manual navigation link on line {i} - never hand-write "
                 "'Previous'/'Next' links; Sphinx generates prev/next from the "
                 "toctree automatically. Related articles is for non-adjacent "
-                "links only"
+                "links only",
+                rule="OL-W32",
             )
             break
     for i, line in enumerate(body.splitlines(), 1):
@@ -372,14 +392,15 @@ def check_common(rep: Report, body: str):
             if re.match(r"^:title(-en)?:", line.strip()):
                 continue
             rep.error(
-                f"em dash on line {i} - never use em dashes; restructure the sentence"
+                f"em dash on line {i}: never use em dashes; restructure the sentence",
+                rule="OL-W26",
             )
             break
 
 
 _SECOND_PERSON = re.compile(r"\byou(?:r|rs|rself)?\b", re.I)
 # Stock openers. Any of these becomes "the phrase every article starts with",
-# which is the failure mode regardless of whether it says "you" (rule 18).
+# which is the failure mode regardless of whether it says "you" (OL-W27).
 _STOCK_OPENER = re.compile(
     r"^\s*(after this (page|article)|by the end of th|in this (page|article)"
     r"|(this (page|article) )?(will )?teach(es)? you|learn how to|get started with"
@@ -389,7 +410,7 @@ _STOCK_OPENER = re.compile(
 
 
 def check_direct_address(rep: Report, body: str):
-    """Rule 18: body prose does not address the reader.
+    """OL-W27: body prose does not address the reader.
 
     Only the LEAD paragraph is checked here, and headings in the standard's
     checks. Admonitions, example translations and glosses legitimately keep
@@ -421,7 +442,8 @@ def check_direct_address(rep: Report, body: str):
         rep.error(
             f"lead paragraph uses a stock opener ('{text[:40]}...') - open on the "
             "content itself: the situation, the pattern, or the key word. Swapping "
-            "one formula for another is the same problem (rule 18)"
+            "one formula for another is the same problem",
+            rule="OL-W27",
         )
     elif _SECOND_PERSON.search(text):
         # WARN, not ERROR: generic "you" describing real German use is allowed, and
@@ -430,7 +452,8 @@ def check_direct_address(rep: Report, body: str):
         rep.warn(
             "lead paragraph uses 'you' - fine if it describes what a German "
             "speaker does, wrong if it addresses the reader about the course "
-            "('you will learn', 'the forms you already know'). Check it (rule 18)"
+            "('you will learn', 'the forms you already know'). Check it",
+            rule="OL-W27",
         )
 
 
@@ -462,7 +485,10 @@ def check_article_headings(rep: Report, body: str):
         )
     for h in headings(body, 2) + headings(body, 3):
         if NUMBERED_HEADING.match(h):
-            rep.error(f"numbered heading '{h}': never number sections by hand")
+            rep.error(
+                f"numbered heading '{h}': never number sections by hand",
+                rule="OL-W32",
+            )
             break
 
 
@@ -538,7 +564,8 @@ def check_related_sources(
     elif written:
         rep.warn(
             "'## Related articles' is written by hand: move its links into "
-            "'related:' in the front matter and remove the section"
+            "'related:' in the front matter and remove the section",
+            rule="OL-W32",
         )
 
 
@@ -579,7 +606,8 @@ def check_related_neighbours(
         if target.resolve() in neighbours:
             rep.error(
                 f"Related articles links {link}, next to this article in the "
-                "toctree: the build already links it as previous or next"
+                "toctree: the build already links it as previous or next",
+                rule="OL-W32",
             )
 
 
@@ -724,7 +752,33 @@ def check_ai_vocabulary(rep: Report, body: str):
     for line_no, line in prose_lines(body):
         m = _AI_VOCABULARY.search(line)
         if m:
-            rep.error(f"stock phrase '{m.group(1)}' on line {line_no}: say it plainly")
+            rep.error(
+                f"stock phrase '{m.group(1)}' on line {line_no}: say it plainly",
+                rule="OL-W23",
+            )
+
+
+_DISCLOSURE = re.compile(
+    r"\b(AI|text-to-speech|TTS|synthetic|computer-generated|machine-generated)"
+    r"[- ](voices?|speech|audio|recordings?|presenters?|speakers?)\b"
+    r"|\b(fictional|invented|made-up) (presenters?|characters?|people|speakers?)\b",
+    re.I,
+)
+
+
+def check_disclosures(rep: Report, body: str):
+    """No line of the page discloses how its audio or cast was made (OL-W31).
+
+    The app says so. A page that does repeats it on every page and goes stale
+    when the production changes.
+    """
+    for line_no, line in prose_lines(body):
+        if m := _DISCLOSURE.search(line):
+            rep.error(
+                f"line {line_no}: '{m.group(0)}' is a disclosure line: the app "
+                "tells the reader how its voices and presenters are made",
+                rule="OL-W31",
+            )
 
 
 def headings(body: str, level: int = 2):
@@ -737,13 +791,13 @@ def headings(body: str, level: int = 2):
 
 
 def validate_article(path: Path, ctype: str, workspace: Path | None) -> Report:
-    rep = Report(path)
+    rep = Report(path, workspace)
     spec = SPECS["types"].get(ctype)
     if spec is None:
         rep.error(f"unknown content type: {ctype}")
         return rep
     common = SPECS["common"]
-    text = path.read_text(encoding="utf-8")
+    text = read_page(path)
     if text.startswith("﻿"):
         rep.warn("file starts with a BOM (\\ufeff): remove it")
     fm, body = split_frontmatter(text)
@@ -819,6 +873,7 @@ def validate_article(path: Path, ctype: str, workspace: Path | None) -> Report:
     check_direct_address(rep, body)
     check_example_blocks(rep, body)
     check_ai_vocabulary(rep, body)
+    check_disclosures(rep, body)
 
     parts = page_path(path, workspace) if workspace else None
     config = language_config(workspace)
@@ -899,8 +954,8 @@ def validate_article(path: Path, ctype: str, workspace: Path | None) -> Report:
 
 
 def validate_index(path: Path, ctype: str | None, workspace: Path | None) -> Report:
-    rep = Report(path)
-    text = path.read_text(encoding="utf-8")
+    rep = Report(path, workspace)
+    text = read_page(path)
     fm, body = split_frontmatter(text)
     offset = text.count("\n", 0, len(text) - len(body))
     check_common(rep, body)
@@ -962,8 +1017,8 @@ def validate_index(path: Path, ctype: str | None, workspace: Path | None) -> Rep
 
 def validate_introduction(path: Path, workspace: Path) -> Report:
     """Hold the top-level index.md to the Introduction page's structure."""
-    rep = Report(path)
-    text = path.read_text(encoding="utf-8")
+    rep = Report(path, workspace)
+    text = read_page(path)
     fm, body = split_frontmatter(text)
     check_common(rep, body)
     standard.check_index_sidebar(rep, fm)
@@ -985,8 +1040,8 @@ def validate_introduction(path: Path, workspace: Path) -> Report:
 
 def validate_terminology(path: Path, workspace: Path) -> Report:
     """Hold the Terminology page to the glossary's rules."""
-    rep = Report(path)
-    text = path.read_text(encoding="utf-8")
+    rep = Report(path, workspace)
+    text = read_page(path)
     _fm, body = split_frontmatter(text)
     check_common(rep, body)
     offset = text.count("\n", 0, len(text) - len(body))
@@ -997,8 +1052,8 @@ def validate_terminology(path: Path, workspace: Path) -> Report:
 
 def validate_standard_page(path: Path, workspace: Path, kind: str) -> Report:
     """Hold the How to use and Contributing pages to the components they may use."""
-    rep = Report(path)
-    text = path.read_text(encoding="utf-8")
+    rep = Report(path, workspace)
+    text = read_page(path)
     _fm, body = split_frontmatter(text)
     offset = text.count("\n", 0, len(text) - len(body))
     check_components(rep, body, Page(kind, path, workspace), offset)
@@ -1008,9 +1063,18 @@ def validate_standard_page(path: Path, workspace: Path, kind: str) -> Report:
 def validate_file(
     path: Path, workspace: Path | None = None, ctype: str | None = None
 ) -> Report:
-    """Validate one article or index file and return its report."""
+    """Validate one article or index file and return its report.
+
+    The bends the page declares are applied last: see :func:`apply_bends`.
+    """
     ws, _level, category = infer_context(path, workspace)
-    ctype = ctype or category
+    rep = check_file(path, ws, ctype or category)
+    apply_bends(rep, path.read_text(encoding="utf-8"), ws)
+    return rep
+
+
+def check_file(path: Path, ws: Path | None, ctype: str | None) -> Report:
+    """Every check the page's kind is held to."""
     parts = page_path(path, ws) if ws else None
     if parts == ("index",):
         return validate_introduction(path, ws)
@@ -1021,8 +1085,7 @@ def validate_file(
     if path.name == "index.md":
         return validate_index(path, ctype, ws)
     if ctype is None:
-        rep = Report(path)
-        parts = page_path(path, ws) if ws else None
+        rep = Report(path, ws)
         if parts and len(parts) > 2:
             rep.error(
                 f"{parts[0]}/{parts[1]}/ is not a category: move the article into "
@@ -1032,6 +1095,54 @@ def validate_file(
             rep.error("cannot infer content type from path; pass --type")
         return rep
     return validate_article(path, ctype, ws)
+
+
+BENT = "bent"
+
+
+def apply_bends(rep: Report, text: str, workspace: Path | None):
+    """Drop the findings of each rule the page bends, and list every bend.
+
+    A bend is ``<!-- OL-W8 bent: reason -->``. Bending a global rule also
+    bends the language rules that narrow it. Each bend is reported as
+    information, so it shows in the output whether or not it hid a finding.
+    A bend of a rule no rules file defines, or with no reason, is an error.
+
+    Args:
+        rep: The page's report.
+        text: The page's source.
+        workspace: The language repository's root.
+    """
+    declared = rules.bends(text)
+    if not declared:
+        return
+    known = rules.known(workspace)
+    valid = []
+    for line, rule, reason in declared:
+        if rule not in known:
+            rep.error(f"line {line}: bends {rule}, which no writing rules file defines")
+        elif not reason:
+            rep.error(f"line {line}: the bend of {rule} gives no reason")
+        else:
+            valid.append((line, rule, reason))
+    kept = []
+    for level, msg in rep.items:
+        cited = rules.cited(msg)
+        if cited and any(rules.covers(bent, cited, workspace) for _, bent, _ in valid):
+            continue
+        kept.append((level, msg))
+    rep.items = kept
+    for line, rule, reason in valid:
+        rep.info(f"line {line}: {rule} {BENT}: {reason}")
+
+
+def page_bends(rep: Report) -> list[str]:
+    """The bends listed in a report, as printed."""
+    return [
+        msg
+        for level, msg in rep.items
+        if level == "INFO" and re.search(rf": {rules.RULE_ID} {BENT}: ", msg)
+    ]
 
 
 def report_status(rep: Report) -> str:

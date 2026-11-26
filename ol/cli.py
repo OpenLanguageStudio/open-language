@@ -1,6 +1,8 @@
 """The ``ol`` command: coursebook build, content checks and authoring helpers."""
 
 import json
+import os
+import re
 import subprocess
 import sys
 from pathlib import Path
@@ -210,16 +212,18 @@ def _run_validate(
     whether or not the file is in the baseline.
     """
     from ol.authoring.menu import check_menu
-    from ol.authoring.validate import report_status
+    from ol.authoring.validate import page_bends, report_status
 
     baseline = _read_baseline(baseline_path)
     cross_page = cross_page_refusals(workspace)
     menu_errors = check_menu(workspace) if menu else {}
     new_failures: list[str] = []
     now_passing: list[str] = []
+    bent: list[str] = []
     for path in files:
         rel = path.resolve().relative_to(workspace.resolve()).as_posix()
         rep = file_report(path, workspace, cross_page)
+        bent.extend(f"{rel}, {msg}" for msg in page_bends(rep))
         status = report_status(rep)
         menu_failed = rel in menu_errors
         for msg in menu_errors.pop(rel, []):
@@ -241,6 +245,10 @@ def _run_validate(
         typer.echo(f"[FAIL] {rel}")
         for msg in errors:
             typer.echo(f"    ERROR: {msg}")
+    if bent:
+        typer.echo(f"\nBent writing rules ({len(bent)}), for review:")
+        for line in bent:
+            typer.echo(f"    {line}")
     return new_failures, now_passing, len(files)
 
 
@@ -447,3 +455,140 @@ def check(
         typer.echo(f"\nFAILED: {', '.join(failed)}")
         raise typer.Exit(1)
     typer.echo("\nAll checks passed.")
+
+
+def _repo(repo: str | None) -> str:
+    """The repository as owner/name: given, from CI, or from the origin remote."""
+    if repo:
+        return repo
+    if found := os.environ.get("GITHUB_REPOSITORY"):
+        return found
+    url = subprocess.run(
+        ["git", "remote", "get-url", "origin"], capture_output=True, text=True
+    ).stdout.strip()
+    if m := re.search(r"github\.com[:/]([^/]+/[^/]+?)(?:\.git)?$", url):
+        return m.group(1)
+    raise typer.BadParameter("pass --repo owner/name")
+
+
+def _decision(repo: str, number: int):
+    from ol import github, review
+
+    pr = github.pull(repo, number)
+    return pr, review.decide(pr["user"]["id"], github.changed_files(repo, pr))
+
+
+def tier_comment(decision) -> str:
+    """The pull request comment that says, in words, what review it needs."""
+    from ol.review import FULL, SMALL, TRIVIAL
+
+    lead = {
+        TRIVIAL: "**Content review: trivial.** No review is needed. The content "
+        "checks still have to pass before it merges.",
+        SMALL: "**Content review: small.** A review by a fast model is needed "
+        "before this merges.",
+        FULL: "**Content review: full.** A review by a strong model, other than "
+        "the model that wrote the change, is needed before this merges.",
+    }[decision.tier]
+    reasons = "\n".join(f"- {reason}" for reason in decision.reasons)
+    tail = (
+        ""
+        if decision.tier == TRIVIAL
+        else "\n\nThe reviewer posts the verdict with `ol review-status`. A new "
+        "push clears it, and the tier is worked out again."
+    )
+    return f"{lead}\n\n{reasons}{tail}"
+
+
+@app.command("review-tier")
+def review_tier(
+    pr: int = typer.Option(..., "--pr", help="Pull request number."),
+    repo: str = typer.Option(None, help="owner/name. Default: from CI or origin."),
+    post: bool = typer.Option(
+        False,
+        "--post",
+        help="Set the content-review status on the head commit and write the "
+        "tier comment.",
+    ),
+):
+    """Work out the content review a pull request needs: trivial, small or full.
+
+    With --post, a trivial pull request gets a success status and the others a
+    pending one, which only `ol review-status` clears.
+    """
+    from ol import github
+    from ol.review import TRIVIAL
+
+    repo = _repo(repo)
+    pull, decision = _decision(repo, pr)
+    typer.echo(f"{decision.tier}: {decision.description}")
+    for reason in decision.reasons:
+        typer.echo(f"    {reason}")
+    if post:
+        state = "success" if decision.tier == TRIVIAL else "pending"
+        github.post_status(repo, pull["head"]["sha"], state, decision.description)
+        github.upsert_tier_comment(repo, pr, tier_comment(decision))
+
+
+@app.command("review-status")
+def review_status(
+    pr: int = typer.Option(..., "--pr", help="Pull request number."),
+    verdict: str = typer.Option(..., help="pass or fail."),
+    tier: str = typer.Option(..., help="The review given: small or full."),
+    report: Path = typer.Option(..., help="The review report, Markdown."),
+    model: str = typer.Option(..., help="The model that reviewed."),
+    writer_model: str = typer.Option(
+        None, help="The model that wrote the change. A full review needs another."
+    ),
+    sha: str = typer.Option(
+        None, help="The commit reviewed. Refused when it is no longer the head."
+    ),
+    repo: str = typer.Option(None, help="owner/name. Default: from CI or origin."),
+):
+    """Post a review's verdict: the content-review status and the report.
+
+    The status goes on the pull request's head commit, so a push after the
+    review leaves the new head without one and the pull request blocks again.
+    A review lower than the tier the pull request needs is refused.
+    """
+    from ol import github
+    from ol.review import FULL, SMALL, covers
+
+    if verdict not in ("pass", "fail"):
+        raise typer.BadParameter("--verdict is pass or fail")
+    if tier not in (SMALL, FULL):
+        raise typer.BadParameter("--tier is small or full")
+    text = report.read_text(encoding="utf-8").strip() if report.is_file() else ""
+    if not text:
+        raise typer.BadParameter(f"{report} is missing or empty")
+    if tier == FULL and writer_model and writer_model == model:
+        typer.echo(
+            f"ERROR: a full review is by a model other than the writer's ({model})"
+        )
+        raise typer.Exit(1)
+    repo = _repo(repo)
+    pull, decision = _decision(repo, pr)
+    head = pull["head"]["sha"]
+    if sha and not head.startswith(sha):
+        typer.echo(
+            f"ERROR: reviewed {sha}, but the head is now {head[:12]}: review again"
+        )
+        raise typer.Exit(1)
+    if not covers(tier, decision.tier):
+        typer.echo(
+            f"ERROR: this pull request needs a {decision.tier} review, not {tier}: "
+            + "; ".join(decision.reasons)
+        )
+        raise typer.Exit(1)
+    passed = verdict == "pass"
+    description = (
+        f"{tier.capitalize()} review {'passed' if passed else 'failed'} ({model})"
+    )
+    github.post_status(repo, head, "success" if passed else "failure", description)
+    github.comment(
+        repo,
+        pr,
+        f"**Content review ({tier}): {'pass' if passed else 'fail'}.** Reviewed "
+        f"by {model} at commit {head[:12]}.\n\n{text}",
+    )
+    typer.echo(f"{description}: posted on {head[:12]}")

@@ -277,7 +277,7 @@ def check_headings(rep, blocks, parent_title):
         if _CLOSING_PUNCTUATION.search(text):
             rep.error(f"{where}: heading '{text}' ends in punctuation")
         if _SECOND_PERSON.search(_QUOTED.sub(" ", _EMPHASIS.sub(" ", block.text))):
-            rep.error(f"{where}: heading '{text}' addresses the reader")
+            rep.error(f"{where}: heading '{text}' addresses the reader", rule="OL-W27")
         parent = parents.get(block.level - 1, "")
         if text.lower() == parent.lower():
             rep.error(f"{where}: heading '{text}' repeats the heading above it")
@@ -366,7 +366,8 @@ def check_table(rep, block, ctype, translation_headers):
         rep.error(
             f"{where}: every Notes cell is empty: a table is for phrases with "
             "something to note, so write these in an ol-examples block, where "
-            "they can be played"
+            "they can be played",
+            rule="OL-W11",
         )
 
 
@@ -400,7 +401,8 @@ def check_prose(rep, blocks):
                 start = " ".join(sentence.split()[:6])
                 rep.error(
                     f"line {line}: sentence of {words} words (maximum {limit}): "
-                    f"'{start} ...'"
+                    f"'{start} ...'",
+                    rule="OL-W24",
                 )
     limit = COMMON["paragraph_max_sentences"]
     for block in walk(blocks):
@@ -415,8 +417,49 @@ def check_prose(rep, blocks):
     if average > COMMON["sentence_average_words"]:
         rep.warn(
             f"prose averages {average:.1f} words a sentence (aim for "
-            f"{COMMON['sentence_average_words']} or fewer)"
+            f"{COMMON['sentence_average_words']} or fewer)",
+            rule="OL-W24",
         )
+
+
+def _outside_tables(block: Block) -> str:
+    """A block's text, without the lines of any table inside it."""
+    text = "\n".join(
+        line for line in block.text.splitlines() if not line.lstrip().startswith("|")
+    )
+    return " ".join([text, *block.items])
+
+
+def check_keywords_in_text(rep, blocks, phrasings: list[str]):
+    """A keyword is said in the text, not only in a table cell (OL-W29).
+
+    A phrasing a learner searches with appears in a sentence of the page. One
+    that appears only in a table cell is an error. One that appears nowhere is
+    left to review, which can tell a near phrasing from a missing one.
+
+    Args:
+        rep: The page's report.
+        blocks: The page's blocks.
+        phrasings: The page's topic keywords, lower case.
+    """
+    cells, text = [], []
+    for block in walk(blocks):
+        if block.kind == "table":
+            cells.extend(
+                plain(cell) for row in [block.header, *block.rows] for cell in row
+            )
+        elif block.kind != "heading":
+            text.append(plain(_outside_tables(block)))
+    in_cells = [cell.casefold() for cell in cells]
+    in_text = " ".join(text).casefold()
+    for phrasing in phrasings:
+        wanted = phrasing.casefold()
+        if wanted not in in_text and any(wanted in cell for cell in in_cells):
+            rep.error(
+                f"the keyword '{phrasing}' appears only in a table cell: say it in "
+                "a sentence of the page",
+                rule="OL-W29",
+            )
 
 
 def _slot(title: str, parts: list[dict]) -> int | None:
@@ -599,7 +642,8 @@ def check_culture_note_headings(rep, found):
             rep.warn(
                 f"line {section.line}: '## {CULTURE_NOTE_HEADING}' is a section: "
                 "write the note as ':::{culture-note}' in the section it belongs "
-                "to, and remove the heading"
+                "to, and remove the heading",
+                rule="OL-W13",
             )
 
 
@@ -636,7 +680,8 @@ def check_section_tracks(rep, found):
             rep.error(
                 f"audio block (line {block.line}) inside '{section.title}': a "
                 "track closes the section it practises, so move it to the end "
-                "of the section"
+                "of the section",
+                rule="OL-W9",
             )
     if not ends_in_track and _section(found, "Hear it in practice") is None:
         rep.error(
@@ -750,6 +795,11 @@ def check_article(rep, body, fm, ctype, spec, context):
     check_h3_places(rep, found, ctype)
     check_tables(rep, blocks, ctype, context["translation_headers"])
     check_prose(rep, blocks)
+    check_keywords_in_text(
+        rep,
+        blocks,
+        _learner_phrasings(fm, context["language"], context["level"], ctype),
+    )
     check_section_order(rep, found, ctype, spec["sections"])
     check_culture_note_headings(rep, found)
     check_hear_it(rep, found)
