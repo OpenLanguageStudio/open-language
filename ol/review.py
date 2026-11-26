@@ -48,6 +48,8 @@ _HUNK = re.compile(r"^@@ -(\d+)(?:,\d+)? \+(\d+)(?:,\d+)? @@")
 _FENCE_OPEN = re.compile(r"^(:{3,}|`{3,})\{([a-z-]+)\}")
 _FENCE = re.compile(r"^(:{3,}|`{3,})")
 _LINK_TARGET = re.compile(r"\]\(([^)\s]*)")
+_NOT_PLAIN = re.compile(r"<|^\s{0,3}\[[^\]]+\]:\s*\S")
+_PIN_LINE = re.compile(r"open-language", re.IGNORECASE)
 
 
 @dataclass
@@ -182,7 +184,7 @@ def changed_lines(patch: str) -> list[tuple[str, int, str]]:
 
 
 def _kind_at(kinds: list[str], line: int) -> str:
-    return kinds[line - 1] if 0 < line <= len(kinds) else "prose"
+    return kinds[line - 1] if 0 < line <= len(kinds) else "unknown"
 
 
 def touches_track(changed: ChangedFile) -> bool:
@@ -214,10 +216,27 @@ def prose_only(changed: ChangedFile) -> str | None:
         kind = _kind_at(base if sign == "-" else head, line)
         if kind != "prose":
             return f"{changed.path} line {line} is not prose ({kind})"
+        if _NOT_PLAIN.search(text):
+            return f"{changed.path} line {line} holds markup or a reference definition"
         targets[sign].update(_LINK_TARGET.findall(text))
     if targets["-"] != targets["+"]:
         return f"{changed.path} changes a link target"
     return None
+
+
+def is_pin_bump(files: list[ChangedFile]) -> bool:
+    """Whether the change is only the ``open-language`` pin and the lock file."""
+    paths = {f.path for f in files}
+    if paths != {"pyproject.toml", "uv.lock"}:
+        return False
+    for changed in files:
+        if changed.path == "pyproject.toml":
+            if changed.patch is None:
+                return False
+            lines = changed_lines(changed.patch)
+            if not lines or not all(_PIN_LINE.search(text) for _, _, text in lines):
+                return False
+    return True
 
 
 def decide(author_id: int, files: list[ChangedFile]) -> Decision:
@@ -231,12 +250,18 @@ def decide(author_id: int, files: list[ChangedFile]) -> Decision:
         The tier, with the reasons it is not a lower one.
     """
     total = sum(f.additions + f.deletions for f in files)
+    if author_id in TRUSTED_AUTHORS and is_pin_bump(files):
+        return Decision(TRIVIAL, [f"pin bump by {TRUSTED_AUTHORS[author_id]}"])
     full: list[str] = []
     for changed in files:
         if not is_page(changed.path):
             continue
         if changed.status in ("added", "renamed", "copied"):
             full.append(f"{changed.path} is a new page ({changed.status})")
+        elif changed.status == "modified" and (
+            changed.base_text is None or changed.head_text is None
+        ):
+            full.append(f"{changed.path} could not be read to check the change")
         elif touches_track(changed):
             full.append(f"{changed.path} changes a track")
     if total > SMALL_MAX_LINES:

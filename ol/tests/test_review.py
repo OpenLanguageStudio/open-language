@@ -300,3 +300,33 @@ def test_an_empty_report_is_refused(monkeypatch, tmp_path):
     )  # fmt: skip
     assert result.exit_code != 0
     assert fake.statuses == []
+
+
+def test_a_page_that_cannot_be_read_is_full():
+    changed = page(TYPO)
+    changed.head_text = None
+    decision = decide(OWNER, [changed])
+    assert decision.tier == FULL
+    from ol.review import _kind_at
+
+    assert _kind_at(line_kinds("one"), 9) == "unknown"
+
+
+@pytest.mark.parametrize(
+    "added",
+    ["Saying hello <!-- bend: x --> today.", "[dativ]: /a1/grammar/dativ.md"],
+)
+def test_a_changed_line_with_markup_or_a_reference_definition_is_not_trivial(added):
+    patch = diff(7, 7, " ", "-Saying hello depends.", f"+{added}", " ")
+    assert decide(OWNER, [page(patch)]).tier == SMALL
+
+
+@pytest.mark.parametrize("author", [OWNER, BOT])
+def test_a_pin_bump_with_its_lock_file_is_trivial(author):
+    pin = '@@ -8,1 +8,1 @@\n-    "open-language @ git+https://x/open-language@v0.18.0",\n+    "open-language @ git+https://x/open-language@v0.19.0",'
+    files = [
+        ChangedFile("pyproject.toml", "modified", 1, 1, pin),
+        ChangedFile("uv.lock", "modified", 2, 2, "@@ -1 +1 @@\n-a\n+b"),
+    ]
+    assert decide(author, files).tier == TRIVIAL
+    assert decide(STRANGER, files).tier == SMALL
