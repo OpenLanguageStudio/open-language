@@ -1,7 +1,6 @@
 # 2. Situations, a fifth category
 
-- **Status:** Accepted. Agreed with Sam in conversation on 2026-11-23.
-- **Deciders:** Sam, Lex.
+- **Status:** Accepted, 2026-11-23.
 
 ## Context
 
