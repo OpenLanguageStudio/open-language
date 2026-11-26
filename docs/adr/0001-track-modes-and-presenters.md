@@ -1,7 +1,6 @@
 # 1. Track modes, and presenters named on every block
 
-- **Status:** Accepted. Agreed with Sam in conversation on 2026-11-17, after the app side was prototyped.
-- **Deciders:** Sam, Lex.
+- **Status:** Accepted, 2026-11-17, after the app side was prototyped.
 
 ## Context
 
