@@ -35,10 +35,10 @@ written in. Write every technical term in it as {term}`term`.}}
 :::{admonition} Prerequisites
 :class: note
 Before reading this article, make sure you are comfortable with:
-- []({{/path.md}})
-<!-- Leave the link text empty: the build writes the page's title. A link to a
+- [{{Link text: the page's subject}}]({{/path.md}})
+<!-- Every link has its own text: never [](...). A link to a
      page of another level is followed by that level as a badge:
-     - [](/b1/grammar/passiv.md) {level}`B1` -->
+     - [The passive](/b1/grammar/passiv.md) {level}`B1` -->
 :::
 <!-- CONDITIONAL: at most 3 links, omit unless genuinely required. -->
 

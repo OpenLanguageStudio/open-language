@@ -499,14 +499,9 @@ def check_level_badges(rep, body: str, page: Page, offset: int = 0):
 def _check_links(rep, page: Page, line: int, where: str, items: list[str]):
     for item in items:
         for m in _LINK.finditer(item):
-            text, link = m[1], m[2]
+            link = m[2]
             if page.target(link) is None:
                 continue
-            if text.strip():
-                rep.error(
-                    f"line {line}: write the {where} link to {link} as [](...), "
-                    "with no text: the build writes the page's title"
-                )
             linked = page.level_of(link)
             badge = re.match(r"\s*\{level\}`", item[m.end() :])
             if linked and page.level and linked != page.level and not badge:
@@ -517,7 +512,7 @@ def _check_links(rep, page: Page, line: int, where: str, items: list[str]):
 
 
 def check_article_links(rep, blocks: list[Block], page: Page):
-    """Related articles and Prerequisites: empty link text, and another level's badge."""
+    """Related articles and Prerequisites: another level's page carries its badge."""
     opening, found = sections(blocks)
     for block in opening:
         if block.is_directive("admonition", "Prerequisites"):

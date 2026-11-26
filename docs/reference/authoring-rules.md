@@ -108,7 +108,17 @@ On a level page, write the skills once under `skills:` in the front matter, each
 
 List related pages under `related:` in the front matter, as page paths without `.md`: relative to the page's folder, or from the root with a leading `/`. Write `related: [/a1/grammar/verbs/sein-und-haben, choose-between-du-and-sie]`. The build draws them as the last section, `## Related articles`, grouped by kind of page. Do not write the section, and write no `:::{situations}` or `:::{how-to-links}` box: the links they drew are drawn there too. A how-to article keeps `## When to use it` until a situation names it, and then the situations replace the section. An entry that names no page stops the build.
 
-Keep `related:` short: a few close neighbours. The main way pages connect is a link in the text, at the point where the reader needs it. Such a link may name a page that is not written yet, with the path it should have: it is a wanted page, fails nothing and shows as plain text until the page exists. Add no marker or TODO beside it. `ol wanted` lists every wanted page with the pages that link to it, and `ol check` prints the list in its own section. A common mistake that another article explains ends with "(learn more: [](…))".
+Keep `related:` short: a few close neighbours. The main way pages connect is a link in the text, at the point where the reader needs it, and every link has its own text: `[the dative](/a1/grammar/cases/dativ.md)`, never `[](…)`.
+
+Write as if every article the page needs exists. When something needs its own explanation, link to the article that should hold it, with an ordinary link and the path it should have (`<level>/<category>/<file-name>.md`). It is a wanted page:
+
+- The source never changes. Add no marker or TODO. Until the page exists the build shows the link's text as plain text, and the first build after the page is written turns it into a live link, with no edit to the linking page.
+- A wanted link fails nothing, but a missing page close to one that exists is a broken link, an error with "did you mean …?". Check the path against the pages that exist before you write it.
+- `ol wanted` lists every wanted page with the pages that link to it, worked out from the source on every run (`--format json` for a machine). `ol check` prints the list in its own section.
+- Use a wanted link for depth only. The page teaches its goal fully without it.
+- Reviewers triage each wanted link before merge. Accepted, the page is queued for writing. Dropped, the writer removes the link. So every wanted link left on the main branch is a commissioned page.
+
+A common mistake that another article explains ends with "(learn more in [Text](…))".
 
 Link only pages a reader would not reach by the next-page link, and link no other article of the article's own subcategory.
 

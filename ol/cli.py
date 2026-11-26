@@ -321,7 +321,7 @@ def templates(
     typer.echo(path.read_text(encoding="utf-8"), nl=False)
 
 
-def _print_wanted(workspace: Path) -> int:
+def _print_wanted(workspace: Path, as_json: bool = False) -> int:
     """Print every wanted page with the pages that link to it.
 
     Returns:
@@ -330,6 +330,10 @@ def _print_wanted(workspace: Path) -> int:
     from ol.authoring.wanted import wanted_pages
 
     found = wanted_pages(workspace, _article_files(workspace))
+    if as_json:
+        listed = [{"page": page, "linked_from": names} for page, names in found.items()]
+        typer.echo(json.dumps(listed, indent=2, ensure_ascii=False))
+        return len(found)
     for page, linking in found.items():
         typer.echo(f"{page}")
         for name in linking:
@@ -342,13 +346,22 @@ def _print_wanted(workspace: Path) -> int:
 @app.command()
 def wanted(
     workspace: Path = typer.Option(Path("."), help="Language workspace root."),
+    output_format: str = typer.Option(
+        "text",
+        "--format",
+        help="text, or json: a list of objects with 'page' and 'linked_from'.",
+    ),
 ):
     """List the pages that are linked in the text but do not exist yet.
 
     Each missing page is followed by the pages that link to it. A wanted page
-    fails no check: a reviewer decides whether it should be written.
+    fails no check: a reviewer decides whether it should be written. A link
+    close to a page that exists is a broken link, reported by ol validate, and
+    is not listed.
     """
-    _print_wanted(workspace)
+    if output_format not in ("text", "json"):
+        raise typer.BadParameter("--format is text or json")
+    _print_wanted(workspace, as_json=output_format == "json")
 
 
 def _render_check(workspace: Path) -> bool:

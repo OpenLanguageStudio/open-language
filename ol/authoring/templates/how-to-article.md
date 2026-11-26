@@ -59,10 +59,10 @@ Delete it when the lead is enough.}}
 :::{admonition} Prerequisites
 :class: note
 Before reading this article, make sure you are comfortable with:
-- []({{/level/grammar/subcat/file.md}})
-<!-- Leave the link text empty: the build writes the page's title. A link to a
+- [{{Link text: the page's subject}}]({{/level/grammar/subcat/file.md}})
+<!-- Every link has its own text: never [](...). A link to a
      page of another level is followed by that level as a badge:
-     - [](/b1/grammar/passiv.md) {level}`B1` -->
+     - [The passive](/b1/grammar/passiv.md) {level}`B1` -->
 :::
 <!-- CONDITIONAL: at most 3 links, and only when the goal truly cannot be
      used without that grammar (e.g. Polite Requests needs Konjunktiv II).
@@ -175,7 +175,7 @@ body, at most 3 on the page.}}
 :class: caution
 
 - *{{Wrong}}* → {{Right}}. ({{why}})
-- *{{Wrong}}* → {{Right}}. ({{why}}, learn more: []({{/level/grammar/page.md}}))
+- *{{Wrong}}* → {{Right}}. ({{why}}, learn more in [{{Link text}}]({{/level/grammar/page.md}}))
 :::
 <!-- Only mistakes that learners with the reader's language really make.
      A mistake another article explains ends with a link to it. -->

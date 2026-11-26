@@ -36,7 +36,7 @@ An article is these parts, in this order. The five category sections below fill 
 | 2 | Title (H1) | One per page. English, sentence case, five words or fewer, no level, no category, no number. `target-title:` in the front matter names the goal in the language taught, and the build draws it straight under the H1 as a subtitle (see Front matter keys). | V (count, prefix), R (case) |
 | 3 | Lead paragraph | The first paragraph under the title. One or two sentences (20 to 50 words). Says what the page covers in plain words, and uses the main learner phrasing at least once. | V |
 | 4 | Explanation paragraph | The second paragraph. States the one idea of the page in plain language (40 to 120 words). It never previews the sections below. Every technical term in it is linked, here or in the lead, so a term is not linked twice two paragraphs apart. Optional in how-to. | V |
-| 5 | Prerequisites | Optional admonition after the two opening paragraphs, before the first H2. At most 3 links, true dependencies only, each a list item with empty link text, `- [](/a1/grammar/cases/akkusativ.md)`, so the build writes the target's title. | V |
+| 5 | Prerequisites | Optional admonition after the two opening paragraphs, before the first H2. At most 3 links, true dependencies only, each a list item whose link has its own text, `- [The accusative](/a1/grammar/cases/akkusativ.md)`. | V |
 | 6 | Body sections | The category's own sections (see below). In grammar, how-to and vocabulary a body section may end in the track that practises it. | V |
 | 7 | Hear it in practice | `## Hear it in practice` with the audio block, after the body and before the summary. Required only when no body section ends in a track. | V |
 | 8 | Summary | `## Summary`, as the template for the category shows. | V |
@@ -65,8 +65,11 @@ The build draws the page's `related:` entries as the last section, `## Related a
 
 A link in a sentence, at the point where the reader needs it, is the main way pages connect. `related:` stays short: a few close neighbours.
 
-- A link may name a page that does not exist yet, with the path the page should have: `[](/a1/grammar/cases/dativ.md)`. It is a wanted page. It fails nothing: the build draws the link's text, or the page's name as words when it has none, as plain text in `<span class="ol-wanted">`, and the next build after the page is written draws a live link. `ol validate` reports it as information, and `ol wanted` lists every wanted page with the pages that link to it. `ol check` prints the same list in its own section. [V, B]
-- A link names a page when its path ends in `.md`, or has no file suffix and holds a `/`. A link to a wanted page is for depth only: the page teaches its goal fully without it. [R]
+- Every link has its own text: `[the dative](/a1/grammar/cases/dativ.md)`. A link with empty text, `[](…)`, to a page that exists is warned about. To a page that does not exist it is an error. [V, B]
+- A link may name a page that does not exist yet, with the path the page should have. It is a wanted page. The source never changes: the link is an ordinary link, the build draws its text as plain text in `<span class="ol-wanted">` until the page exists, and the first build after the page is written draws a live link, with no edit to the linking page. It fails nothing. `ol validate` reports it as information, `ol wanted` lists every wanted page with the pages that link to it (`--format json` for a machine), and `ol check` prints the same list in its own section. [V, B]
+- A missing page close to one that exists is a broken link, not a wanted page, and is an error in `ol validate` and the build: "broken link, did you mean …?". Close means a page in the same directory whose file name is one letter away (two for a name of six letters or more), or a page of the same file name in another directory. [V, B]
+- A link names a page when its path ends in `.md`, or has no file suffix and holds a `/`. [V]
+- A link to a wanted page is for depth only: the page teaches its goal fully without it. Reviewers triage every wanted link before merge: they accept it, and the page is queued for writing, or the writer drops the link. Every wanted link left on the main branch is a page that has been commissioned. [R]
 - `related:` is not text: an entry there that names no page still stops the build. [B]
 
 ### Tags
@@ -129,7 +132,7 @@ A notice is read as a break from the text. The fewer there are, the more each on
 
 - The free notices are `note`, `tip`, `important` and `warning`, each with its one meaning: `note` explains, `tip` helps a form stick, `important` is the rule a learner must not miss, `warning` names a trap. [V: kind] [R: meaning]
 - A titled notice is one of three, each with its class: Prerequisites (`note`), Common mistakes (`caution`) and Key points (`note`). No other title. [V]
-- A common mistake that another article explains ends with a link to it: "(learn more: [](/a1/grammar/questions/w-questions.md))". The link may name a wanted page. [R]
+- A common mistake that another article explains ends with a link to it: "(learn more in [W-questions](/a1/grammar/questions/w-questions.md))". The link may name a wanted page. [R]
 - An article has at most 3 free notices, at most 1 in each H2 section, and at most 1 `important`. [V]
 - A free notice holds 60 words or fewer. [V]
 - No notice holds another. [V]

@@ -55,7 +55,7 @@ from ol.authoring.components import Page, check_components
 from ol.authoring.glossary import check_terminology
 from ol.authoring.page import parse, plain
 from ol.authoring.specs_data import SPECS
-from ol.authoring.wanted import missing_links
+from ol.authoring.wanted import near_page, page_links, workspace_pages
 from ol.blocks import Block, BlockFormatError, BlockReader, Refusal
 from ol.levels import LEVELS
 from ol.workspace import find_workspace, page_path
@@ -229,9 +229,13 @@ def check_audio_block(rep: Report, block: Block, ctype: str | None):
 def check_doc_links(
     rep: Report, body: str, path: Path, workspace: Path | None, offset: int = 0
 ):
-    """Note each link in the text to a page that does not exist yet.
+    """Check each link in the text that names a page.
 
-    A wanted page fails nothing: ``ol wanted`` lists them all for review.
+    A link to a page not written yet is a wanted page: it fails nothing, and
+    ``ol wanted`` lists them all for review. Every link carries its own text,
+    so a link with none is warned about, and is an error when its page does
+    not exist, since the build would have no title to write. A missing page
+    close to one that exists is a broken link.
 
     Args:
         rep: The page's report.
@@ -243,10 +247,28 @@ def check_doc_links(
     if not workspace:
         return
     docname = page_name(path, workspace)
-    for line, page in missing_links(
-        body, docname, lambda name: (workspace / f"{name}.md").is_file(), offset
-    ):
-        rep.info(f"line {line}: wanted page {page}: it does not exist yet")
+    pages: set[str] | None = None
+    for line, text, page in page_links(body, docname, offset):
+        if (workspace / f"{page}.md").is_file():
+            if not text.strip():
+                rep.warn(
+                    f"line {line}: the link to {page} has no text: give every "
+                    "link its own words, as in [the dative](...)"
+                )
+            continue
+        if pages is None:
+            pages = workspace_pages(workspace)
+        near = near_page(page, pages)
+        if near:
+            rep.error(f"line {line}: broken link to {page}, did you mean {near}?")
+        elif not text.strip():
+            rep.error(
+                f"line {line}: the link to {page}, a page not written yet, has no "
+                "text: give it its own words, which show as plain text until "
+                "the page exists"
+            )
+        else:
+            rep.info(f"line {line}: wanted page {page}: it does not exist yet")
 
 
 TARGET_TITLE = "target-title"

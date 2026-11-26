@@ -235,7 +235,7 @@ def test_a_first_use_that_is_linked_passes(repository):
 def test_a_first_use_whose_sentence_links_to_an_article_passes(repository):
     text = FIXTURE.read_text(encoding="utf-8").replace(
         SENTENCE,
-        f"{SENTENCE} A noun names a thing, as in [](/a1/how-to/introduce-yourself.md).",
+        f"{SENTENCE} A noun names a thing, as in [introductions](/a1/how-to/introduce-yourself.md).",
         1,
     )
     assert article_errors(repository, text) == []
@@ -243,7 +243,9 @@ def test_a_first_use_whose_sentence_links_to_an_article_passes(repository):
 
 def test_a_first_use_whose_sentence_links_to_a_wanted_page_passes(repository):
     text = FIXTURE.read_text(encoding="utf-8").replace(
-        SENTENCE, f"{SENTENCE} A noun names a thing ([](/a1/grammar/nouns.md)).", 1
+        SENTENCE,
+        f"{SENTENCE} A noun names a thing ([more on nouns](/a1/grammar/nouns.md)).",
+        1,
     )
     assert article_errors(repository, text) == []
 
@@ -258,7 +260,7 @@ def test_a_first_use_as_the_text_of_a_link_to_an_article_passes(repository):
 def test_a_link_in_the_next_sentence_does_not_meet_the_first_use(repository):
     text = FIXTURE.read_text(encoding="utf-8").replace(
         SENTENCE,
-        f"{SENTENCE} A noun names a thing. More in [](/a1/grammar/nouns.md).",
+        f"{SENTENCE} A noun names a thing. More in [Nouns](/a1/grammar/nouns.md).",
         1,
     )
     found = article_errors(repository, text)

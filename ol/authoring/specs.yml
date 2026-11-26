@@ -12,7 +12,9 @@
 #   - NO blockquote subtitle under the H1
 #   - NO :::{seealso} blocks (use Prerequisites admonition or Related articles)
 #   - no unfilled {{PLACEHOLDER}}; a link in the body to a page that does not
-#     exist yet is a wanted page, listed by `ol wanted`, and fails nothing
+#     exist yet is a wanted page, listed by `ol wanted`, and fails nothing,
+#     unless it is close to a page that exists (a broken link) or has no text
+#   - every link has its own text: `[](...)` to a page that exists is warned
 #   - `target-title:`, when given, is one line of text
 #   - no heading repeats a track's :title: or :title-en:
 #   - a phrase table has something in its Notes column

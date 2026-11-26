@@ -145,7 +145,7 @@ The shared stylesheet shows the phrase in normal weight with the translation ben
 `ol.docs.roles` also adds the `level` role, a level badge drawn in that level's colour. It follows a link to a page of another level:
 
 ```markdown
-- [](/b1/grammar/relativsaetze.md) {level}`B1`
+- [Relative clauses](/b1/grammar/relativsaetze.md) {level}`B1`
 ```
 
 The colours are in `ol/levels.py`, `LEVEL_COLOURS`, the one place they are defined: album covers read the same table, so a level looks the same on a page and on a cover. The role writes the colour on the badge itself:

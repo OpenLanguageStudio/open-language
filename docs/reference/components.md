@@ -15,7 +15,7 @@ This page shows how to write each component. How many a page may hold, and where
 | Marking role | ``{akk}`den` `` | The grammatical job of a word in an example sentence. The language repository lists its roles. |
 | Stacked phrase | ``{stack}`Guten Morgen \| Good morning` `` | A phrase with its translation beneath it, in a table cell or a list. |
 | Glossary term | ``{term}`accusative` `` | The first use of a listed technical term in an article's prose, when no article covers it. |
-| Page link | `[](/a1/grammar/cases/akkusativ.md)` | A link to another page, or to a page not written yet. Empty brackets: the build writes the page's title. |
+| Page link | `[the accusative](/a1/grammar/cases/akkusativ.md)` | A link to another page, or to a page not written yet, always with its own text. |
 | Level badge | ``{level}`A1` `` | The level after a link to a page of another level, in that level's colour. |
 | Register badge | ``{bdg-light}`informal` `` | A register in a Notes cell. |
 | Example block | `:::{ol-examples}` with `:presenters:` | Example sentences with their translations, beside the explanation. |
@@ -68,22 +68,22 @@ Ich gebe {dativ}`dem Kind` {akk}`den Ball`.
 
 ### Page links
 
-Leave the text of a link to another Coursebook page empty. The build writes the target page's title, so a retitled page never leaves a stale link behind:
+Every link has its own text, the words the sentence or the list needs:
 
 ```markdown
-- [](/a1/grammar/cases/akkusativ.md)
+- [The accusative](/a1/grammar/cases/akkusativ.md)
 ```
 
-A link that needs words of its own inside a sentence keeps them: `the [accusative case](/a1/grammar/cases/akkusativ.md)`. Link in the text, at the point where the reader needs it, and to an article before the glossary: a link to the article that covers a term, in the sentence that first uses it, is the term's link.
+Inside a sentence the link is the words that name the page's subject: `the [accusative case](/a1/grammar/cases/akkusativ.md)`. A link with empty text, `[](…)`, is warned about, and is an error when its page does not exist. Link in the text, at the point where the reader needs it, and to an article before the glossary: a link to the article that covers a term, in the sentence that first uses it, is the term's link.
 
-A link may name a page that is not written yet, with the path it should have (`<level>/<category>/<file-name>.md`). It is a wanted page. Add no marker: until the page exists, the build draws the link's text, or the page's name as words, as plain text (`<span class="ol-wanted">`), and once the page is written the next build draws a live link. `ol wanted` lists every wanted page with the pages that link to it. Use a wanted link for depth only: the page teaches its goal without it. `related:` in the front matter takes pages that exist, and nothing else. A link off the site is written in full, with its text: `[Goethe-Institut: A1 Wortliste](https://...)`. External links appear only under a level page's Additional reading.
+A link may name a page that is not written yet, with the path it should have (`<level>/<category>/<file-name>.md`). It is a wanted page. Add no marker: the source never changes. Until the page exists, the build draws the link's text as plain text (`<span class="ol-wanted">`), and once the page is written the next build draws a live link, with no edit to this page. `ol wanted` lists every wanted page with the pages that link to it. A missing page close to one that exists, in the same directory with a name a letter or two away or with the same file name in another directory, is a broken link: "did you mean …?". Use a wanted link for depth only: the page teaches its goal without it, and a reviewer accepts or drops each one before merge. `related:` in the front matter takes pages that exist, and nothing else. A link off the site is written in full, with its text: `[Goethe-Institut: A1 Wortliste](https://...)`. External links appear only under a level page's Additional reading.
 
 ### Badges
 
 A badge is a small label. A Coursebook page uses two kinds:
 
 ```markdown
-- [](/b1/grammar/relativsaetze.md) {level}`B1`
+- [Relative clauses](/b1/grammar/relativsaetze.md) {level}`B1`
 
 | {stack}`Hallo! \| Hi!` | {bdg-light}`informal` |
 ```
@@ -146,14 +146,14 @@ Three notices have fixed titles and fixed kinds. Prerequisites opens an article,
 :::{admonition} Prerequisites
 :class: note
 Before reading this article, make sure you are comfortable with:
-- [](/a1/grammar/articles/bestimmter-artikel.md)
+- [The definite article](/a1/grammar/articles/bestimmter-artikel.md)
 :::
 
 :::{admonition} Common mistakes
 :class: caution
 
 - *\*Ich sehe der Mann.* → Ich sehe **den** Mann. (direct object, masculine)
-- *\*Wo kommst du?* → **Woher** kommst du? (learn more: [](/a1/grammar/questions/w-questions.md))
+- *\*Wo kommst du?* → **Woher** kommst du? (learn more in [W-questions](/a1/grammar/questions/w-questions.md))
 :::
 
 :::{admonition} Key points
@@ -163,7 +163,7 @@ Before reading this article, make sure you are comfortable with:
 :::
 ```
 
-A common mistake that another article explains ends with a link to it, "(learn more: [](…))". The link may name a page not written yet. A wrong form in Common mistakes is in italics after an asterisk, the linguist's mark for a form no speaker uses, and its correction follows the arrow with the changed word in bold. Never strike a wrong form through: a screen reader reads struck text aloud as if it were right.
+A common mistake that another article explains ends with a link to it, "(learn more in [Text](…))", with words of its own. The link may name a page not written yet. A wrong form in Common mistakes is in italics after an asterisk, the linguist's mark for a form no speaker uses, and its correction follows the arrow with the changed word in bold. Never strike a wrong form through: a screen reader reads struck text aloud as if it were right.
 
 A culture note is a notice of its own, with the fixed title "Culture note" and a violet no other notice uses. It stands anywhere in the body of a how-to, grammar or writing article, where it fits, and never under a `## Culture note` heading. It holds 80 words or fewer, an article has at most 3, and it does not count toward the free notices. It takes no title and no options:
 

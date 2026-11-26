@@ -738,7 +738,8 @@ def test_a_common_mistake_may_end_with_a_link_to_the_article(tmp_path):
 def test_a_common_mistake_may_link_to_a_wanted_page(tmp_path):
     text = fixture("grammar").replace(
         "\n:::\n\n## Hear it in practice",
-        " (learn more: [](/a1/grammar/cases/dativ.md))\n:::\n\n## Hear it in practice",
+        " (learn more in [The dative](/a1/grammar/cases/dativ.md))\n:::\n\n"
+        "## Hear it in practice",
         1,
     )
     assert "cases/dativ.md" in text

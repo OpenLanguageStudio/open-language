@@ -4,6 +4,9 @@ A writer links to the article a sentence needs even before it is written (see
 ``ol.authoring.wanted``). The build draws such a link's text as plain text,
 ``<span class="ol-wanted">``, instead of failing on it, and logs it. ``ol
 wanted`` lists every wanted page with the pages that link to it.
+
+Two missing links are warnings, so a strict build fails on them: one close to
+a page that exists, which is a typo, and one with no text of its own.
 """
 
 from __future__ import annotations
@@ -13,7 +16,7 @@ from sphinx import addnodes
 from sphinx.transforms.post_transforms import SphinxPostTransform
 from sphinx.util import logging
 
-from ol.authoring.wanted import page_link, words_of
+from ol.authoring.wanted import near_page, page_link, words_of
 
 logger = logging.getLogger(__name__)
 
@@ -35,7 +38,20 @@ class DrawWanted(SphinxPostTransform):
             page = page_link(ref.get("refdoc", self.env.docname), ref["reftarget"])
             if page is None or page in self.env.found_docs:
                 continue
-            logger.info("wanted page %s", page, location=ref)
+            near = near_page(page, self.env.found_docs)
+            if near:
+                logger.warning(
+                    "broken link to %s, did you mean %s?", page, near, location=ref
+                )
+            elif not ref.astext().strip():
+                logger.warning(
+                    "the link to %s, a page not written yet, has no text: give it "
+                    "its own words",
+                    page,
+                    location=ref,
+                )
+            else:
+                logger.info("wanted page %s", page, location=ref)
             drawn = nodes.inline(classes=[CLASS])
             held = ref.children
             if len(held) == 1 and "xref" in held[0].get("classes", []):

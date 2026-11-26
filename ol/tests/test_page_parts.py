@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 from io import StringIO
 from pathlib import Path
 
@@ -9,7 +10,7 @@ import pytest
 from sphinx.application import Sphinx
 from typer.testing import CliRunner
 
-from ol.authoring.wanted import page_link, wanted_pages, words_of
+from ol.authoring.wanted import near_page, page_link, wanted_pages, words_of
 from ol.cli import app
 
 
@@ -111,7 +112,7 @@ class TestWantedPages:
     PAGES = {
         "index": "# Course\n\n```{toctree}\na1/greet\n```\n",
         "a1/greet": (
-            "# Greet\n\nUse the formal form ([](/a1/grammar/formal-you.md)).\n\n"
+            "# Greet\n\nUse [the formal form](/a1/grammar/formal-you.md).\n\n"
             "Read [the dative](/a1/grammar/dativ.md) first.\n"
         ),
     }
@@ -120,14 +121,32 @@ class TestWantedPages:
         html = build(self.PAGES).html("a1/greet")
         assert '<span class="ol-wanted">the dative</span>' in html
 
-    def test_a_link_with_no_text_shows_the_page_name_as_words(self, build):
-        html = build(self.PAGES).html("a1/greet")
-        assert '<span class="ol-wanted">Formal you</span>' in html
-
     def test_the_build_passes_and_logs_each_wanted_page(self, build):
         done = build(self.PAGES)
-        assert "dativ" not in done.warnings.getvalue()
+        assert "greet.md" not in done.warnings.getvalue()
         assert "wanted page a1/grammar/dativ\n" in done.status.getvalue()
+
+    def test_a_link_with_no_text_is_a_warning_and_shows_the_page_name(self, build):
+        pages = dict(self.PAGES)
+        pages["a1/greet"] = "# Greet\n\nSee ([](/a1/grammar/formal-you.md)).\n"
+        done = build(pages)
+        assert '<span class="ol-wanted">Formal you</span>' in done.html("a1/greet")
+        assert (
+            "the link to a1/grammar/formal-you, a page not written yet, has no text"
+            in done.warnings.getvalue()
+        )
+
+    def test_a_link_close_to_a_page_that_exists_is_a_warning(self, build):
+        pages = {
+            "index": "# Course\n\n```{toctree}\na1/greet\na1/grammar/dativ\n```\n",
+            "a1/grammar/dativ": "# Dativ\n\nThe case.\n",
+            "a1/greet": "# Greet\n\nRead [the dative](/a1/grammar/dative.md).\n",
+        }
+        done = build(pages)
+        assert (
+            "broken link to a1/grammar/dative, did you mean a1/grammar/dativ?"
+            in done.warnings.getvalue()
+        )
 
     def test_a_link_to_a_page_that_exists_is_still_a_link(self, build):
         pages = dict(self.PAGES)
@@ -136,7 +155,7 @@ class TestWantedPages:
         html = build(pages).html("a1/greet")
         assert 'ol-wanted">the dative' not in html
         assert 'href="grammar/dativ.html"' in html
-        assert '<span class="ol-wanted">Formal you</span>' in html
+        assert '<span class="ol-wanted">the formal form</span>' in html
 
 
 class TestExampleTabs:
@@ -193,6 +212,41 @@ def test_wanted_pages_maps_each_missing_page_to_its_linking_pages(tmp_path):
     assert found == {"a1/grammar/akkusativ": ["a1/grammar/dativ", "a1/how-to/greet"]}
 
 
+def test_a_link_close_to_a_page_that_exists_is_not_wanted(tmp_path):
+    write(tmp_path, "a1/grammar/dativ", "# Dativ\n\nThe case.\n")
+    write(tmp_path, "a1/how-to/greet", "# Greet\n\n[x](/a1/grammar/dative.md).\n")
+    assert wanted_pages(tmp_path, sorted(tmp_path.rglob("*.md"))) == {}
+
+
+class TestNearPage:
+    PAGES = {"a1/grammar/cases/akkusativ", "a1/grammar/cases/dativ", "a1/index"}
+
+    @pytest.mark.parametrize(
+        ("page", "near"),
+        [
+            ("a1/grammar/cases/akusativ", "a1/grammar/cases/akkusativ"),
+            ("a1/grammar/cases/akkusativs", "a1/grammar/cases/akkusativ"),
+            ("a1/grammar/cases/datv", "a1/grammar/cases/dativ"),
+            ("a1/grammar/akkusativ", "a1/grammar/cases/akkusativ"),
+            ("b1/grammar/cases/dativ", "a1/grammar/cases/dativ"),
+        ],
+    )
+    def test_a_near_miss_names_the_page_it_was_meant_for(self, page, near):
+        assert near_page(page, self.PAGES) == near
+
+    @pytest.mark.parametrize(
+        "page",
+        [
+            "a1/grammar/cases/genitiv",
+            "a1/grammar/cases/dat",
+            "a2/index",
+            "a1/how-to/akkusativ-or-dativ",
+        ],
+    )
+    def test_a_new_page_is_near_nothing(self, page):
+        assert near_page(page, self.PAGES) is None
+
+
 def test_a_link_in_code_is_not_wanted(tmp_path):
     write(tmp_path, "a1/how-to/greet", "# Greet\n\n```\n[](/a1/x/missing.md)\n```\n")
     assert wanted_pages(tmp_path, [tmp_path / "a1/how-to/greet.md"]) == {}
@@ -204,6 +258,29 @@ def test_ol_wanted_lists_each_page_with_the_pages_that_link_to_it(tmp_path):
     result = CliRunner().invoke(app, ["wanted", "--workspace", str(tmp_path)])
     assert result.exit_code == 0, result.output
     assert "a1/grammar/dativ\n    linked from a1/how-to/greet" in result.output
+
+
+def test_ol_wanted_writes_json(tmp_path):
+    (tmp_path / "open-language.yml").write_text("language: German\nlanguage_code: de\n")
+    write(tmp_path, "a1/how-to/greet", "# Greet\n\nSee [x](/a1/grammar/dativ.md).\n")
+    write(tmp_path, "a1/how-to/thank", "# Thank\n\nSee [x](/a1/grammar/dativ.md).\n")
+    result = CliRunner().invoke(
+        app, ["wanted", "--workspace", str(tmp_path), "--format", "json"]
+    )
+    assert result.exit_code == 0, result.output
+    assert json.loads(result.output) == [
+        {
+            "page": "a1/grammar/dativ",
+            "linked_from": ["a1/how-to/greet", "a1/how-to/thank"],
+        }
+    ]
+
+
+def test_ol_wanted_refuses_another_format(tmp_path):
+    result = CliRunner().invoke(
+        app, ["wanted", "--workspace", str(tmp_path), "--format", "xml"]
+    )
+    assert result.exit_code != 0
 
 
 def test_ol_wanted_says_when_nothing_is_wanted(tmp_path):

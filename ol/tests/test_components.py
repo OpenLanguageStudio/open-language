@@ -214,18 +214,6 @@ GRAMMAR = {
         "a notice holds another notice",
     ),
     # Links and level badges.
-    "a related link with text": (
-        related("- [Nominative](/a1/grammar/cases/nominativ.md)"),
-        "write the Related articles link to /a1/grammar/cases/nominativ.md as [](...)",
-    ),
-    "a prerequisite with text": (
-        before(
-            "## The forms",
-            ":::{admonition} Prerequisites\n:class: note\n"
-            "- [Nominative](/a1/grammar/cases/nominativ.md)\n:::\n\n",
-        ),
-        "write the Prerequisites link",
-    ),
     "another level without its badge": (
         related("- [](/a2/grammar/adjektivendungen.md)"),
         "is followed by its level, {level}`A2`",
@@ -557,3 +545,12 @@ def test_terminology_may_not_use_interface_roles(pages):
     text = terminology.read_text(encoding="utf-8") + "\nPress {kbd}`Ctrl`.\n"
     found = page_errors(pages, "terminology.md", text)
     assert any("the {kbd} role is not a component" in m for m in found), found
+
+
+def test_a_prerequisite_link_with_its_own_text_passes(tmp_path):
+    text = before(
+        "## The forms",
+        ":::{admonition} Prerequisites\n:class: note\n"
+        "- [The nominative](/a1/grammar/cases/nominativ.md)\n:::\n\n",
+    )(fixture("grammar"))
+    assert errors(tmp_path, "grammar", text) == []
