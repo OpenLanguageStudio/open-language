@@ -72,7 +72,8 @@ the tab labels (German: DE-W1). This applies throughout the coursebook unless th
 is to mix registers.
 
 **OL-W9. A track closes the section it practises.** A page with two tracks gives each its own
-section, with the track at the end of it. Tracks are not stacked at the end of the page.
+section, with the track at the end of it. An H3 subsection is a section: a grammar page that
+splits one H2 into parallel forms may close each subsection with its track. Tracks are not stacked at the end of the page.
 
 **OL-W10. Track titles are never headings.** The audio block renders its own title. Track
 titles do not appear in the sidebar.

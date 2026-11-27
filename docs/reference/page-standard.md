@@ -38,7 +38,7 @@ An article is these parts, in this order. The five category sections below fill 
 | 4 | Explanation paragraph | The second paragraph. States the one idea of the page in plain language (40 to 120 words). It never previews the sections below. Every technical term in it is linked, here or in the lead, so a term is not linked twice two paragraphs apart. Optional in how-to. | V |
 | 5 | Prerequisites | Optional admonition after the two opening paragraphs, before the first H2. At most 3 links, true dependencies only, each a list item whose link has its own text, `- [The accusative](/a1/grammar/cases/akkusativ.md)`. | V |
 | 6 | Body sections | The category's own sections (see below). In grammar, how-to and vocabulary a body section may end in the track that practises it. | V |
-| 7 | Hear it in practice | `## Hear it in practice` with the audio block, after the body and before the summary. Required only when no body section ends in a track. | V |
+| 7 | Hear it in practice | `## Hear it in practice` with the audio block, after the body and before the summary. Required only when no body section ends in a track. A track may close a body section, or an H3 subsection of one. | V |
 | 8 | Summary | `## Summary`, as the template for the category shows. | V |
 | 9 | Related articles | Drawn by the build from `related:` in the front matter (see Front matter keys), as the last section of the page. The page has no `## Related articles` section of its own. | V, B |
 

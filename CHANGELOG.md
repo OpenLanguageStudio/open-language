@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+### Changed
+
+- A track may close an H3 subsection, not only an H2 section (OL-W9). A grammar page that splits one H2 into parallel forms, such as one H3 per modal verb, can end each subsection with its own track. A track in the middle of a subsection still fails.
+
 ## [0.19.0] - 2026-11-27
 
 ### Changed: checks that can fail content that passed 0.18.0 (breaking)

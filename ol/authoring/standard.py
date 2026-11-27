@@ -651,11 +651,22 @@ def _is_track(block: Block) -> bool:
     return block.is_directive("audio-examples")
 
 
+def _subsections(blocks: list[Block]) -> list[list[Block]]:
+    """Split a section's blocks at its H3 headings: the part before the first
+    H3, then each H3 with what follows it."""
+    parts: list[list[Block]] = [[]]
+    for block in blocks:
+        if block.kind == "heading" and block.level == 3:
+            parts.append([])
+        parts[-1].append(block)
+    return parts
+
+
 def check_section_tracks(rep, found):
     """A track closes the body section it practises, or stands in Hear it in practice.
 
-    A body section may end in one or more audio blocks, and nowhere else does a
-    body section hold one. Hear it in practice is needed only when no body
+    A body section, or an H3 subsection of one, may end in one or more audio
+    blocks, and nowhere else does a body section hold one. Hear it in practice is needed only when no body
     section ends in a track.
 
     Args:
@@ -666,16 +677,18 @@ def check_section_tracks(rep, found):
     for section in found:
         if section.title in CLOSING:
             continue
-        trailing = len(section.blocks)
-        while trailing and _is_track(section.blocks[trailing - 1]):
-            trailing -= 1
-        ends_in_track |= trailing < len(section.blocks)
-        held = [
-            block
-            for top in section.blocks[:trailing]
-            for block in walk([top])
-            if _is_track(block)
-        ]
+        held = []
+        for part in _subsections(section.blocks):
+            trailing = len(part)
+            while trailing and _is_track(part[trailing - 1]):
+                trailing -= 1
+            ends_in_track |= trailing < len(part)
+            held += [
+                block
+                for top in part[:trailing]
+                for block in walk([top])
+                if _is_track(block)
+            ]
         for block in held:
             rep.error(
                 f"audio block (line {block.line}) inside '{section.title}': a "

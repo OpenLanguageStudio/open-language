@@ -621,6 +621,30 @@ def test_two_tracks_may_close_one_section(tmp_path):
     assert errors(tmp_path, "how-to", text) == []
 
 
+def h3_tracks(after_second: str = "") -> str:
+    """The grammar fixture with two H3 subsections, each closed by a track."""
+    text = tracks_at_section_ends("grammar", "## Accusative: *der* becomes *den*")
+    heading = "## Accusative: *der* becomes *den*"
+    after = text.index("\n## ", text.index(heading) + len(heading))
+    parts = "".join(
+        f"### {name}\n\nThe {name.lower()} case of the pattern.\n\n"
+        + SECTION_TRACK.format(category="grammar", track=name.lower())
+        + (after_second if name == "Second" else "")
+        for name in ("First", "Second")
+    )
+    return text[:after] + "\n" + parts + text[after:]
+
+
+def test_a_track_may_close_each_h3_subsection(tmp_path):
+    assert errors(tmp_path, "grammar", h3_tracks()) == []
+
+
+def test_a_track_inside_an_h3_subsection_is_still_red(tmp_path):
+    text = h3_tracks(after_second="Talk continues after the track.\n\n")
+    found = errors(tmp_path, "grammar", text)
+    assert any("a track closes the section it practises" in m for m in found), found
+
+
 def test_hear_it_in_practice_may_follow_a_section_that_ends_in_a_track(tmp_path):
     text = tracks_at_section_ends("how-to", "## Formal or casual").replace(
         "## Summary",
